@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Braian Arroyo Braconi — UX Manager</title>
+  <meta name="description" content="UX Manager focused on culture, craft, and teams that ship better products. Based in Córdoba / Buenos Aires, Argentina."/>
+  <meta name="keywords" content="UX Manager, UX Lead, Design Leader, Mercado Libre, PedidosYa, NaranjaX, Argentina, Córdoba, Buenos Aires"/>
+  <meta property="og:title" content="Braian Arroyo Braconi — UX Manager"/>
+  <meta property="og:description" content="UX Manager focused on culture, craft, and teams that ship better products."/>
+  <meta property="og:type" content="website"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #111;
+      --gray: #666;
+      --light: #f5f3ef;
+      --accent: #e8643a;
+      --border: #e0ddd8;
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #fff; color: var(--black); line-height: 1.6; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.5rem 3rem;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+    }
+    .nav-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; text-decoration: none; color: var(--black); }
+    .nav-right { display: flex; align-items: center; gap: 2rem; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { font-size: 0.85rem; text-decoration: none; color: var(--gray); letter-spacing: 0.02em; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--black); }
+
+    /* LANG TOGGLE */
+    .lang-toggle {
+      display: flex; gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 2rem;
+      overflow: hidden;
+    }
+    .lang-btn {
+      padding: 0.3rem 0.8rem;
+      font-size: 0.75rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      border: none;
+      background: transparent;
+      color: var(--gray);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lang-btn.active { background: var(--black); color: #fff; }
+
+    /* HERO */
+    .hero { padding: 10rem 3rem 6rem; max-width: 780px; margin: 0 auto; }
+    .hero-label { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem; }
+    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; margin-bottom: 2rem; color: var(--black); }
+    .hero-bio { font-size: 1.1rem; color: #444; line-height: 1.8; max-width: 620px; font-weight: 300; }
+    .hero-bio strong { color: var(--black); font-weight: 500; }
+
+    .divider { width: 100%; height: 1px; background: var(--border); }
+
+    /* SECTIONS */
+    .section { max-width: 780px; margin: 0 auto; padding: 5rem 3rem; }
+    .section-header { display: flex; align-items: baseline; gap: 1.5rem; margin-bottom: 3.5rem; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; }
+
+    /* TIMELINE */
+    .timeline { display: flex; flex-direction: column; }
+    .timeline-item { display: grid; grid-template-columns: 140px 1fr; gap: 2rem; padding: 2.5rem 0; border-top: 1px solid var(--border); }
+    .timeline-item:last-child { border-bottom: 1px solid var(--border); }
+    .timeline-years { font-size: 0.8rem; color: var(--gray); letter-spacing: 0.04em; padding-top: 0.2rem; }
+    .timeline-content h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .timeline-role { font-size: 0.85rem; color: var(--accent); font-weight: 500; margin-bottom: 0.8rem; }
+    .timeline-desc { font-size: 0.95rem; color: #555; line-height: 1.7; font-weight: 300; }
+
+    /* TALKS */
+    .talks-list { display: flex; flex-direction: column; }
+    .talk-item { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2rem; padding: 1.8rem 0; border-top: 1px solid var(--border); text-decoration: none; color: inherit; transition: opacity 0.2s; }
+    .talk-item:last-child { border-bottom: 1px solid var(--border); }
+    .talk-item:hover { opacity: 0.6; }
+    .talk-item h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 400; font-style: italic; margin-bottom: 0.3rem; }
+    .talk-item p { font-size: 0.85rem; color: var(--gray); font-weight: 300; }
+    .talk-venue { font-size: 0.8rem; color: var(--accent); white-space: nowrap; font-weight: 500; }
+
+    /* PHILOSOPHY */
+    .philosophy { background: var(--light); padding: 6rem 3rem; }
+    .philosophy-inner { max-width: 780px; margin: 0 auto; }
+    .philosophy blockquote { font-family: 'Playfair Display', serif; font-size: clamp(1.3rem, 3vw, 1.9rem); font-style: italic; line-height: 1.5; letter-spacing: -0.02em; color: var(--black); margin-bottom: 2rem; position: relative; padding-left: 2rem; }
+    .philosophy blockquote::before { content: ''; position: absolute; left: 0; top: 0.3em; bottom: 0.3em; width: 3px; background: var(--accent); }
+    .philosophy-caption { font-size: 0.85rem; color: var(--gray); letter-spacing: 0.04em; padding-left: 2rem; }
+
+    /* ABOUT */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+    .about-photo { width: 100%; max-width: 280px; aspect-ratio: 1; border-radius: 50%; object-fit: cover; margin-bottom: 2rem; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+    .about-text { font-size: 1rem; color: #444; line-height: 1.8; font-weight: 300; }
+    .about-text p + p { margin-top: 1rem; }
+    .about-details { display: flex; flex-direction: column; gap: 1.5rem; }
+    .about-detail-item { border-top: 1px solid var(--border); padding-top: 1rem; }
+    .about-detail-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.3rem; }
+    .about-detail-value { font-size: 0.95rem; color: var(--black); }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); padding: 3rem; max-width: 780px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    footer p { font-size: 0.8rem; color: var(--gray); }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { font-size: 0.8rem; color: var(--gray); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent); }
+
+    /* LANG HIDDEN */
+    [data-lang] { display: none; }
+    .lang-es [data-lang="es"] { display: block; }
+    .lang-en [data-lang="en"] { display: block; }
+    .lang-es [data-lang-inline="es"] { display: inline; }
+    .lang-en [data-lang-inline="en"] { display: inline; }
+    [data-lang-inline] { display: none; }
+
+    @media (max-width: 640px) {
+      nav { padding: 1rem 1.2rem; }
+      .nav-links { display: none; }
+      .hero, .section { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .timeline-item { grid-template-columns: 1fr; gap: 0.5rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .about-photo { max-width: 200px; }
+      .about-details { max-width: 100% !important; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem 1.5rem; }
+      .philosophy { padding: 4rem 1.5rem; }
+    }
+  </style>
+</head>
+<body class="lang-es">
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-name">Braian Arroyo Braconi</a>
+    <div class="nav-right">
+      <ul class="nav-links">
+        <li><a href="#trayectoria"><span data-lang-inline="es">Trayectoria</span><span data-lang-inline="en">Career</span></a></li>
+        <li><a href="#charlas"><span data-lang-inline="es">Charlas</span><span data-lang-inline="en">Talks</span></a></li>
+        <li><a href="#sobre-mi"><span data-lang-inline="es">Sobre mí</span><span data-lang-inline="en">About</span></a></li>
+      </ul>
+      <div class="lang-toggle">
+        <button class="lang-btn active" onclick="setLang('es')">ES</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <p class="hero-label">
+      <span data-lang-inline="es">UX Manager · Diseñador Industrial UNC · Córdoba / Buenos Aires, Argentina</span>
+      <span data-lang-inline="en">UX Manager · Industrial Designer UNC · Córdoba / Buenos Aires, Argentina</span>
+    </p>
+
+    <h1>
+      <span data-lang-inline="es">UX Manager enfocado en la cultura, el oficio y los equipos que hacen la diferencia.</span>
+      <span data-lang-inline="en">UX Manager focused on culture, craft, and teams that ship better products.</span>
+    </h1>
+
+    <p class="hero-bio">
+      <span data-lang-inline="es">
+        Llevo más de 7 años en experiencias digitales de escala en Latinoamérica.
+        Pasé de diseñador a líder, y hoy gestiono equipos que ponen al usuario en el centro de cada decisión.
+        <strong>Trabajo en la intersección de cultura y técnica. Creo que la calidad de un producto es el reflejo de cómo trabaja el equipo que lo construye.</strong>
+      </span>
+      <span data-lang-inline="en">
+        Over 7 years building digital experiences at scale across Latin America.
+        I moved from designer to leader, and today I manage teams that put users at the center of every decision.
+        <strong>I work at the intersection of culture and craft. I believe product quality is a reflection of how the team building it works together.</strong>
+      </span>
+    </p>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- TRAYECTORIA -->
+  <section class="section" id="trayectoria">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span data-lang-inline="es">La Trayectoria</span>
+        <span data-lang-inline="en">Career</span>
+      </h2>
+    </div>
+
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="timeline-years">2023 — <span data-lang-inline="es">Presente</span><span data-lang-inline="en">Present</span></div>
+        <div class="timeline-content">
+          <h3>NaranjaX</h3>
+          <div class="timeline-role">UX Manager</div>
+          <p class="timeline-desc">
+            <span data-lang-inline="es">Liderando el área de experiencia de usuario en una de las fintech más relevantes de Argentina. Construyendo cultura de diseño, procesos y productos que impactan en la vida financiera de millones de personas.</span>
+            <span data-lang-inline="en">Leading the UX area at one of Argentina's most relevant fintechs. Building design culture, processes, and products that impact the financial lives of millions.</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-years">2020 — 2023</div>
+        <div class="timeline-content">
+          <h3>PedidosYa</h3>
+          <div class="timeline-role">UX Lead</div>
+          <p class="timeline-desc">
+            <span data-lang-inline="es">Tres años escalando desde lead hasta roles de mayor responsabilidad en una de las plataformas de delivery más grandes de la región. Coordiné equipos multidisciplinarios para diseñar experiencias de alta demanda.</span>
+            <span data-lang-inline="en">Three years growing from lead to broader responsibilities at one of the region's largest delivery platforms. Led multidisciplinary teams designing high-demand, low-error-tolerance experiences.</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-years">2017 — 2020</div>
+        <div class="timeline-content">
+          <h3>Mercado Libre</h3>
+          <div class="timeline-role">UX Designer → Sr. UX Designer</div>
+          <p class="timeline-desc">
+            <span data-lang-inline="es">Mis primeros años de carrera en el ecosistema de e-commerce más grande de Latinoamérica. Aprendí el oficio con rigor y entendí que el diseño de escala requiere tanto criterio como velocidad.</span>
+            <span data-lang-inline="en">My early career years at Latin America's largest e-commerce ecosystem. I learned the craft rigorously and understood that design at scale demands both judgment and speed.</span>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CHARLAS -->
+  <section class="section" id="charlas">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span data-lang-inline="es">Charlas</span>
+        <span data-lang-inline="en">Talks</span>
+      </h2>
+    </div>
+
+    <div class="talks-list">
+      <a href="https://www.fadu.uba.ar/ux-uba/" target="_blank" class="talk-item">
+        <div>
+          <h3>
+            <span data-lang-inline="es">Toma de decisiones institucionales: El Diseño UX como escenario de conflictos</span>
+            <span data-lang-inline="en">Institutional Decision-Making: UX Design as a Conflict Arena</span>
+          </h3>
+          <p>
+            <span data-lang-inline="es">1º Encuentro de UX, FADU — Universidad de Buenos Aires. Con Emiliano Mallon Noya. Incluido en el libro colectivo del evento.</span>
+            <span data-lang-inline="en">1st UX Conference, FADU — University of Buenos Aires. With Emiliano Mallon Noya. Published in the conference anthology.</span>
+          </p>
+        </div>
+        <span class="talk-venue">FADU UBA</span>
+      </a>
+      <a href="#" class="talk-item">
+        <div>
+          <h3>
+            <span data-lang-inline="es">El futuro de las experiencias de usuario</span>
+            <span data-lang-inline="en">The Future of User Experiences</span>
+          </h3>
+          <p>
+            <span data-lang-inline="es">Stanford University. Exploración sobre cómo la tecnología y el diseño están redefiniendo la forma en que las personas interactúan con productos y servicios.</span>
+            <span data-lang-inline="en">Stanford University. Exploring how technology and design are redefining how people interact with products and services.</span>
+          </p>
+        </div>
+        <span class="talk-venue">Stanford</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- FILOSOFÍA -->
+  <div class="philosophy">
+    <div class="philosophy-inner">
+      <blockquote>
+        <span data-lang-inline="es">"Diseño para las personas. Lidero para el equipo. Construyo para lo que viene."</span>
+        <span data-lang-inline="en">"Design for people. Lead for the team. Build for what's next."</span>
+      </blockquote>
+      <p class="philosophy-caption">— Braian Arroyo Braconi</p>
+    </div>
+  </div>
+
+  <!-- SOBRE MÍ -->
+  <section class="section" id="sobre-mi">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span data-lang-inline="es">Sobre mí</span>
+        <span data-lang-inline="en">About</span>
+      </h2>
+    </div>
+
+    <div class="about-grid">
+      <div>
+        <img src="82b8d43b-ae3f-41b6-9bbe-b4ae07cde264 2.jpg" alt="Braian Arroyo Braconi" class="about-photo"/>
+      </div>
+      <div class="about-text">
+        <span data-lang-inline="es">
+          <p>Soy UX Manager con base en Córdoba y Buenos Aires. Diseñador Industrial de la UNC que encontró en la experiencia de usuario el lugar donde el diseño impacta a más personas.</p>
+          <p>A lo largo de mi carrera en Mercado Libre, PedidosYa y NaranjaX aprendí que el diseño de calidad no depende solo de talento — depende de cómo están configurados los equipos, los procesos y la cultura. Eso es lo que intento transformar.</p>
+          <p>Sigo siendo alguien que prueba, arma, rompe y aprende. El craft no desaparece cuando te convertís en manager — se transforma en el estándar que le pedís al equipo. Hoy tengo especial foco en cómo la IA está redefiniendo el proceso de diseño, los roles, y la relación entre diseñadores y producto.</p>
+        </span>
+        <span data-lang-inline="en">
+          <p>I'm a UX Manager based in Córdoba and Buenos Aires. An Industrial Designer from UNC who found in user experience the place where design impacts the most people.</p>
+          <p>Throughout my career at Mercado Libre, PedidosYa, and NaranjaX I learned that quality design doesn't depend solely on talent — it depends on how teams, processes, and culture are configured. That's what I work to transform.</p>
+          <p>I'm still someone who experiments, builds, breaks things down, and learns. Craft doesn't disappear when you become a manager — it transforms into the standard you demand from your team. Today I'm especially focused on how AI is redefining the design process, roles, and the relationship between designers and product.</p>
+        </span>
+      </div>
+    </div>
+    <div class="about-details" style="max-width:780px;margin:0 auto;">
+        <div class="about-detail-item">
+          <div class="about-detail-label"><span data-lang-inline="es">Ubicación</span><span data-lang-inline="en">Location</span></div>
+          <div class="about-detail-value">Córdoba / Buenos Aires, Argentina</div>
+        </div>
+        <div class="about-detail-item">
+          <div class="about-detail-label"><span data-lang-inline="es">Rol actual</span><span data-lang-inline="en">Current role</span></div>
+          <div class="about-detail-value">UX Manager — NaranjaX</div>
+        </div>
+        <div class="about-detail-item">
+          <div class="about-detail-label"><span data-lang-inline="es">Experiencia</span><span data-lang-inline="en">Experience</span></div>
+          <div class="about-detail-value">7+ <span data-lang-inline="es">años en UX</span><span data-lang-inline="en">years in UX</span></div>
+        </div>
+        <div class="about-detail-item">
+          <div class="about-detail-label"><span data-lang-inline="es">Formación</span><span data-lang-inline="en">Education</span></div>
+          <div class="about-detail-value"><span data-lang-inline="es">Diseño Industrial, UNC</span><span data-lang-inline="en">Industrial Design, UNC</span></div>
+        </div>
+        <div class="about-detail-item">
+          <div class="about-detail-label">LinkedIn</div>
+          <div class="about-detail-value"><a href="https://linkedin.com/in/braianarroyobraconi" target="_blank" style="color:var(--accent);text-decoration:none;">braianarroyobraconi</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <footer>
+    <p>© 2026 Braian Arroyo Braconi</p>
+    <div class="footer-links">
+      <a href="https://linkedin.com/in/braianarroyobraconi" target="_blank">LinkedIn</a>
+      <a href="mailto:hola@braianarroyo.com">Email</a>
+    </div>
+  </footer>
+
+  <script>
+    function setLang(lang) {
+      document.body.className = 'lang-' + lang;
+      document.documentElement.lang = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector('.lang-btn[onclick="setLang(\'' + lang + '\')"]').classList.add('active');
+      // Update meta description
+      const desc = lang === 'es'
+        ? 'UX Manager focused on culture, craft, and teams that ship better products. Basado en Córdoba / Buenos Aires, Argentina.'
+        : 'UX Manager focused on culture, craft, and teams that ship better products. Based in Córdoba / Buenos Aires, Argentina.';
+      document.querySelector('meta[name="description"]').setAttribute('content', desc);
+    }
+  </script>
+
+</body>
+</html>
