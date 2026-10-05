@@ -2,539 +2,597 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>Braian Arroyo Braconi · Design Leader</title>
   <meta name="description" content="Design leader working at the intersection of teams, craft and AI. UX Manager at NaranjaX, previously Mercado Libre and PedidosYa."/>
-  <meta name="keywords" content="UX Manager, UX Lead, Design Leader, NaranjaX, Mercado Libre, PedidosYa, DesignCore, Pegote, Argentina, Córdoba"/>
+  <meta name="keywords" content="UX Manager, Design Leader, NaranjaX, Mercado Libre, PedidosYa, DesignCore, Pegote, Argentina"/>
   <meta property="og:title" content="Braian Arroyo Braconi · Design Leader"/>
   <meta property="og:description" content="Design leader working at the intersection of teams, craft and AI."/>
   <meta property="og:type" content="website"/>
   <meta property="og:url" content="https://www.braianarroyo.com/"/>
-  <meta name="theme-color" content="#0f0f10" media="(prefers-color-scheme: dark)"/>
-  <meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)"/>
+  <meta name="theme-color" content="#0b0b0c"/>
+  <meta name="color-scheme" content="dark"/>
   <link rel="canonical" href="https://www.braianarroyo.com/"/>
   <link rel="preload" href="/assets/fonts/Geist.woff2" as="font" type="font/woff2" crossorigin/>
+  <link rel="preload" href="/assets/img/braian.webp" as="image" type="image/webp"/>
+  <!--
+    Art direction: "Craft, in chapters". A near-black editorial frame; each side project is its own chapter
+    with one muted color field; the contact chapter switches to the brand's signal orange.
+    Assets: portrait and Pegote artwork belong to Braian; the Living lamp chapter runs a port of his own
+    Processing sketch. Icons: Solar (Iconify, CC BY 4.0). Type: Geist (SIL OFL), self-hosted.
+    Motion: GSAP + ScrollTrigger, Lenis as the only smooth-scroll engine. No Three.js.
+  -->
   <style>
     @font-face { font-family: 'Geist'; src: url('/assets/fonts/Geist.woff2') format('woff2'); font-weight: 300 700; font-display: swap; }
     @font-face { font-family: 'Geist Mono'; src: url('/assets/fonts/Geist-Mono.woff2') format('woff2'); font-weight: 400 500; font-display: swap; }
 
-    /* Tokens. Radii: pills for interactive (nav, buttons, tags), 14px for media and tiles. */
+    /* Tokens. Shape: pills for controls, 6px on media and panels (editorial, restrained). Dark editorial theme only. */
     :root {
-      --bg: #fafaf9;
-      --surface: #f1f1ef;
-      --text: #161617;
-      --muted: #5c5c60;
-      --line: #e2e2df;
-      --accent: #c8471d;
-      --accent-soft: rgba(200, 71, 29, 0.09);
-      --radius: 14px;
-      --max: 1180px;
-      --ease: cubic-bezier(0.16, 1, 0.3, 1);
-      color-scheme: light;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0f0f10;
-        --surface: #18181a;
-        --text: #ececea;
-        --muted: #9b9b9f;
-        --line: #29292c;
-        --accent: #f0764a;
-        --accent-soft: rgba(240, 118, 74, 0.1);
-        color-scheme: dark;
-      }
+      --ink: #0b0b0c;
+      --ink-2: #131315;
+      --paper: #efece6;
+      --muted: #a3a29e;
+      --faint: #74736f;
+      --rule: rgba(239, 236, 230, 0.12);
+      --signal: #e8643a;
+      --f-pegote: #18332b;
+      --f-monitor: #172030;
+      --f-goals: #24201c;
+      --r: 6px;
+      --edge: clamp(16px, 4vw, 56px);
+      --max: 1320px;
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      color-scheme: dark;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; scroll-padding-top: 80px; -webkit-text-size-adjust: 100%; }
+    html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; scroll-padding-top: 88px; }
+    html:not(.lenis) { scroll-behavior: smooth; }
+    html.lenis, html.lenis body { height: auto; }
+    .lenis.lenis-smooth { scroll-behavior: auto !important; }
     body {
       font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      font-size: 17px;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
+      background: var(--ink); color: var(--paper);
+      font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden;
     }
     img { display: block; max-width: 100%; }
     a { color: inherit; }
-    .mono { font-family: 'Geist Mono', ui-monospace, monospace; }
-    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
-    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+    a, button { touch-action: manipulation; }
+    button { -webkit-user-select: none; user-select: none; font: inherit; }
+    :focus-visible { outline: 2px solid var(--signal); outline-offset: 4px; border-radius: 4px; }
+    .mono { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--edge); }
+    .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .icon { width: 1em; height: 1em; flex: none; }
 
-    /* NAV */
-    .nav {
-      position: sticky; top: 0; z-index: 10;
-      background: color-mix(in srgb, var(--bg) 82%, transparent);
-      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-      border-bottom: 1px solid transparent;
-      transition: border-color .3s;
-    }
-    .nav.scrolled { border-bottom-color: var(--line); }
-    .nav-inner { height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    /* Motion scaffolding: only hidden once JS has confirmed motion is on. */
+    html.has-motion [data-split], html.has-motion [data-reveal], html.has-motion [data-unveil], html.has-motion [data-intro], html.has-motion .handoff blockquote { visibility: hidden; }
+    .w-mask { display: inline-block; overflow: hidden; vertical-align: top; padding: 0 0.06em 0.1em; margin: 0 -0.06em -0.1em; }
+    .w { display: inline-block; will-change: transform; }
+
+    /* TOP BAR */
+    .bar { position: fixed; inset: 0 0 auto; z-index: 20; pointer-events: none; }
+    .bar::before { content: ''; position: absolute; inset: 0 0 -28px; background: linear-gradient(var(--ink) 40%, transparent); opacity: .92; }
+    .bar-inner { position: relative; height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .bar a, .bar button, .bar nav { pointer-events: auto; }
     .brand { font-weight: 500; letter-spacing: -0.01em; text-decoration: none; white-space: nowrap; }
-    .nav-right { display: flex; align-items: center; gap: 8px; }
-    .nav-links { display: flex; gap: 2px; list-style: none; }
-    .nav-links a {
-      display: block; padding: 7px 14px; border-radius: 999px;
-      font-size: 14px; color: var(--muted); text-decoration: none; white-space: nowrap;
-      transition: color .2s, background .2s;
+    .bar-right { display: flex; align-items: center; gap: 12px; }
+
+    .pill {
+      position: relative; padding: 4px; border-radius: 999px;
+      background: rgba(24, 24, 26, 0.7);
+      backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+      box-shadow: 0 0 0 1px var(--rule), inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 32px -16px rgba(0, 0, 0, 0.8);
     }
-    .nav-links a:hover { color: var(--text); background: var(--surface); }
-    .lang { display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; margin-left: 8px; }
-    .lang button {
-      font: 500 12px 'Geist Mono', monospace; letter-spacing: .04em;
-      padding: 5px 10px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer;
-      transition: background .2s, color .2s;
+    .pill ul { display: flex; list-style: none; }
+    .pill a { display: block; padding: 8px 15px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; white-space: nowrap; }
+    .pill .active-copy { position: absolute; inset: 4px; pointer-events: none; clip-path: inset(0 100% 0 0 round 999px); opacity: 0; transition: clip-path 280ms var(--ease-out), opacity 200ms ease; }
+    .pill .active-copy ul { height: 100%; }
+    .pill .active-copy a { background: var(--paper); color: var(--ink); }
+
+    .lang { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 3px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--rule); }
+    .lang::before { content: ''; position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); border-radius: 999px; background: rgba(239, 236, 230, 0.12); transition: transform 220ms var(--ease-out); }
+    .lang[data-active="en"]::before { transform: translateX(100%); }
+    .lang button { position: relative; font: 500 12px 'Geist Mono', monospace; letter-spacing: 0.06em; padding: 6px 11px; border: 0; background: none; color: var(--faint); cursor: pointer; transition: color 200ms ease; }
+    .lang button[aria-pressed="true"] { color: var(--paper); }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px; white-space: nowrap;
+      padding: 14px 22px; border-radius: 999px; font-weight: 500; font-size: 15px; text-decoration: none; border: 0; cursor: pointer;
+      background: transparent; color: var(--paper); box-shadow: inset 0 0 0 1px rgba(239, 236, 230, 0.24);
+      transition: transform 160ms var(--ease-out), background-color 220ms ease, color 220ms ease, box-shadow 220ms ease;
     }
-    .lang button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+    .btn:active { transform: scale(0.97); }
+    .btn-solid { background: var(--paper); color: var(--ink); box-shadow: none; }
+    .btn .icon { font-size: 17px; transition: transform 220ms var(--ease-out); }
 
     /* HERO */
-    .hero { padding: 72px 0 96px; }
-    .hero-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 64px; align-items: end; }
-    .greet { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
-    .hero h1 {
-      font-size: clamp(38px, 4.6vw, 62px); font-weight: 400; line-height: 1.06; letter-spacing: -0.035em;
-      max-width: 19ch; margin-bottom: 28px;
-    }
-    .hero h1 em { font-style: italic; font-weight: 300; color: var(--muted); }
-    .hero-sub { font-size: 18px; color: var(--muted); max-width: 40ch; margin-bottom: 36px; }
-    .ctas { display: flex; flex-wrap: wrap; gap: 12px; }
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
-      padding: 13px 22px; border-radius: 999px; font: 500 15px 'Geist', sans-serif; text-decoration: none;
-      border: 1px solid var(--line); background: transparent; color: var(--text); cursor: pointer;
-      transition: transform .2s var(--ease), background .2s, border-color .2s;
-    }
-    .btn:hover { border-color: var(--muted); }
-    .btn:active { transform: scale(0.98); }
-    .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
-    .btn-primary:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .btn svg { width: 16px; height: 16px; }
-    .portrait { border-radius: var(--radius); overflow: hidden; aspect-ratio: 4 / 5; background: var(--surface); }
+    .hero { min-height: 100svh; padding: 132px 0 56px; display: flex; align-items: flex-end; }
+    .hero .grid { align-items: end; row-gap: 48px; width: 100%; }
+    .hero-copy { grid-column: 1 / span 7; }
+    .greet { color: var(--faint); margin-bottom: 28px; }
+    .hero h1 { font-size: clamp(40px, 4.9vw, 78px); font-weight: 450; line-height: 0.98; letter-spacing: -0.045em; text-wrap: balance; }
+    .hero h1 em { font-style: italic; font-weight: 350; color: var(--muted); }
+    .hero-sub { margin-top: 32px; font-size: 19px; line-height: 1.5; color: var(--muted); max-width: 44ch; text-wrap: pretty; }
+    .ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 36px; }
+    .portrait { grid-column: 9 / span 4; }
+    .portrait figure { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--r); background: var(--ink-2); }
     .portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+    .portrait figcaption { display: flex; justify-content: space-between; margin-top: 12px; color: var(--faint); }
 
-    /* SECTIONS */
-    section { padding: 112px 0; }
-    .rule { border-top: 1px solid var(--line); }
-    h2 { font-size: clamp(30px, 3.4vw, 44px); font-weight: 400; letter-spacing: -0.03em; line-height: 1.1; }
-    .lede { font-size: 18px; color: var(--muted); max-width: 58ch; margin-top: 18px; }
+    /* CHAPTERS */
+    section { padding: clamp(96px, 12vw, 168px) 0; }
+    .chapter-label { color: var(--faint); margin-bottom: 20px; display: block; }
+    h2 { font-size: clamp(34px, 4.6vw, 68px); font-weight: 450; line-height: 1.02; letter-spacing: -0.04em; text-wrap: balance; }
+    .lede { font-size: clamp(19px, 1.6vw, 22px); line-height: 1.5; color: var(--muted); max-width: 52ch; text-wrap: pretty; }
 
-    /* WORK */
-    .work-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 80px; }
-    .work-intro { position: sticky; top: 112px; align-self: start; }
-    .pillars { display: grid; gap: 0; }
-    .pillar { padding: 32px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 40px 1fr; gap: 16px; }
-    .pillar:last-child { border-bottom: 1px solid var(--line); }
-    .pillar svg { width: 26px; height: 26px; color: var(--accent); margin-top: 2px; }
-    .pillar h3 { font-size: 20px; font-weight: 500; letter-spacing: -0.015em; margin-bottom: 8px; }
-    .pillar p { color: var(--muted); max-width: 52ch; }
+    /* WHAT I DO */
+    .statement { grid-column: 1 / span 10; font-size: clamp(28px, 3.4vw, 50px); font-weight: 400; line-height: 1.14; letter-spacing: -0.032em; text-wrap: pretty; }
+    .statement .dim { color: var(--faint); }
+    .pillars { grid-column: 1 / -1; margin-top: clamp(64px, 8vw, 112px); display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 24px; }
+    .pillar { border-top: 1px solid var(--rule); padding-top: 24px; }
+    .pillar .icon { font-size: 26px; color: var(--signal); }
+    .pillar h3 { margin: 20px 0 10px; font-size: 21px; font-weight: 550; letter-spacing: -0.02em; }
+    .pillar p { color: var(--muted); font-size: 16px; max-width: 40ch; text-wrap: pretty; }
 
-    /* CAREER */
-    .career { margin-top: 56px; display: grid; }
-    .job { display: grid; grid-template-columns: 180px 1fr 1.6fr; gap: 32px; padding: 28px 0; border-top: 1px solid var(--line); }
-    .job:last-child { border-bottom: 1px solid var(--line); }
-    .job-years { font-size: 13px; color: var(--muted); padding-top: 4px; }
-    .job h3 { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
-    .job-role { font-size: 15px; color: var(--accent); margin-top: 2px; }
-    .job p { color: var(--muted); }
+    /* EXPERIENCE */
+    .exp-head { grid-column: 1 / -1; margin-bottom: 40px; }
+    .job { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; padding: 32px 0; border-top: 1px solid var(--rule); align-items: baseline; }
+    .job:last-child { border-bottom: 1px solid var(--rule); }
+    .job h3 { grid-column: 1 / span 5; font-size: clamp(30px, 3.6vw, 52px); font-weight: 450; letter-spacing: -0.04em; line-height: 1; }
+    .job-meta { grid-column: 6 / span 3; display: grid; gap: 4px; }
+    .job-meta .mono { color: var(--faint); }
+    .job-role { color: var(--signal); font-size: 15px; }
+    .job p { grid-column: 9 / span 4; color: var(--muted); font-size: 16px; text-wrap: pretty; }
 
     /* AFTER HOURS */
-    .ah-head { max-width: 640px; }
-    .eyebrow { font-size: 13px; color: var(--accent); margin-bottom: 16px; }
-    .bento { margin-top: 56px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
-    .tile {
-      position: relative; border-radius: var(--radius); background: var(--surface); overflow: hidden;
-      display: flex; flex-direction: column; border: 1px solid var(--line);
-    }
-    .tile-body { padding: 28px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
-    .tile h3 { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; }
-    .tile p { color: var(--muted); font-size: 16px; max-width: 48ch; }
-    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 14px; }
-    .tag { font: 12px 'Geist Mono', monospace; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
-    .tile-link {
-      display: inline-flex; align-items: center; gap: 6px; font-weight: 500; font-size: 15px; text-decoration: none; color: var(--accent);
-      width: fit-content;
-    }
-    .tile-link:hover { text-decoration: underline; text-underline-offset: 4px; }
-    .tile-link svg { width: 15px; height: 15px; }
+    .ah-intro { grid-column: 1 / span 8; }
+    .ah-intro .lede { margin-top: 24px; }
+    .project { margin-top: clamp(56px, 7vw, 96px); }
+    .panel { border-radius: var(--r); overflow: hidden; }
+    .p-meta { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 16px; }
+    .p-meta div { display: grid; gap: 2px; }
+    .p-meta dt { color: rgba(239, 236, 230, 0.5); }
+    .p-meta dd { font-size: 13px; }
+    .p-title { font-size: clamp(44px, 6vw, 96px); font-weight: 450; letter-spacing: -0.05em; line-height: 0.95; }
+    .p-desc { margin-top: 24px; color: rgba(239, 236, 230, 0.78); font-size: 17px; max-width: 46ch; text-wrap: pretty; }
+    .p-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 28px; font-weight: 500; text-decoration: none; color: var(--paper); border-bottom: 1px solid rgba(239, 236, 230, 0.4); padding-bottom: 4px; transition: border-color 200ms ease; }
+    .p-link .icon { transition: transform 220ms var(--ease-out); }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 28px; }
+    .tag { font: 12px 'Geist Mono', monospace; letter-spacing: .02em; padding: 5px 10px; border-radius: 999px; background: rgba(239, 236, 230, 0.07); color: rgba(239, 236, 230, 0.72); }
 
-    .t-pegote { grid-column: span 7; }
-    .t-pegote .media { aspect-ratio: 16 / 11; overflow: hidden; background: #1f3a33; }
-    .t-pegote .media img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; transition: transform .8s var(--ease); }
-    .t-pegote:hover .media img { transform: scale(1.025); }
+    .pegote { background: var(--f-pegote); display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; }
+    .pegote .p-text { grid-column: 1 / span 5; padding: clamp(28px, 4vw, 56px); display: flex; flex-direction: column; justify-content: space-between; gap: 40px; }
+    .pegote .p-media { grid-column: 6 / span 7; position: relative; overflow: hidden; min-height: 460px; display: block; }
+    .pegote .p-media img { position: absolute; inset: -4% 0; width: 100%; height: 108%; object-fit: cover; object-position: 50% 0%; transition: scale 700ms var(--ease-out); }
 
-    .t-lamp { grid-column: span 5; background: #0b0b0c; border-color: #222; color: #ececea; }
-    .t-lamp p { color: #a2a2a6; }
-    .t-lamp .tag { border-color: #333; color: #a2a2a6; }
-    .lamp-stage { position: relative; aspect-ratio: 1 / 1; cursor: crosshair; touch-action: none; }
-    .lamp-stage canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
-    .lamp-read {
-      position: absolute; left: 14px; bottom: 12px; right: 14px; display: flex; justify-content: space-between;
-      font: 12px 'Geist Mono', monospace; color: rgba(255,255,255,.78); pointer-events: none;
-      text-shadow: 0 1px 6px rgba(0,0,0,.6);
-    }
+    .lamp-chapter { margin-top: clamp(56px, 7vw, 96px); }
+    .lamp-stage { position: relative; height: clamp(360px, 62vh, 640px); background: #000; overflow: hidden; cursor: crosshair; touch-action: pan-y; }
+    .lamp-stage canvas { position: relative; width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+    .lamp-poster { position: absolute; inset: 0; background: radial-gradient(60% 70% at 40% 50%, #3b2a12, #000 70%); }
+    .lamp-read { position: absolute; left: var(--edge); right: var(--edge); bottom: 20px; display: flex; justify-content: space-between; gap: 12px; color: rgba(255, 255, 255, 0.85); pointer-events: none; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7); }
+    .lamp-text { padding-top: 40px; row-gap: 24px; }
+    .lamp-text .p-title { grid-column: 1 / span 5; }
+    .lamp-text .lamp-body { grid-column: 7 / span 6; }
+    .lamp-text .p-desc { margin-top: 0; }
 
-    .t-monitor { grid-column: span 5; background: var(--accent-soft); }
-    .sources { display: flex; flex-wrap: wrap; gap: 8px; padding: 28px 28px 0; }
-    .source { font: 13px 'Geist Mono', monospace; padding: 8px 12px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); }
-    .source.off { color: var(--muted); border-style: dashed; background: transparent; }
-
-    .t-goals { grid-column: span 7; }
-    .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 28px 28px 0; }
-    .day {
-      border-radius: 10px; border: 1px solid var(--line); background: var(--bg); padding: 10px 8px 12px; text-align: center;
-      font: 12px 'Geist Mono', monospace; color: var(--muted);
-    }
-    .day b { display: block; font: 500 20px 'Geist', sans-serif; color: var(--text); margin-top: 2px; }
-    .day.today { border-color: var(--accent); }
-    .day.today b { color: var(--accent); }
+    .duo { display: grid; grid-template-columns: 5fr 7fr; gap: 24px; margin-top: clamp(56px, 7vw, 96px); }
+    .duo .panel { padding: clamp(28px, 3.4vw, 48px); display: flex; flex-direction: column; }
+    .monitor { background: var(--f-monitor); }
+    .goals { background: var(--f-goals); }
+    .duo .p-title { font-size: clamp(36px, 3.8vw, 60px); }
+    .sources { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 40px; }
+    .source { font: 13px 'Geist Mono', monospace; padding: 7px 12px; border-radius: 999px; background: rgba(239, 236, 230, 0.1); }
+    .source.off { background: none; box-shadow: inset 0 0 0 1px rgba(239, 236, 230, 0.16); color: rgba(239, 236, 230, 0.5); }
+    .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 40px; }
+    .day { border-radius: 8px; background: rgba(239, 236, 230, 0.06); padding: 10px 4px 12px; text-align: center; font: 11.5px 'Geist Mono', monospace; letter-spacing: .04em; text-transform: uppercase; color: rgba(239, 236, 230, 0.5); }
+    .day b { display: block; font: 500 22px 'Geist', sans-serif; letter-spacing: -0.02em; color: var(--paper); margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .day.today { background: var(--signal); color: rgba(11, 11, 12, 0.7); }
+    .day.today b { color: var(--ink); }
+    .duo .tags { margin-top: auto; padding-top: 28px; }
 
     /* TALKS */
-    .talks { margin-top: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .talk {
-      display: flex; flex-direction: column; gap: 14px; padding: 32px; min-height: 260px;
-      border: 1px solid var(--line); border-radius: var(--radius); text-decoration: none;
-      transition: border-color .25s, transform .3s var(--ease);
-    }
-    a.talk:hover { border-color: var(--muted); transform: translateY(-2px); }
-    .talk-venue { font-size: 13px; color: var(--accent); }
-    .talk h3 { font-size: 24px; font-weight: 400; letter-spacing: -0.02em; line-height: 1.25; }
-    .talk p { color: var(--muted); font-size: 16px; margin-top: auto; }
+    .talks-head { grid-column: 1 / -1; margin-bottom: 40px; }
+    .talk { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; padding: 36px 0; border-top: 1px solid var(--rule); text-decoration: none; align-items: baseline; }
+    .talk:last-child { border-bottom: 1px solid var(--rule); }
+    .talk .mono { grid-column: 1 / span 3; color: var(--signal); }
+    .talk h3 { grid-column: 4 / span 6; font-size: clamp(24px, 2.4vw, 36px); font-weight: 450; letter-spacing: -0.03em; line-height: 1.15; text-wrap: balance; }
+    .talk p { grid-column: 10 / span 3; color: var(--muted); font-size: 15px; }
+    .talk .icon { font-size: 0.7em; transition: transform 220ms var(--ease-out); }
 
-    /* QUOTE */
-    .quote { padding: 136px 0; text-align: center; }
-    .quote blockquote { font-size: clamp(28px, 4vw, 52px); font-weight: 300; letter-spacing: -0.03em; line-height: 1.18; max-width: 22ch; margin: 0 auto; }
-    .quote blockquote span { color: var(--muted); }
+    /* HANDOFF */
+    .handoff { padding: clamp(96px, 12vw, 176px) 0; }
+    .handoff blockquote { font-size: clamp(38px, 6.4vw, 104px); font-weight: 450; letter-spacing: -0.05em; line-height: 0.98; }
+    .handoff blockquote span { display: block; }
+    .handoff blockquote span:nth-child(2) { color: var(--faint); padding-left: 6vw; }
+    .handoff blockquote span:nth-child(3) { padding-left: 12vw; }
 
-    /* CONTACT */
-    .contact-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 64px; align-items: end; }
-    .mail {
-      display: inline-block; font-size: clamp(22px, 3vw, 38px); letter-spacing: -0.02em; text-decoration: none;
-      border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-top: 28px; word-break: break-all;
-      transition: border-color .2s, color .2s;
-    }
-    .mail:hover { color: var(--accent); border-color: var(--accent); }
-    .based { font-size: 13px; color: var(--muted); margin-top: 14px; }
-    .contact-actions { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
-    .links { list-style: none; display: grid; gap: 0; }
-    .links a {
-      display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-top: 1px solid var(--line);
-      text-decoration: none; font-size: 18px; transition: color .2s;
-    }
-    .links li:last-child a { border-bottom: 1px solid var(--line); }
-    .links a:hover { color: var(--accent); }
-    .links svg { width: 18px; height: 18px; color: var(--muted); }
-    footer { padding: 40px 0 56px; color: var(--muted); font-size: 14px; }
+    /* CONTACT: the one signal-colored chapter */
+    .contact { background: var(--signal); color: var(--ink); }
+    .contact .chapter-label { color: rgba(11, 11, 12, 0.62); }
+    .contact h2 { font-size: clamp(56px, 10vw, 160px); letter-spacing: -0.055em; line-height: 0.92; grid-column: 1 / -1; }
+    .contact .lede { color: rgba(11, 11, 12, 0.8); grid-column: 1 / span 6; margin-top: 32px; }
+    .contact-row { grid-column: 1 / -1; margin-top: 56px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+    .mail { font-size: clamp(22px, 3vw, 40px); letter-spacing: -0.03em; text-decoration: none; border-bottom: 2px solid rgba(11, 11, 12, 0.3); padding-bottom: 4px; overflow-wrap: anywhere; transition: border-color 200ms ease; }
+    .contact .btn { color: var(--ink); box-shadow: inset 0 0 0 1px rgba(11, 11, 12, 0.35); }
+    .contact .btn-solid { background: var(--ink); color: var(--paper); box-shadow: none; }
+    .copy-state { display: inline-grid; }
+    .copy-state > span { grid-area: 1 / 1; display: inline-flex; align-items: center; gap: 10px; transition: opacity 200ms ease, filter 200ms ease, transform 200ms var(--ease-out); }
+    .copy-state .done { opacity: 0; filter: blur(4px); transform: scale(0.96); }
+    #copy[data-copied] .idle { opacity: 0; filter: blur(4px); transform: scale(0.96); }
+    #copy[data-copied] .done { opacity: 1; filter: none; transform: none; }
+    .based { grid-column: 1 / -1; margin-top: 40px; color: rgba(11, 11, 12, 0.62); }
+
+    footer { padding: 40px 0 48px; color: var(--faint); font-size: 14px; }
     footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    footer nav { display: flex; gap: 20px; }
+    footer a { text-decoration: none; transition: color 200ms ease; }
 
-    /* MOTION */
-    @media (prefers-reduced-motion: no-preference) {
-      .rise { opacity: 0; transform: translateY(18px); animation: rise .9s var(--ease) forwards; animation-delay: calc(var(--i, 0) * 90ms + 80ms); }
-      @keyframes rise { to { opacity: 1; transform: none; } }
-      .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s var(--ease), transform .8s var(--ease); transition-delay: calc(var(--i, 0) * 70ms); }
-      .reveal.in { opacity: 1; transform: none; }
+    /* HOVER: real pointers only */
+    @media (hover: hover) and (pointer: fine) {
+      .pill .list a { transition: color 200ms ease; }
+      .pill .list a:hover { color: var(--paper); }
+      .lang button:hover { color: var(--paper); }
+      .btn:hover { box-shadow: inset 0 0 0 1px rgba(239, 236, 230, 0.6); }
+      .btn-solid:hover { background: var(--signal); color: var(--ink); }
+      .btn:hover .icon, .p-link:hover .icon, .talk:hover .icon { transform: translate(3px, -3px); }
+      .p-link:hover { border-color: var(--paper); }
+      .pegote:hover .p-media img { scale: 1.02; }
+      .talk h3 { transition: color 220ms ease; }
+      a.talk:hover h3 { color: var(--signal); }
+      .contact .btn:hover { box-shadow: inset 0 0 0 1px var(--ink); }
+      .contact .btn-solid:hover { background: var(--paper); color: var(--ink); }
+      .mail:hover { border-color: var(--ink); }
+      footer a:hover { color: var(--paper); }
     }
-    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+    @media (prefers-reduced-transparency: reduce) { .pill { background: #18181a; backdrop-filter: none; -webkit-backdrop-filter: none; } }
 
     /* RESPONSIVE */
-    @media (max-width: 960px) {
-      .hero-grid, .work-grid, .contact-grid { grid-template-columns: 1fr; gap: 48px; }
-      .work-intro { position: static; }
-      .portrait { max-width: 420px; aspect-ratio: 1 / 1; }
-      .t-pegote, .t-lamp, .t-monitor, .t-goals { grid-column: span 12; }
-      .job { grid-template-columns: 1fr; gap: 6px; }
+    @media (max-width: 1024px) {
+      .hero-copy { grid-column: 1 / -1; }
+      .portrait { grid-column: 1 / span 7; }
+      .statement { grid-column: 1 / -1; }
+      .pillars { grid-template-columns: 1fr; row-gap: 40px; }
+      .job h3 { grid-column: 1 / -1; margin-bottom: 14px; }
+      .job-meta { grid-column: 1 / span 5; }
+      .job p { grid-column: 6 / -1; }
+      .pegote .p-text { grid-column: 1 / -1; order: 2; }
+      .pegote .p-media { grid-column: 1 / -1; min-height: 0; aspect-ratio: 4 / 3; }
+      .duo { grid-template-columns: 1fr; }
+      .lamp-text .p-title, .lamp-text .lamp-body { grid-column: 1 / -1; }
+      .talk .mono { grid-column: 1 / -1; margin-bottom: 10px; }
+      .talk h3 { grid-column: 1 / span 8; }
+      .talk p { grid-column: 9 / -1; }
+      .ah-intro, .contact .lede { grid-column: 1 / -1; }
     }
     @media (max-width: 720px) {
-      .wrap { padding: 0 16px; }
-      .nav-links { display: none; }
-      .hero { padding: 40px 0 72px; }
-      section { padding: 80px 0; }
-      .quote { padding: 96px 0; }
-      .talks { grid-template-columns: 1fr; }
-      .talk { min-height: 0; padding: 24px; }
-      .tile-body { padding: 22px; }
-      .sources, .week { padding: 22px 22px 0; }
+      .grid, .job, .talk, .pegote { column-gap: 0; }
+      .bar-inner { height: 60px; }
+      /* Phones: the section nav floats at the bottom, within thumb reach */
+      .pill { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); }
+      .pill a { padding: 10px 14px; }
+      .hero { padding-top: 96px; min-height: auto; }
+      .portrait { grid-column: 1 / -1; }
+      .portrait figure { aspect-ratio: 1 / 1; }
+      .job-meta, .job p { grid-column: 1 / -1; }
+      .job p { margin-top: 12px; }
+      .talk h3, .talk p { grid-column: 1 / -1; }
+      .talk p { margin-top: 12px; }
+      .handoff blockquote span:nth-child(2), .handoff blockquote span:nth-child(3) { padding-left: 0; }
       .week { gap: 4px; }
-      .day { padding: 8px 2px 10px; font-size: 11px; }
-      .day b { font-size: 16px; }
+      .day { font-size: 10px; padding: 8px 2px 10px; }
+      .day b { font-size: 17px; }
+      .lamp-stage { height: 76vw; }
+      .lamp-read #lampHint { display: none; }
+      footer { padding-bottom: calc(108px + env(safe-area-inset-bottom)); }
     }
   </style>
 </head>
 <body>
 
-  <nav class="nav" id="nav">
-    <div class="wrap nav-inner">
+  <div class="bar">
+    <div class="wrap bar-inner">
       <a href="#top" class="brand">Braian Arroyo Braconi</a>
-      <div class="nav-right">
-        <ul class="nav-links">
-          <li><a href="#trabajo" data-i18n="nav.work">Trabajo</a></li>
-          <li><a href="#despues-de-hora" data-i18n="nav.after">Después de hora</a></li>
-          <li><a href="#charlas" data-i18n="nav.talks">Charlas</a></li>
-        </ul>
-        <div class="lang" role="group" aria-label="Idioma / Language">
+      <div class="bar-right">
+        <nav class="pill" id="pill" aria-label="Secciones">
+          <ul class="list">
+            <li><a href="#trabajo" data-sec="trabajo" data-i18n="nav.work">Trabajo</a></li>
+            <li><a href="#despues-de-hora" data-sec="despues-de-hora" data-i18n="nav.after">Después de hora</a></li>
+            <li><a href="#contacto" data-sec="contacto" data-i18n="nav.contact">Contacto</a></li>
+          </ul>
+          <div class="active-copy" aria-hidden="true"></div>
+        </nav>
+        <div class="lang" role="group" aria-label="Idioma / Language" data-active="es">
           <button type="button" data-lang="es" aria-pressed="true">ES</button>
           <button type="button" data-lang="en" aria-pressed="false">EN</button>
         </div>
       </div>
     </div>
-  </nav>
+  </div>
 
   <main id="top">
 
     <!-- HERO -->
     <header class="hero" id="sobre-mi">
-      <div class="wrap hero-grid">
-        <div>
-          <p class="greet mono rise" style="--i:0" id="greet">Hola</p>
-          <h1 class="rise" style="--i:1" data-i18n="hero.title" data-html>Líder de diseño en la intersección entre <em>equipos, oficio e IA.</em></h1>
-          <p class="hero-sub rise" style="--i:2" data-i18n="hero.sub">UX Manager en NaranjaX. Antes, Mercado Libre y PedidosYa. Más de 8 años diseñando productos que usan millones de personas en Latinoamérica.</p>
-          <div class="ctas rise" style="--i:3">
-            <a class="btn btn-primary" href="mailto:braianarroyobraconi@gmail.com" data-i18n="cta.mail">Escribime</a>
+      <div class="wrap grid">
+        <div class="hero-copy">
+          <p class="greet mono" id="greet" data-intro>Hola</p>
+          <h1 data-split data-i18n="hero.title" data-html>Líder de diseño en la intersección entre <em>equipos, oficio e IA.</em></h1>
+          <p class="hero-sub" data-intro data-i18n="hero.sub">UX Manager en NaranjaX. Antes, Mercado Libre y PedidosYa. Más de 8 años diseñando productos que usan millones de personas en Latinoamérica.</p>
+          <div class="ctas" data-intro>
+            <a class="btn btn-solid" href="#contacto"><span data-i18n="cta.contact">Hablemos</span>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M18 15V6H9"/></svg></a>
             <a class="btn" href="#despues-de-hora" data-i18n="cta.after">Ver proyectos propios</a>
           </div>
         </div>
-        <div class="portrait rise" style="--i:2">
-          <img src="/assets/img/braian.webp" width="900" height="1200" alt="Braian Arroyo Braconi sonriendo, sentado en una oficina con plantas" data-i18n-alt="hero.alt" fetchpriority="high"/>
+        <div class="portrait">
+          <figure data-unveil>
+            <img src="/assets/img/braian.webp" width="900" height="1200" alt="Braian Arroyo Braconi sonriendo, sentado en una oficina con plantas" data-i18n-alt="hero.alt" fetchpriority="high"/>
+          </figure>
+          <figcaption class="mono" data-intro><span>UX Manager</span><span>NaranjaX</span></figcaption>
         </div>
       </div>
     </header>
 
-    <!-- WORK -->
-    <section class="rule" id="trabajo">
-      <div class="wrap work-grid">
-        <div class="work-intro reveal">
-          <h2 data-i18n="work.title">Qué hago</h2>
-          <p class="lede" data-i18n="work.lede">Lidero el equipo de UX de NaranjaX, una de las fintech más grandes de Argentina, con millones de clientes. Mi foco es subir la vara de cómo diseñamos: las personas, el proceso y los estándares.</p>
-        </div>
-        <div class="pillars">
-          <article class="pillar reveal">
-            <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M164.47,195.63a8,8,0,0,1-6.7,12.37H10.23a8,8,0,0,1-6.7-12.37,95.83,95.83,0,0,1,47.22-37.71,60,60,0,1,1,66.5,0A95.83,95.83,0,0,1,164.47,195.63Zm87.91-.15a95.87,95.87,0,0,0-47.13-37.56A60,60,0,0,0,144.7,54.59a4,4,0,0,0-1.33,6A75.83,75.83,0,0,1,147,150.53a4,4,0,0,0,1.07,5.53,112.32,112.32,0,0,1,29.85,30.83,23.92,23.92,0,0,1,3.65,16.47,4,4,0,0,0,3.95,4.64h60.3a8,8,0,0,0,7.73-5.93A8.22,8.22,0,0,0,252.38,195.48Z"/></svg>
-            <div>
-              <h3 data-i18n="p1.t">Equipo y cultura</h3>
-              <p data-i18n="p1.d">Contrataciones, planes de carrera, feedback y rituales. Armo equipos donde perfiles senior y junior crecen juntos, porque la calidad del producto refleja cómo trabaja el equipo.</p>
-            </div>
+    <!-- WHAT I DO -->
+    <section id="trabajo">
+      <div class="wrap grid">
+        <span class="chapter-label mono" style="grid-column:1/-1" data-reveal data-i18n="work.label">Qué hago</span>
+        <p class="statement" data-split data-i18n="work.statement" data-html>Lidero el equipo de UX de NaranjaX, una de las fintech más grandes de Argentina. <span class="dim">Mi foco es subir la vara de cómo diseñamos: las personas, el proceso y los estándares.</span></p>
+        <div class="pillars" data-reveal-group>
+          <article class="pillar" data-reveal>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="9" cy="6" r="4"/><path d="M15 9C16.6569 9 18 7.65685 18 6C18 4.34315 16.6569 3 15 3"/><ellipse cx="9" cy="17" rx="7" ry="4"/><path d="M18 14C19.7542 14.3847 21 15.3589 21 16.5C21 17.5293 19.9863 18.4229 18.5 18.8704"/></g></svg>
+            <h3 data-i18n="p1.t">Equipo y cultura</h3>
+            <p data-i18n="p1.d">Contrataciones, planes de carrera, feedback y rituales. Armo equipos donde perfiles senior y junior crecen juntos, porque la calidad del producto refleja cómo trabaja el equipo.</p>
           </article>
-          <article class="pillar reveal">
-            <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></svg>
-            <div>
-              <h3 data-i18n="p2.t">Proceso y calidad</h3>
-              <p data-i18n="p2.d">Defino cómo diseñamos: estándares de calidad, investigación con usuarios y toma de decisiones junto a producto e ingeniería. El oficio no desaparece al liderar: se convierte en la vara del equipo.</p>
-            </div>
+          <article class="pillar" data-reveal>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M16 22C14.1144 22 13.1716 22 12.5858 21.4142C12 20.8284 12 19.8856 12 18L12 6C12 4.11438 12 3.17157 12.5858 2.58579C13.1716 2 14.1144 2 16 2L18 2C19.8856 2 20.8284 2 21.4142 2.58579C22 3.17157 22 4.11438 22 6V18C22 19.8856 22 20.8284 21.4142 21.4142C20.8284 22 19.8856 22 18 22H16Z"/><path d="M12 12H14M12 6L14 6M12 18H14M12 15L15 15M12 9L15 9"/><path d="M2 5.8L2 4.85C2 3.27599 3.34315 2 5 2C6.65685 2 8 3.27599 8 4.85L8 5.8M2 5.8C2 5.8 3.125 6.75 5 6.75C6.875 6.75 8 5.8 8 5.8M2 5.8L2 15.5338C2 16.1254 2 16.4211 2.03777 16.7114C2.08232 17.0538 2.166 17.3905 2.28733 17.7157C2.39019 17.9914 2.52943 18.2559 2.8079 18.785L3.98794 21.0271M3.98794 21.0271L4.27639 21.5751C4.41343 21.8355 4.69357 22 5 22C5.30643 22 5.58657 21.8355 5.72361 21.5751L6.01206 21.0271L7.19209 18.785C7.47057 18.2559 7.60981 17.9914 7.71267 17.7157C7.834 17.3905 7.91768 17.0538 7.96223 16.7114C8 16.4211 8 16.1254 8 15.5338L8 5.8M6.01206 21.0271H3.98794"/></g></svg>
+            <h3 data-i18n="p2.t">Proceso y calidad</h3>
+            <p data-i18n="p2.d">Defino cómo diseñamos: estándares de calidad, investigación con usuarios y toma de decisiones junto a producto e ingeniería. El oficio no desaparece al liderar: se convierte en la vara del equipo.</p>
           </article>
-          <article class="pillar reveal">
-            <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144ZM152,48h16V64a8,8,0,0,0,16,0V48h16a8,8,0,0,0,0-16H184V16a8,8,0,0,0-16,0V32H152a8,8,0,0,0,0,16Zm88,32h-8V72a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0V96h8a8,8,0,0,0,0-16Z"/></svg>
-            <div>
-              <h3 data-i18n="p3.t">IA en el proceso de diseño</h3>
-              <p data-i18n="p3.d">Exploro cómo la IA transforma el trabajo de diseño, los roles y la colaboración con producto, y desarrollo herramientas internas para que el equipo la use en su día a día.</p>
-            </div>
+          <article class="pillar" data-reveal>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round"><path stroke-width="1.5" d="M3.84453 7.92226C2.71849 6.79623 2.71849 4.97056 3.84453 3.84453C4.97056 2.71849 6.79623 2.71849 7.92226 3.84453L20.1555 16.0777C21.2815 17.2038 21.2815 19.0294 20.1555 20.1555C19.0294 21.2815 17.2038 21.2815 16.0777 20.1555L3.84453 7.92226Z"/><path stroke-width="1.5" d="M6 10L10 6"/><path fill="currentColor" d="M16.1 2.30719C16.261 1.8976 16.8385 1.8976 16.9994 2.30719L17.4298 3.40247C17.479 3.52752 17.5776 3.62651 17.7022 3.67583L18.7934 4.1078C19.2015 4.26934 19.2015 4.849 18.7934 5.01054L17.7022 5.44252C17.5776 5.49184 17.479 5.59082 17.4298 5.71587L16.9995 6.81115C16.8385 7.22074 16.261 7.22074 16.1 6.81116L15.6697 5.71587C15.6205 5.59082 15.5219 5.49184 15.3973 5.44252L14.3061 5.01054C13.898 4.849 13.898 4.26934 14.3061 4.1078L15.3973 3.67583C15.5219 3.62651 15.6205 3.52752 15.6697 3.40247L16.1 2.30719Z"/><path fill="currentColor" d="M19.9672 9.12945C20.1281 8.71987 20.7057 8.71987 20.8666 9.12945L21.0235 9.5288C21.0727 9.65385 21.1713 9.75284 21.2959 9.80215L21.6937 9.95965C22.1018 10.1212 22.1018 10.7009 21.6937 10.8624L21.2959 11.0199C21.1713 11.0692 21.0727 11.1682 21.0235 11.2932L20.8666 11.6926C20.7057 12.1022 20.1281 12.1022 19.9672 11.6926L19.8103 11.2932C19.7611 11.1682 19.6625 11.0692 19.5379 11.0199L19.14 10.8624C18.732 10.7009 18.732 10.1212 19.14 9.95965L19.5379 9.80215C19.6625 9.75284 19.7611 9.65385 19.8103 9.5288L19.9672 9.12945Z"/><path fill="currentColor" d="M5.1332 15.3072C5.29414 14.8976 5.87167 14.8976 6.03261 15.3072L6.18953 15.7065C6.23867 15.8316 6.33729 15.9306 6.46188 15.9799L6.85975 16.1374C7.26783 16.2989 7.26783 16.8786 6.85975 17.0401L6.46188 17.1976C6.33729 17.2469 6.23867 17.3459 6.18953 17.471L6.03261 17.8703C5.87167 18.2799 5.29414 18.2799 5.1332 17.8703L4.97628 17.471C4.92714 17.3459 4.82852 17.2469 4.70393 17.1976L4.30606 17.0401C3.89798 16.8786 3.89798 16.2989 4.30606 16.1374L4.70393 15.9799C4.82852 15.9306 4.92714 15.8316 4.97628 15.7065L5.1332 15.3072Z"/></g></svg>
+            <h3 data-i18n="p3.t">IA en el proceso de diseño</h3>
+            <p data-i18n="p3.d">Exploro cómo la IA transforma el trabajo de diseño, los roles y la colaboración con producto, y desarrollo herramientas internas para que el equipo la use en su día a día.</p>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- CAREER -->
-    <section class="rule" id="trayectoria">
-      <div class="wrap">
-        <h2 class="reveal" data-i18n="career.title">Experiencia</h2>
-        <div class="career">
-          <div class="job reveal">
-            <div class="job-years mono" data-i18n="j1.y">Dic 2024 - hoy</div>
-            <div><h3>NaranjaX</h3><div class="job-role">UX Manager</div></div>
-            <p data-i18n="j1.d">Liderazgo del equipo de UX en una fintech con millones de clientes en Argentina: cultura de diseño, procesos y producto.</p>
-          </div>
-          <div class="job reveal">
-            <div class="job-years mono" data-i18n="j2.y">Ago 2021 - hoy</div>
-            <div><h3>DesignCore</h3><div class="job-role" data-i18n="j2.r">Fundador</div></div>
-            <p data-i18n="j2.d">Academia de UX que forma diseñadores en toda Latinoamérica. Nació como proyecto paralelo y creció a partir de la enseñanza, la comunidad y el oficio.</p>
-          </div>
-          <div class="job reveal">
-            <div class="job-years mono">Nov 2021 - 2024</div>
-            <div><h3>PedidosYa</h3><div class="job-role">UX Lead</div></div>
-            <p data-i18n="j3.d">Lideré equipos multidisciplinarios en una de las plataformas de delivery más grandes de la región, en experiencias de alta demanda y poco margen de error.</p>
-          </div>
-          <div class="job reveal">
-            <div class="job-years mono">2018 - Nov 2021</div>
-            <div><h3>Mercado Libre</h3><div class="job-role">UX Designer, Sr. UX Designer</div></div>
-            <p data-i18n="j4.d">Me formé en el e-commerce más grande de Latinoamérica, donde aprendí que diseñar a escala exige tanto criterio como velocidad.</p>
-          </div>
+    <!-- EXPERIENCE -->
+    <section id="trayectoria" style="padding-top:0">
+      <div class="wrap grid">
+        <div class="exp-head"><span class="chapter-label mono" data-reveal data-i18n="career.label">Experiencia</span></div>
+        <div class="job" data-reveal>
+          <h3>NaranjaX</h3>
+          <div class="job-meta"><span class="job-role">UX Manager</span><span class="mono" data-i18n="j1.y">Dic 2024 - hoy</span></div>
+          <p data-i18n="j1.d">Liderazgo del equipo de UX en una fintech con millones de clientes en Argentina: cultura de diseño, procesos y producto.</p>
+        </div>
+        <div class="job" data-reveal>
+          <h3>DesignCore</h3>
+          <div class="job-meta"><span class="job-role" data-i18n="j2.r">Fundador</span><span class="mono" data-i18n="j2.y">Ago 2021 - hoy</span></div>
+          <p data-i18n="j2.d">Academia de UX que forma diseñadores en toda Latinoamérica. Nació como proyecto paralelo y creció a partir de la enseñanza, la comunidad y el oficio.</p>
+        </div>
+        <div class="job" data-reveal>
+          <h3>PedidosYa</h3>
+          <div class="job-meta"><span class="job-role">UX Lead</span><span class="mono">Nov 2021 - 2024</span></div>
+          <p data-i18n="j3.d">Lideré equipos multidisciplinarios en una de las plataformas de delivery más grandes de la región, en experiencias de alta demanda y poco margen de error.</p>
+        </div>
+        <div class="job" data-reveal>
+          <h3>Mercado Libre</h3>
+          <div class="job-meta"><span class="job-role">UX Designer, Sr. UX Designer</span><span class="mono">2018 - Nov 2021</span></div>
+          <p data-i18n="j4.d">Me formé en el e-commerce más grande de Latinoamérica, donde aprendí que diseñar a escala exige tanto criterio como velocidad.</p>
         </div>
       </div>
     </section>
 
     <!-- AFTER HOURS -->
-    <section class="rule" id="despues-de-hora">
+    <section id="despues-de-hora" style="padding-top:0">
       <div class="wrap">
-        <div class="ah-head reveal">
-          <p class="eyebrow mono" data-i18n="ah.eyebrow">Proyectos propios</p>
-          <h2 data-i18n="ah.title">Después de hora</h2>
-          <p class="lede" data-i18n="ah.lede">Lo que construyo fuera del trabajo: un juego, herramientas propias y experimentos con hardware. Me mantienen cerca del oficio y me dejan probar ideas, sobre todo con IA, antes de llevarlas al equipo.</p>
+        <div class="grid">
+          <div class="ah-intro">
+            <span class="chapter-label mono" data-reveal data-i18n="ah.label">Después de hora</span>
+            <h2 data-split data-i18n="ah.title">Lo que construyo fuera del trabajo.</h2>
+            <p class="lede" data-reveal data-i18n="ah.lede">Un juego, herramientas propias y experimentos con hardware. Me mantienen cerca del oficio y me dejan probar ideas, sobre todo con IA, antes de llevarlas al equipo.</p>
+          </div>
         </div>
 
-        <div class="bento">
-          <article class="tile t-pegote reveal">
-            <a class="media" href="https://pegote.club" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
-              <img src="/assets/img/pegote.webp" width="1080" height="1350" loading="lazy" alt=""/>
-            </a>
-            <div class="tile-body">
-              <h3>Pegote</h3>
-              <p data-i18n="pg.d">Un juego web de stickers y collage, en alfa abierta. Lo diseñé y desarrollé de punta a punta: diseño de interacción, animaciones con comportamiento físico, cuentas, analítica y crecimiento.</p>
-              <a class="tile-link" href="https://pegote.club" target="_blank" rel="noopener"><span data-i18n="pg.cta">Jugar en pegote.club</span>
-                <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
-              <div class="tags"><span class="tag">Canvas 2D</span><span class="tag">Supabase</span><span class="tag">PostHog</span></div>
+        <article class="project panel pegote" data-reveal>
+          <div class="p-text">
+            <div>
+              <h3 class="p-title">Pegote</h3>
+              <dl class="p-meta mono">
+                <div><dt data-i18n="m.role">Rol</dt><dd data-i18n="m.designdev">Diseño y desarrollo</dd></div>
+                <div><dt data-i18n="m.year">Año</dt><dd>2026</dd></div>
+              </dl>
+              <p class="p-desc" data-i18n="pg.d">Un juego web de stickers y collage, en alfa abierta. Lo diseñé y desarrollé de punta a punta: diseño de interacción, animaciones con comportamiento físico, cuentas, analítica y crecimiento.</p>
+              <a class="p-link" href="https://pegote.club" target="_blank" rel="noopener"><span data-i18n="pg.cta">Jugar en pegote.club</span>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M18 15V6H9"/></svg></a>
             </div>
-          </article>
+            <div class="tags"><span class="tag">Canvas 2D</span><span class="tag">Supabase</span><span class="tag">PostHog</span></div>
+          </div>
+          <a class="p-media" href="https://pegote.club" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true" data-unveil>
+            <img src="/assets/img/pegote.webp" width="1080" height="1350" loading="lazy" alt="" data-parallax/>
+          </a>
+        </article>
+      </div>
 
-          <article class="tile t-lamp reveal" style="--i:1">
-            <div class="lamp-stage" id="lampStage">
-              <canvas id="lamp" width="80" height="80" role="img" aria-label="Patrón generativo de la lámpara viva" data-i18n-aria="lamp.aria"></canvas>
-              <div class="lamp-read"><span id="lampLight">luz 70%</span><span id="lampTemp">temp 40%</span></div>
-            </div>
-            <div class="tile-body">
-              <h3 data-i18n="lamp.t">Lámpara viva</h3>
-              <p data-i18n="lamp.d">Un ESP32 lee sensores de luz y temperatura y mueve un patrón generativo: con más luz se acelera y cambia de forma; con calor, cambia de color. Esta versión web funciona en vivo: pasá el cursor por encima.</p>
-              <div class="tags"><span class="tag">ESP32</span><span class="tag">Arduino</span><span class="tag">Processing</span></div>
-            </div>
-          </article>
+      <!-- Living lamp: the full-bleed signature chapter -->
+      <article class="lamp-chapter">
+        <div class="lamp-stage" id="lampStage">
+          <div class="lamp-poster" aria-hidden="true"></div>
+          <canvas id="lamp" role="img" aria-label="Patrón generativo de la lámpara viva" data-i18n-aria="lamp.aria"></canvas>
+          <div class="lamp-read mono" aria-hidden="true"><span id="lampLight">luz 72%</span><span id="lampHint" data-i18n="lamp.hint">Mové el cursor</span><span id="lampTemp">temp 8%</span></div>
+        </div>
+        <div class="wrap grid lamp-text">
+          <h3 class="p-title" data-reveal data-i18n="lamp.t">Lámpara viva</h3>
+          <div class="lamp-body" data-reveal>
+            <p class="p-desc" data-i18n="lamp.d">Un ESP32 lee sensores de luz y temperatura y mueve un patrón generativo: con más luz se acelera y cambia de forma; con calor, cambia de color. Esta versión web corre el mismo código en vivo: el eje horizontal es la luz y el vertical, la temperatura.</p>
+            <dl class="p-meta mono">
+              <div><dt data-i18n="m.role">Rol</dt><dd data-i18n="m.hw">Hardware y código creativo</dd></div>
+              <div><dt data-i18n="m.year">Año</dt><dd>2026</dd></div>
+            </dl>
+            <div class="tags"><span class="tag">ESP32</span><span class="tag">Arduino</span><span class="tag">Processing</span></div>
+          </div>
+        </div>
+      </article>
 
-          <article class="tile t-monitor reveal">
+      <div class="wrap">
+        <div class="duo">
+          <article class="panel monitor" data-reveal>
             <div class="sources" aria-hidden="true">
               <span class="source">Google News</span><span class="source">GDELT</span><span class="source">Mastodon</span><span class="source">Hacker News</span><span class="source off">Reddit</span><span class="source off">YouTube</span><span class="source off">Bluesky</span>
             </div>
-            <div class="tile-body">
-              <h3>Social Monitor</h3>
-              <p data-i18n="sm.d">Monitoreo de marca: recolecta menciones en noticias, redes y foros, Claude las clasifica por relevancia, sentimiento, temas y urgencia, y genera un reporte semanal.</p>
-              <div class="tags"><span class="tag">Next.js</span><span class="tag">Supabase</span><span class="tag">Claude</span></div>
-            </div>
+            <h3 class="p-title">Social Monitor</h3>
+            <dl class="p-meta mono">
+              <div><dt data-i18n="m.role">Rol</dt><dd data-i18n="m.designdev">Diseño y desarrollo</dd></div>
+              <div><dt data-i18n="m.year">Año</dt><dd>2026</dd></div>
+            </dl>
+            <p class="p-desc" data-i18n="sm.d">Monitoreo de marca: recolecta menciones en noticias, redes y foros, Claude las clasifica por relevancia, sentimiento, temas y urgencia, y genera un reporte semanal.</p>
+            <div class="tags"><span class="tag">Next.js</span><span class="tag">Supabase</span><span class="tag">Claude</span></div>
           </article>
-
-          <article class="tile t-goals reveal" style="--i:1">
+          <article class="panel goals" data-reveal>
             <div class="week" id="week" aria-hidden="true"></div>
-            <div class="tile-body">
-              <h3>WeeklyGoals</h3>
-              <p data-i18n="wg.d">App nativa para la barra de menú de macOS: planificación de objetivos semanales día por día, con recordatorios. La hice para mi propio flujo de trabajo y la uso a diario.</p>
-              <div class="tags"><span class="tag">SwiftUI</span><span class="tag">macOS</span></div>
-            </div>
+            <h3 class="p-title">WeeklyGoals</h3>
+            <dl class="p-meta mono">
+              <div><dt data-i18n="m.role">Rol</dt><dd data-i18n="m.designdev">Diseño y desarrollo</dd></div>
+              <div><dt data-i18n="m.year">Año</dt><dd>2026</dd></div>
+            </dl>
+            <p class="p-desc" data-i18n="wg.d">App nativa para la barra de menú de macOS: planificación de objetivos semanales día por día, con recordatorios. La hice para mi propio flujo de trabajo y la uso a diario.</p>
+            <div class="tags"><span class="tag">SwiftUI</span><span class="tag">macOS</span></div>
           </article>
         </div>
       </div>
     </section>
 
     <!-- TALKS -->
-    <section class="rule" id="charlas">
-      <div class="wrap">
-        <h2 class="reveal" data-i18n="talks.title">Charlas</h2>
-        <div class="talks">
-          <a class="talk reveal" href="https://www.fadu.uba.ar/ux-uba/" target="_blank" rel="noopener">
-            <span class="talk-venue mono">FADU UBA</span>
-            <h3 data-i18n="t1.t">Toma de decisiones institucionales: el diseño UX como escenario de conflictos</h3>
-            <p data-i18n="t1.d">1er Encuentro de UX de la Universidad de Buenos Aires, con Emiliano Mallon Noya. Publicada en el libro del encuentro.</p>
-          </a>
-          <div class="talk reveal" style="--i:1">
-            <span class="talk-venue mono">Stanford University</span>
-            <h3 data-i18n="t2.t">El futuro de las experiencias de usuario</h3>
-            <p data-i18n="t2.d">Cómo la tecnología y el diseño están cambiando la forma en que las personas usan productos y servicios.</p>
-          </div>
+    <section id="charlas" style="padding-top:0">
+      <div class="wrap grid">
+        <div class="talks-head"><span class="chapter-label mono" data-reveal data-i18n="talks.label">Charlas</span></div>
+        <a class="talk" href="https://www.fadu.uba.ar/ux-uba/" target="_blank" rel="noopener" data-reveal>
+          <span class="mono">FADU UBA</span>
+          <h3><span data-i18n="t1.t">Toma de decisiones institucionales: el diseño UX como escenario de conflictos</span>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M18 15V6H9"/></svg></h3>
+          <p data-i18n="t1.d">1er Encuentro de UX de la Universidad de Buenos Aires, con Emiliano Mallon Noya. Publicada en el libro del encuentro.</p>
+        </a>
+        <div class="talk" data-reveal>
+          <span class="mono">Stanford University</span>
+          <h3 data-i18n="t2.t">El futuro de las experiencias de usuario</h3>
+          <p data-i18n="t2.d">Cómo la tecnología y el diseño están cambiando la forma en que las personas usan productos y servicios.</p>
         </div>
       </div>
     </section>
 
-    <!-- QUOTE -->
-    <div class="rule quote">
+    <!-- HANDOFF -->
+    <div class="handoff">
       <div class="wrap">
-        <blockquote class="reveal" data-i18n="quote" data-html>Diseño para las personas. <span>Lidero para el equipo.</span> Construyo para lo que viene.</blockquote>
+        <blockquote>
+          <span data-i18n="q1">Diseño para las personas.</span>
+          <span data-i18n="q2">Lidero para el equipo.</span>
+          <span data-i18n="q3">Construyo para lo que viene.</span>
+        </blockquote>
       </div>
     </div>
 
     <!-- CONTACT -->
-    <section class="rule" id="contacto">
-      <div class="wrap contact-grid">
-        <div class="reveal">
-          <h2 data-i18n="contact.title">Hablemos</h2>
-          <p class="lede" data-i18n="contact.lede">Abierto a conversar sobre liderazgo de diseño, IA en el proceso y colaboraciones internacionales.</p>
-          <p class="based mono" data-i18n="contact.based">Córdoba, Argentina · GMT-3</p>
+    <section class="contact" id="contacto">
+      <div class="wrap grid">
+        <span class="chapter-label mono" style="grid-column:1/-1" data-i18n="contact.label">Contacto</span>
+        <h2 data-split data-i18n="contact.title">Hablemos.</h2>
+        <p class="lede" data-reveal data-i18n="contact.lede">Abierto a conversar sobre liderazgo de diseño, IA en el proceso y colaboraciones internacionales.</p>
+        <div class="contact-row" data-reveal>
           <a class="mail" href="mailto:braianarroyobraconi@gmail.com">braianarroyobraconi@gmail.com</a>
-          <div class="contact-actions">
-            <button class="btn" type="button" id="copy">
-              <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"/></svg>
-              <span id="copyLabel" data-i18n="contact.copy">Copiar email</span>
-            </button>
-          </div>
+          <button class="btn btn-solid" type="button" id="copy">
+            <span class="copy-state">
+              <span class="idle"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M6 11C6 8.17157 6 6.75736 6.87868 5.87868C7.75736 5 9.17157 5 12 5H15C17.8284 5 19.2426 5 20.1213 5.87868C21 6.75736 21 8.17157 21 11V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H12C9.17157 22 7.75736 22 6.87868 21.1213C6 20.2426 6 18.8284 6 16V11Z"/><path d="M6 19C4.34315 19 3 17.6569 3 16V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H15C16.6569 2 18 3.34315 18 5"/></g></svg><span data-i18n="contact.copy">Copiar email</span></span>
+              <span class="done" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path stroke-linejoin="round" d="M8.5 12.5L10.5 14.5L15.5 9.5"/></g></svg><span data-i18n="contact.copied">Copiado</span></span>
+            </span>
+          </button>
+          <a class="btn" href="https://linkedin.com/in/braianarroyobraconi" target="_blank" rel="noopener">LinkedIn
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M18 15V6H9"/></svg></a>
+          <span class="sr-only" role="status" id="copyStatus"></span>
         </div>
-        <ul class="links reveal" style="--i:1">
-          <li><a href="https://linkedin.com/in/braianarroyobraconi" target="_blank" rel="noopener">LinkedIn
-            <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a></li>
-          <li><a href="https://pegote.club" target="_blank" rel="noopener">Pegote
-            <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a></li>
-        </ul>
+        <p class="based mono" data-i18n="contact.based">Córdoba, Argentina · GMT-3</p>
       </div>
     </section>
   </main>
 
-  <footer class="rule">
+  <footer>
     <div class="wrap">
       <span>© 2026 Braian Arroyo Braconi</span>
-      <span data-i18n="footer">Diseñado y desarrollado por Braian.</span>
+      <nav aria-label="Footer">
+        <a href="https://linkedin.com/in/braianarroyobraconi" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://pegote.club" target="_blank" rel="noopener">Pegote</a>
+        <a href="#top" data-i18n="footer.top">Volver arriba</a>
+      </nav>
     </div>
   </footer>
 
+  <script src="/assets/vendor/gsap.min.js" defer></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
+  <script src="/assets/vendor/lenis.min.js" defer></script>
   <script>
-    // Icons above: Phosphor Icons (fill weight), MIT license.
-
     const I18N = {
       en: {
-        'nav.work': 'Work', 'nav.after': 'After hours', 'nav.talks': 'Talks',
+        'nav.work': 'Work', 'nav.after': 'After hours', 'nav.contact': 'Contact',
         'hero.title': 'Design leader working at the intersection of <em>teams, craft and AI.</em>',
         'hero.sub': 'UX Manager at NaranjaX. Previously Mercado Libre and PedidosYa. 8+ years designing products used by millions across Latin America.',
         'hero.alt': 'Braian Arroyo Braconi smiling, sitting in an office with plants',
-        'cta.mail': 'Email me', 'cta.after': 'See side projects',
-        'work.title': 'What I do',
-        'work.lede': 'I lead the UX team at NaranjaX, one of Argentina\'s largest fintechs, serving millions of customers. My focus is raising the bar on how we design: the people, the process and the standards.',
+        'cta.contact': 'Let\'s talk', 'cta.after': 'See side projects',
+        'work.label': 'What I do',
+        'work.statement': 'I lead the UX team at NaranjaX, one of Argentina\'s largest fintechs. <span class="dim">My focus is raising the bar on how we design: the people, the process and the standards.</span>',
         'p1.t': 'Team and culture',
         'p1.d': 'Hiring, career growth, feedback and rituals. I build teams where senior and junior designers grow together, because product quality mirrors how the team works.',
         'p2.t': 'Process and quality',
         'p2.d': 'I shape how we design: quality standards, user research and decision-making with product and engineering. Craft doesn\'t go away when you lead. It becomes the team\'s bar.',
         'p3.t': 'AI in the design process',
         'p3.d': 'I explore how AI is reshaping design work, roles and collaboration with product, and I build internal tools so the team uses it day to day.',
-        'career.title': 'Experience',
+        'career.label': 'Experience',
         'j1.y': 'Dec 2024 - present', 'j1.d': 'Leading the UX team at a fintech with millions of customers in Argentina: design culture, processes and product.',
         'j2.y': 'Aug 2021 - present', 'j2.r': 'Founder', 'j2.d': 'A UX academy training designers across Latin America. It started as a side project and grew through teaching, community and craft.',
         'j3.d': 'Led multidisciplinary teams at one of the region\'s largest delivery platforms, on high-demand experiences with little room for error.',
         'j4.d': 'Trained at Latin America\'s largest e-commerce company, where I learned that design at scale takes as much judgment as speed.',
-        'ah.eyebrow': 'Side projects', 'ah.title': 'After hours',
-        'ah.lede': 'What I build outside work: a game, my own tools and hardware experiments. They keep me close to the craft and let me test ideas, especially with AI, before bringing them to the team.',
+        'ah.label': 'After hours', 'ah.title': 'What I build outside work.',
+        'ah.lede': 'A game, my own tools and hardware experiments. They keep me close to the craft and let me test ideas, especially with AI, before bringing them to the team.',
+        'm.role': 'Role', 'm.year': 'Year', 'm.designdev': 'Design and development', 'm.hw': 'Hardware and creative code',
         'pg.d': 'A web game about stickers and collage, in open alpha. Designed and built end to end by me: interaction design, physics-like animation, accounts, analytics and growth. Interface in Spanish.',
         'pg.cta': 'Play at pegote.club',
-        'lamp.t': 'Living lamp', 'lamp.aria': 'Generative pattern from the living lamp',
-        'lamp.d': 'An ESP32 reads light and temperature sensors and drives a generative pattern: more light speeds it up and changes its shape, heat shifts its color. This web version runs live: move your cursor over it.',
+        'lamp.t': 'Living lamp', 'lamp.aria': 'Generative pattern from the living lamp', 'lamp.hint': 'Move your cursor', 'lamp.hintTouch': 'Touch and drag',
+        'lamp.d': 'An ESP32 reads light and temperature sensors and drives a generative pattern: more light speeds it up and changes its shape, heat shifts its color. This web version runs the same code live: the horizontal axis is light and the vertical one is temperature.',
         'sm.d': 'Brand monitoring: it collects mentions across news, social networks and forums, Claude classifies them by relevance, sentiment, topic and urgency, and it generates a weekly report.',
         'wg.d': 'A native macOS menu bar app for planning weekly goals day by day, with reminders. Built for my own workflow and in daily use.',
-        'talks.title': 'Talks',
+        'talks.label': 'Talks',
         't1.t': 'Institutional decision-making: UX design as a conflict arena',
         't1.d': '1st UX Conference at the University of Buenos Aires, with Emiliano Mallon Noya. Published in the conference book.',
         't2.t': 'The future of user experiences',
         't2.d': 'How technology and design are changing the way people use products and services.',
-        'quote': 'Design for people. <span>Lead for the team.</span> Build for what\'s next.',
-        'contact.title': 'Let\'s talk', 'contact.lede': 'Open to conversations about design leadership, AI in the design process and international collaborations.',
+        'q1': 'Design for people.', 'q2': 'Lead for the team.', 'q3': 'Build for what\'s next.',
+        'contact.label': 'Contact', 'contact.title': 'Let\'s talk.',
+        'contact.lede': 'Open to conversations about design leadership, AI in the design process and international collaborations.',
         'contact.based': 'Córdoba, Argentina · GMT-3',
         'contact.copy': 'Copy email', 'contact.copied': 'Copied',
-        'footer': 'Designed and built by Braian.',
+        'footer.top': 'Back to top',
         'greet': ['Good morning', 'Good afternoon', 'Good evening'],
         'light': 'light', 'temp': 'temp'
       },
-      es: { 'contact.copied': 'Copiado', 'greet': ['Buen día', 'Buenas tardes', 'Buenas noches'], 'light': 'luz', 'temp': 'temp' }
+      es: { 'greet': ['Buen día', 'Buenas tardes', 'Buenas noches'], 'light': 'luz', 'temp': 'temp', 'lamp.hintTouch': 'Tocá y arrastrá' }
     };
 
-    // Capture the Spanish copy already in the markup so switching back restores it.
+    // Capture the Spanish copy from the markup so switching back restores it.
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const k = el.dataset.i18n;
-      I18N.es[k] = el.hasAttribute('data-html') ? el.innerHTML : el.textContent;
+      if (!(k in I18N.es)) I18N.es[k] = el.hasAttribute('data-html') ? el.innerHTML : el.textContent;
     });
     document.querySelectorAll('[data-i18n-alt]').forEach(el => { I18N.es[el.dataset.i18nAlt] = el.alt; });
     document.querySelectorAll('[data-i18n-aria]').forEach(el => { I18N.es[el.dataset.i18nAria] = el.getAttribute('aria-label'); });
 
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const coarse = matchMedia('(pointer: coarse)').matches;
     let lang = 'es';
-    function t(k) { return (I18N[lang] && I18N[lang][k]) ?? I18N.es[k]; }
+    const t = k => (I18N[lang] && I18N[lang][k]) ?? I18N.es[k];
 
     function greet() {
       const h = new Date().getHours();
@@ -547,41 +605,68 @@
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const v = t(el.dataset.i18n);
         if (el.hasAttribute('data-html')) el.innerHTML = v; else el.textContent = v;
+        // Split headings come back as plain, visible copy in the new language.
+        if (el.hasAttribute('data-split-done')) { el.removeAttribute('data-split-done'); el.removeAttribute('aria-label'); }
       });
       document.querySelectorAll('[data-i18n-alt]').forEach(el => { el.alt = t(el.dataset.i18nAlt); });
       document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
       document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+      document.querySelector('.lang').dataset.active = l;
+      document.getElementById('pill').setAttribute('aria-label', l === 'en' ? 'Sections' : 'Secciones');
+      if (coarse) document.getElementById('lampHint').textContent = t('lamp.hintTouch');
       greet();
       renderWeek();
-      lampLabels();
+      lamp.labels();
+      syncPill();
       if (remember) { try { localStorage.setItem('lang', l); } catch (e) {} }
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
     }
     document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
 
-    // Nav border once the page scrolls (IntersectionObserver on the hero, no scroll listener).
-    const nav = document.getElementById('nav');
-    new IntersectionObserver(([e]) => nav.classList.toggle('scrolled', !e.isIntersecting), { rootMargin: '-64px 0px 0px 0px', threshold: 0.98 })
-      .observe(document.querySelector('.greet'));
+    // ---- Section pill: the active tab is a restyled copy of the list, clipped to the current link ----
+    const pill = document.getElementById('pill');
+    const pillList = pill.querySelector('.list');
+    const pillCopy = pill.querySelector('.active-copy');
+    let activeSec = null;
+    function syncPill() {
+      pillCopy.innerHTML = '';
+      const clone = pillList.cloneNode(true);
+      clone.querySelectorAll('a').forEach(a => { a.removeAttribute('href'); a.setAttribute('tabindex', '-1'); });
+      pillCopy.appendChild(clone);
+      placePill();
+    }
+    function placePill() {
+      const link = activeSec && pillList.querySelector(`[data-sec="${activeSec}"]`);
+      pillList.querySelectorAll('a').forEach(a => a.toggleAttribute('aria-current', a === link));
+      if (!link) { pillCopy.style.opacity = '0'; return; }
+      const r = pillList.offsetWidth - link.offsetLeft - link.offsetWidth;
+      pillCopy.style.clipPath = `inset(0 ${r}px 0 ${link.offsetLeft}px round 999px)`;
+      pillCopy.style.opacity = '1';
+    }
+    const owner = { 'sobre-mi': null, trabajo: 'trabajo', trayectoria: 'trabajo', 'despues-de-hora': 'despues-de-hora', charlas: null, contacto: 'contacto' };
+    const secIO = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) activeSec = owner[e.target.id] ?? null; });
+      placePill();
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    document.querySelectorAll('main > header, main > section').forEach(el => secIO.observe(el));
+    new ResizeObserver(placePill).observe(pillList);
 
-    // Scroll reveal.
-    const io = new IntersectionObserver(entries => entries.forEach(e => {
-      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-    }), { threshold: 0.15 });
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-    // Copy email.
-    document.getElementById('copy').addEventListener('click', async () => {
-      const label = document.getElementById('copyLabel');
+    // ---- Copy email ----
+    const copyBtn = document.getElementById('copy');
+    let copyTimer = 0;
+    copyBtn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText('braianarroyobraconi@gmail.com');
-        label.textContent = t('contact.copied');
-        setTimeout(() => { label.textContent = t('contact.copy'); }, 1800);
+        copyBtn.setAttribute('data-copied', '');
+        document.getElementById('copyStatus').textContent = t('contact.copied');
+        clearTimeout(copyTimer);
+        copyTimer = setTimeout(() => { copyBtn.removeAttribute('data-copied'); document.getElementById('copyStatus').textContent = ''; }, 1800);
       } catch (e) {
         window.location.href = 'mailto:braianarroyobraconi@gmail.com';
       }
     });
 
-    // WeeklyGoals: the current week, Monday first, today highlighted.
+    // ---- WeeklyGoals: the current week, Monday first, today highlighted ----
     function renderWeek() {
       const names = lang === 'en' ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
       const now = new Date();
@@ -589,21 +674,23 @@
       monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
       document.getElementById('week').innerHTML = names.map((n, i) => {
         const d = new Date(monday); d.setDate(monday.getDate() + i);
-        const today = d.toDateString() === now.toDateString();
-        return `<div class="day${today ? ' today' : ''}">${n}<b>${d.getDate()}</b></div>`;
+        return `<div class="day${d.toDateString() === now.toDateString() ? ' today' : ''}">${n}<b>${d.getDate()}</b></div>`;
       }).join('');
     }
 
-    // ---- Living lamp: port of the Processing sketch (lampara_viva.pde) ----
+    // ---- Living lamp: port of Braian's Processing sketch (lampara_viva.pde) ----
     const lamp = (() => {
       const cv = document.getElementById('lamp');
       const ctx = cv.getContext('2d');
-      const N = 80;
-      const img = ctx.createImageData(N, N);
       const stage = document.getElementById('lampStage');
-      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let W = 0, H = 0, img = null;
+      function size() {
+        // Same cell density as the original 80x80 grid, stretched to the chapter's aspect ratio.
+        const r = stage.getBoundingClientRect();
+        H = 64; W = Math.max(48, Math.min(180, Math.round(H * r.width / Math.max(1, r.height))));
+        if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; img = ctx.createImageData(W, H); }
+      }
 
-      // Classic Perlin noise, scaled to 0..1 like Processing's noise().
       const p = new Uint8Array(512);
       { const b = [...Array(256).keys()]; for (let i = 255; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [b[i], b[j]] = [b[j], b[i]]; } for (let i = 0; i < 512; i++) p[i] = b[i & 255]; }
       const fade = x => x * x * x * (x * (x * 6 - 15) + 10);
@@ -619,20 +706,20 @@
         return (r + 1) / 2;
       }
 
-      let light = 72, temp = 38, t = 0, cur = 0, next = 0, blend = 0, running = false, raf = 0;
-      const dist = (x, y) => Math.hypot(x - 40, y - 40);
+      let light = 72, temp = 8, tLight = 72, tTemp = 8, vLight = 0, vTemp = 0, tt = 0, cur = 0, next = 0, blend = 0, running = false, raf = 0;
+      const dist = (x, y) => Math.hypot(x - W / 2, y - H / 2);
       function pattern(m, nx, ny, x, y) {
         switch (m) {
-          case 0: return noise(nx, ny, t);
-          case 1: return Math.sin(nx * 4 + t) * Math.cos(ny * 4 + t);
-          case 2: return Math.sin(dist(x, y) * 0.4 + t);
-          case 3: return noise(nx * 2, ny * 2, t * 1.5);
-          case 4: return Math.sin(nx * 3 + Math.sin(t) * 2);
-          case 5: return Math.cos(ny * 4 + t);
-          case 6: return noise(nx + Math.sin(t) * 2, ny + Math.cos(t) * 2, t);
-          case 7: return Math.sin((nx + ny) * 4 + t);
-          case 8: return Math.cos(dist(x, y) * 0.3 + t);
-          case 9: return noise(nx * 4, ny * 4, t * 0.5) * Math.sin(t);
+          case 0: return noise(nx, ny, tt);
+          case 1: return Math.sin(nx * 4 + tt) * Math.cos(ny * 4 + tt);
+          case 2: return Math.sin(dist(x, y) * 0.4 + tt);
+          case 3: return noise(nx * 2, ny * 2, tt * 1.5);
+          case 4: return Math.sin(nx * 3 + Math.sin(tt) * 2);
+          case 5: return Math.cos(ny * 4 + tt);
+          case 6: return noise(nx + Math.sin(tt) * 2, ny + Math.cos(tt) * 2, tt);
+          case 7: return Math.sin((nx + ny) * 4 + tt);
+          case 8: return Math.cos(dist(x, y) * 0.3 + tt);
+          case 9: return noise(nx * 4, ny * 4, tt * 0.5) * Math.sin(tt);
         }
         return 0;
       }
@@ -640,62 +727,159 @@
       function hsb(h, s, b) {
         h = ((h % 255) + 255) % 255 / 255 * 6; s = Math.max(0, Math.min(1, s / 255)); b = Math.max(0, Math.min(1, b / 255));
         const i = Math.floor(h), f = h - i, P = b * (1 - s), Q = b * (1 - s * f), T = b * (1 - s * (1 - f));
-        const [r, g, bl] = [[b, T, P], [Q, b, P], [P, b, T], [P, Q, b], [T, P, b], [b, P, Q]][i % 6];
-        return [r * 255, g * 255, bl * 255];
+        const c = [[b, T, P], [Q, b, P], [P, b, T], [P, Q, b], [T, P, b], [b, P, Q]][i % 6];
+        return [c[0] * 255, c[1] * 255, c[2] * 255];
       }
-
+      // Pointer sets a target; the reading follows on a critically damped spring instead of jumping.
+      function follow() {
+        const k = 0.06, damp = 2 * Math.sqrt(k);
+        vLight += (tLight - light) * k - vLight * damp; light += vLight;
+        vTemp += (tTemp - temp) * k - vTemp * damp; temp += vTemp;
+        if (Math.abs(vLight) > 0.01 || Math.abs(vTemp) > 0.01) labels();
+      }
       function step() {
+        if (!img) return;
+        follow();
         let ln = light / 100;
         ln = ln < 0.5 ? 0 : (ln - 0.5) / 0.5;
         const stress = ln ** 3;
-        t += stress * 0.3 + 0.004; // small floor so the idle state still breathes
+        tt += stress * 0.3 + 0.004;
         if (Math.random() < 0.001 + stress * 0.02 && blend === 0) { next = (Math.random() * 10) | 0; blend = 0.001; }
         if (blend > 0) { blend += 0.02; if (blend >= 1) { cur = next; blend = 0; } }
         const hueBase = 25 + (temp / 100) ** 1.5 * 175;
         const sat = 200 - stress * 80;
         const d = img.data;
-        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
           const nx = x * 0.08, ny = y * 0.08;
           const v1 = pattern(cur, nx, ny, x, y);
           const v = blend > 0 ? lerp(v1, pattern(next, nx, ny, x, y), blend) : v1;
           const sh = Math.abs(v) ** 1.8;
-          const [r, g, b] = hsb(hueBase + (sh * 80 - 40), sat, sh * 255);
-          const o = (y * N + x) * 4; d[o] = r; d[o + 1] = g; d[o + 2] = b; d[o + 3] = 255;
+          const c = hsb(hueBase + (sh * 80 - 40), sat, sh * 255);
+          const o = (y * W + x) * 4; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
         }
         ctx.putImageData(img, 0, 0);
       }
       function loop() { step(); raf = requestAnimationFrame(loop); }
-      function start() { if (!running && !reduce) { running = true; loop(); } }
+      let visible = false;
+      function start() { if (!running && !reduce && visible && !document.hidden) { running = true; loop(); } }
       function stop() { running = false; cancelAnimationFrame(raf); }
-
       function labels() {
-        document.getElementById('lampLight').textContent = `${t_('light')} ${Math.round(light)}%`;
-        document.getElementById('lampTemp').textContent = `${t_('temp')} ${Math.round(temp)}%`;
+        document.getElementById('lampLight').textContent = `${t('light')} ${Math.round(light)}%`;
+        document.getElementById('lampTemp').textContent = `${t('temp')} ${Math.round(temp)}%`;
       }
-      const t_ = k => t(k);
       function input(e) {
         const r = stage.getBoundingClientRect();
-        light = Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100));
-        temp = Math.max(0, Math.min(100, 100 - (e.clientY - r.top) / r.height * 100));
-        labels();
-        if (reduce) step();
+        tLight = Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100));
+        tTemp = Math.max(0, Math.min(100, 100 - (e.clientY - r.top) / r.height * 100));
+        if (reduce) { light = tLight; temp = tTemp; vLight = vTemp = 0; labels(); step(); }
       }
       stage.addEventListener('pointermove', input);
       stage.addEventListener('pointerdown', input);
-
-      new IntersectionObserver(([e]) => e.isIntersecting ? start() : stop()).observe(stage);
-      step();
+      new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible ? start() : stop(); }).observe(stage);
+      document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+      new ResizeObserver(() => { size(); step(); }).observe(stage);
+      size(); step();
       return { labels };
     })();
-    function lampLabels() { lamp.labels(); }
 
-    // Language: the visitor's own choice, then the country set by middleware.js, then the browser language.
+    // ---- Language: own choice, then country (middleware.js cookie), then browser ----
     let saved = null;
     try { saved = localStorage.getItem('lang'); } catch (e) {}
     const geo = (document.cookie.match(/(?:^|; )geo-lang=(es|en)/) || [])[1];
     const browser = (navigator.language || '').toLowerCase().startsWith('es') ? 'es' : 'en';
-    const initial = saved === 'es' || saved === 'en' ? saved : geo || browser;
-    setLang(initial, false);
+    setLang(saved === 'es' || saved === 'en' ? saved : geo || browser, false);
+
+    // ---- Motion: GSAP + ScrollTrigger, Lenis as the single smooth-scroll engine ----
+    if (!reduce) document.documentElement.classList.add('has-motion');
+
+    // Split into masked words; inline markup (em, span.dim) is re-applied around each word,
+    // and the element keeps an unsplit accessible name.
+    function split(el) {
+      if (el.hasAttribute('data-split-done')) return el.querySelectorAll('.w');
+      el.setAttribute('aria-label', el.textContent.replace(/\s+/g, ' ').trim());
+      const walk = (node, wrapIn) => {
+        const out = document.createDocumentFragment();
+        node.childNodes.forEach(n => {
+          if (n.nodeType === 3) {
+            n.textContent.split(/(\s+)/).forEach(part => {
+              if (!part) return;
+              if (!part.trim()) { out.appendChild(document.createTextNode(' ')); return; }
+              const mask = document.createElement('span'); mask.className = 'w-mask'; mask.setAttribute('aria-hidden', 'true');
+              let inner = document.createElement('span'); inner.className = 'w'; inner.textContent = part;
+              wrapIn.slice().reverse().forEach(tpl => { const c = tpl.cloneNode(false); c.appendChild(inner); inner = c; });
+              mask.appendChild(inner); out.appendChild(mask);
+            });
+          } else if (n.nodeType === 1) {
+            out.appendChild(walk(n, wrapIn.concat(n)));
+          }
+        });
+        return out;
+      };
+      const frag = walk(el, []);
+      el.textContent = ''; el.appendChild(frag);
+      el.setAttribute('data-split-done', '');
+      return el.querySelectorAll('.w');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (reduce || !window.gsap || !window.ScrollTrigger) {
+        document.documentElement.classList.remove('has-motion');
+        return;
+      }
+      gsap.registerPlugin(ScrollTrigger);
+      gsap.defaults({ ease: 'power3.out', duration: 0.85 });
+
+      if (window.Lenis) {
+        const lenis = new Lenis({ lerp: 0.09, smoothWheel: true, wheelMultiplier: 0.9, anchors: { offset: -80 } });
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add(time => lenis.raf(time * 1000));
+        gsap.ticker.lagSmoothing(0);
+      }
+
+      // Hero intro: portrait unveils first, headline words second, supporting copy third, CTA last.
+      const heroWords = split(document.querySelector('.hero h1'));
+      gsap.set('.hero h1, .hero [data-unveil]', { autoAlpha: 1 });
+      gsap.timeline({ defaults: { ease: 'power4.out' } })
+        .fromTo('.hero [data-unveil]', { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 1.2, ease: 'expo.out' }, 0)
+        .fromTo('.hero [data-unveil] img', { scale: 1.12 }, { scale: 1, duration: 1.6, ease: 'expo.out' }, 0)
+        .fromTo(heroWords, { yPercent: 110 }, { yPercent: 0, duration: 1, stagger: 0.05 }, 0.15)
+        .fromTo('.hero [data-intro]', { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.09 }, 0.55);
+
+      // Chapter headings: word by word as they enter.
+      document.querySelectorAll('main section [data-split]').forEach(el => {
+        const words = split(el);
+        gsap.set(el, { autoAlpha: 1 });
+        gsap.fromTo(words, { yPercent: 110 }, { yPercent: 0, duration: 0.95, ease: 'power4.out', stagger: 0.035, scrollTrigger: { trigger: el, start: 'top 84%', once: true } });
+      });
+
+      // Groups stagger their children; single elements fade up.
+      document.querySelectorAll('[data-reveal-group]').forEach(group => {
+        const items = group.querySelectorAll('[data-reveal]');
+        gsap.fromTo(items, { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.07, scrollTrigger: { trigger: group, start: 'top 84%', once: true } });
+      });
+      document.querySelectorAll('[data-reveal]').forEach(el => {
+        if (el.closest('[data-reveal-group]')) return;
+        gsap.fromTo(el, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.8, scrollTrigger: { trigger: el, start: 'top 86%', once: true } });
+      });
+
+      // Project media: clip the image layer only; text stays selectable.
+      document.querySelectorAll('main section [data-unveil]').forEach(fig => {
+        gsap.set(fig, { autoAlpha: 1 });
+        gsap.fromTo(fig, { clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0% 0)', duration: 1.1, ease: 'power4.out', scrollTrigger: { trigger: fig, start: 'top 82%', once: true } });
+      });
+
+      // Parallax under 5% on project imagery.
+      document.querySelectorAll('[data-parallax]').forEach(img => {
+        gsap.fromTo(img, { yPercent: -3 }, { yPercent: 3, ease: 'none', scrollTrigger: { trigger: img.parentElement, start: 'top bottom', end: 'bottom top', scrub: 1.1 } });
+      });
+
+      // Handoff: the three lines arrive one after another.
+      gsap.set('.handoff blockquote', { autoAlpha: 1 });
+      gsap.fromTo('.handoff blockquote span', { autoAlpha: 0, y: 40 }, { autoAlpha: 1, y: 0, duration: 1, ease: 'power4.out', stagger: 0.12, scrollTrigger: { trigger: '.handoff', start: 'top 75%', once: true } });
+
+      if (document.fonts) document.fonts.ready.then(() => ScrollTrigger.refresh());
+      window.addEventListener('load', () => ScrollTrigger.refresh());
+    });
   </script>
 </body>
 </html>
