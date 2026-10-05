@@ -142,7 +142,7 @@ h2 { font-size: clamp(34px, 4.6vw, 68px); font-weight: 450; line-height: 1.02; l
 .pegote { background: var(--f-pegote); display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; }
 .pegote .p-text { grid-column: 1 / span 5; padding: clamp(28px, 4vw, 56px); display: flex; flex-direction: column; justify-content: space-between; gap: 40px; }
 .pegote .p-media { grid-column: 6 / span 7; position: relative; overflow: hidden; min-height: 460px; display: block; }
-.pegote .p-media img { position: absolute; inset: -4% 0; width: 100%; height: 108%; object-fit: cover; object-position: 50% 0%; transition: scale 700ms var(--ease-out); }
+.pegote .p-media img { position: absolute; inset: -8% 0; width: 100%; height: 116%; object-fit: cover; object-position: 50% 0%; transition: scale 700ms var(--ease-out); }
 
 .lamp-chapter { margin-top: clamp(56px, 7vw, 96px); }
 .lamp-stage { position: relative; height: clamp(360px, 62vh, 640px); background: #000; overflow: hidden; cursor: crosshair; touch-action: pan-y; }
@@ -373,18 +373,18 @@ footer a { text-decoration: none; transition: color 200ms ease; }
 html.js .job-panel { grid-template-rows: 0fr; transition: grid-template-rows 420ms var(--ease-out); }
 html.js .job.open .job-panel { grid-template-rows: 1fr; }
 .job-panel-inner { overflow: hidden; min-height: 0; }
-.job-panel-content { padding-top: 28px; }
+.job-panel-content { padding-top: 32px; padding-bottom: 8px; }
 html.js .job-panel-content { opacity: 0; transform: translateY(-6px); transition: opacity 200ms ease, transform 300ms var(--ease-out); }
 html.js .job.open .job-panel-content { opacity: 1; transform: none; transition-delay: 80ms; }
 .job-areas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 24px; }
 .job-areas .mono, .job-sub { color: var(--faint); margin-right: 6px; }
 .job-sub { display: block; margin-bottom: 14px; }
-.pill-tag { font-size: 14px; padding: 6px 14px; border-radius: 999px; background: rgba(239, 236, 230, 0.08); }
-.job-projects { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-.job-projects li { position: relative; padding: 22px; border-radius: var(--r); background: rgba(239, 236, 230, 0.05); display: flex; flex-direction: column; gap: 8px; }
-.job-projects .ctx { color: var(--signal); }
-.job-projects h4 { font-size: 19px; font-weight: 550; letter-spacing: -0.015em; }
-.job-projects p { grid-column: auto; font-size: 15px; color: var(--muted); }
+.pill-tag { font-size: 14px; padding: 5px 13px; border-radius: 999px; box-shadow: inset 0 0 0 1px #3a3a3e; color: var(--paper); }
+.job-projects { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); column-gap: 32px; row-gap: 28px; }
+.job-projects li { padding-top: 18px; border-top: 1px solid #3a3a3e; display: flex; flex-direction: column; gap: 8px; }
+.job-projects .ctx { color: var(--faint); }
+.job-projects h4 { font-size: clamp(20px, 1.7vw, 24px); font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
+.job-projects p { grid-column: auto; font-size: 15px; color: var(--muted); max-width: 36ch; }
 @media (hover: hover) and (pointer: fine) {
   .job.has-panel:hover h3 { color: var(--muted); }
   .job.has-panel h3 { transition: color 220ms ease; }
@@ -399,3 +399,8 @@ html.js .job.open .job-panel-content { opacity: 1; transform: none; transition-d
   .job-plus { top: 26px; }
   .job.has-panel h3 { padding-right: 48px; }
 }
+
+/* Parallax room: images that move inside their frame are taller than the frame. */
+.cs-cover img[data-parallax] { position: absolute; left: 0; top: -8%; width: 100%; height: 116%; }
+.portrait figure { transform: translateZ(0); }
+.portrait img { transform-origin: 50% 40%; }

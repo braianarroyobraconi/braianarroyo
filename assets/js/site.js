@@ -195,7 +195,7 @@
         gsap.set(media, { autoAlpha: 1 });
         tl.fromTo(media, { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 1.2, ease: 'expo.out' }, 0);
         const img = media.querySelector('img, video');
-        if (img) tl.fromTo(img, { scale: 1.12 }, { scale: 1, duration: 1.6, ease: 'expo.out' }, 0);
+        if (img) tl.fromTo(img, { scale: 1.24 }, { scale: 1.1, duration: 1.6, ease: 'expo.out' }, 0);
       }
       tl.fromTo(words, { yPercent: 110 }, { yPercent: 0, duration: 1, stagger: 0.05 }, 0.15)
         .fromTo(intro.querySelectorAll('[data-intro]'), { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.09 }, 0.55);
@@ -226,9 +226,43 @@
       gsap.fromTo(fig, { clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0% 0)', duration: 1.1, ease: 'power4.out', scrollTrigger: { trigger: fig, start: 'top 85%', once: true } });
     });
 
-    // Parallax under 5% on project imagery.
-    document.querySelectorAll('[data-parallax]').forEach(img => {
-      gsap.fromTo(img, { yPercent: -3 }, { yPercent: 3, ease: 'none', scrollTrigger: { trigger: img.parentElement, start: 'top bottom', end: 'bottom top', scrub: 1.1 } });
+    // Parallax: depth through speed differences. Images move inside their frames (never revealing edges),
+    // text drifts slower than the page, and the three side-project panels travel at slightly different speeds.
+    // Softer on small screens; none at all under reduced motion (this block never runs then).
+    const mm = gsap.matchMedia();
+    mm.add({ wide: '(min-width: 721px)', narrow: '(max-width: 720px)' }, ctx => {
+      const k = ctx.conditions.wide ? 1 : 0.5;
+      const scrub = { scrub: 1.2, invalidateOnRefresh: true };
+
+      // Hero: copy sinks and dims, the portrait rises a little faster, the photo pans inside its frame.
+      const hero = document.querySelector('.hero');
+      if (hero) {
+        const st = { trigger: hero, start: 'top top', end: 'bottom top', ...scrub };
+        gsap.to('.hero-copy', { y: 110 * k, autoAlpha: 0.35, ease: 'none', scrollTrigger: st });
+        gsap.to('.portrait', { y: -50 * k, ease: 'none', scrollTrigger: st });
+        gsap.fromTo('.portrait img', { yPercent: 0 }, { yPercent: 4 * k, ease: 'none', scrollTrigger: st }); // within the 1.1 zoom margin
+      }
+
+      // Images inside panels and covers: up to ±8% of their own height (they are sized 116% in CSS).
+      document.querySelectorAll('[data-parallax]').forEach(img => {
+        const amt = 5.5 * k; // the image is 116% tall: 8% spare on each side of the frame
+        gsap.fromTo(img, { yPercent: -amt }, { yPercent: amt, ease: 'none', scrollTrigger: { trigger: img.parentElement, start: 'top bottom', end: 'bottom top', ...scrub } });
+      });
+
+      // Side-project panels: the middle one travels a bit further, so the row gains depth.
+      if (ctx.conditions.wide) {
+        document.querySelectorAll('.trio .panel').forEach((panel, i) => {
+          // yPercent, not y: the entrance reveal already owns y on these panels.
+          const d = [4, 9, 6][i] || 4;
+          gsap.fromTo(panel, { yPercent: d }, { yPercent: -d, ease: 'none', scrollTrigger: { trigger: '.trio', start: 'top bottom', end: 'bottom top', ...scrub } });
+        });
+      }
+
+      // Closing lines slide in opposite directions while the block crosses the screen.
+      document.querySelectorAll('.handoff blockquote span').forEach((line, i) => {
+        const dir = i % 2 ? -1 : 1;
+        gsap.fromTo(line, { xPercent: -5 * dir * k }, { xPercent: 5 * dir * k, ease: 'none', scrollTrigger: { trigger: '.handoff', start: 'top bottom', end: 'bottom top', ...scrub } });
+      });
     });
 
     // Lines that arrive one after another.
