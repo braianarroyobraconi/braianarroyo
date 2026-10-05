@@ -3,6 +3,7 @@
 // Pages declare their English copy in window.I18N_EN and register language hooks in window.SITE_HOOKS
 // before this file runs. Spanish is the markup itself.
 (() => {
+  document.documentElement.classList.add('js');
   const COMMON_EN = {
     'nav.work': 'Work', 'nav.after': 'After hours', 'nav.contact': 'Contact',
     'back': 'Back', 'contact.copy': 'Copy email', 'contact.copied': 'Copied',
@@ -56,8 +57,10 @@
     const link = activeSec && pillList.querySelector(`[data-sec="${activeSec}"]`);
     pillList.querySelectorAll('a').forEach(a => a.toggleAttribute('aria-current', a === link));
     if (!link) { pillCopy.style.opacity = '0'; return; }
-    const r = pillList.offsetWidth - link.offsetLeft - link.offsetWidth;
-    pillCopy.style.clipPath = `inset(0 ${r}px 0 ${link.offsetLeft}px round 999px)`;
+    // offsetLeft is measured from the pill (it has padding); the copy sits on the list itself.
+    const l = link.offsetLeft - pillList.offsetLeft;
+    const r = pillList.offsetWidth - l - link.offsetWidth;
+    pillCopy.style.clipPath = `inset(0 ${r}px 0 ${l}px round 999px)`;
     pillCopy.style.opacity = '1';
   }
   if (pill) {
@@ -108,6 +111,23 @@
       }
     });
   }
+
+
+  // ---- Experience accordion: the whole row toggles; closed panels are inert so focus skips them ----
+  document.querySelectorAll('.job.has-panel').forEach(job => {
+    const btn = job.querySelector('.job-toggle');
+    const panel = job.querySelector('.job-panel');
+    const head = () => job.style.setProperty('--row-h', panel.offsetTop + 'px');
+    head(); new ResizeObserver(head).observe(job);
+    panel.inert = true;
+    btn.addEventListener('click', () => {
+      const open = !job.classList.contains('open');
+      job.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      panel.inert = !open;
+    });
+    panel.addEventListener('transitionend', e => { if (e.target === panel && window.ScrollTrigger) ScrollTrigger.refresh(); });
+  });
 
   // ---- Language: own choice, then country (middleware.js cookie), then browser ----
   let saved = null;

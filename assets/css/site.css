@@ -350,3 +350,45 @@ footer a { text-decoration: none; transition: color 200ms ease; }
   .pipeline div { grid-template-columns: 1fr; gap: 6px; }
   .cs-block { column-gap: 0; }
 }
+
+/* EXPERIENCE ACCORDION: rows open in place. Without JS every panel stays open. */
+.job { padding-right: 56px; }
+.job.has-panel { position: relative; }
+.job-toggle { all: unset; cursor: pointer; }
+.job-toggle::after { content: ''; position: absolute; inset: 0 0 auto; height: var(--row-h, 100%); }
+.job-toggle:focus-visible { outline: 2px solid var(--signal); outline-offset: 6px; border-radius: 4px; }
+.job-plus { position: absolute; right: 0; top: 30px; width: 36px; height: 36px; border-radius: 999px; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--rule); color: var(--muted); pointer-events: none; transition: transform 260ms var(--ease-out), background-color 200ms ease, color 200ms ease; }
+.job-plus svg { width: 18px; height: 18px; }
+.job.open .job-plus { transform: rotate(45deg); background: var(--paper); color: var(--ink); box-shadow: none; }
+.job-panel { grid-column: 1 / -1; display: grid; grid-template-rows: 1fr; }
+html.js .job-panel { grid-template-rows: 0fr; transition: grid-template-rows 420ms var(--ease-out); }
+html.js .job.open .job-panel { grid-template-rows: 1fr; }
+.job-panel-inner { overflow: hidden; min-height: 0; }
+.job-panel-content { padding-top: 28px; }
+html.js .job-panel-content { opacity: 0; transform: translateY(-6px); transition: opacity 200ms ease, transform 300ms var(--ease-out); }
+html.js .job.open .job-panel-content { opacity: 1; transform: none; transition-delay: 80ms; }
+.job-areas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 24px; }
+.job-areas .mono, .job-sub { color: var(--faint); margin-right: 6px; }
+.job-sub { display: block; margin-bottom: 14px; }
+.pill-tag { font-size: 14px; padding: 6px 14px; border-radius: 999px; background: rgba(239, 236, 230, 0.08); }
+.job-projects { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.job-projects li { position: relative; padding: 22px; border-radius: var(--r); background: rgba(239, 236, 230, 0.05); display: flex; flex-direction: column; gap: 8px; }
+.job-projects .ctx { color: var(--signal); }
+.job-projects h4 { font-size: 19px; font-weight: 550; letter-spacing: -0.015em; }
+.job-projects p { grid-column: auto; font-size: 15px; color: var(--muted); }
+.job-projects .live { align-self: flex-start; margin-top: auto; padding: 4px 9px 4px 22px; border-radius: 999px; background: rgba(120, 200, 140, 0.12); color: #9fd8a8; position: relative; font-size: 11px; }
+.job-projects .live::before { content: ''; position: absolute; left: 9px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 999px; background: #7fd18c; }
+@media (hover: hover) and (pointer: fine) {
+  .job.has-panel:hover h3 { color: var(--signal); }
+  .job.has-panel h3 { transition: color 220ms ease; }
+  .job.has-panel:hover .job-plus { color: var(--paper); box-shadow: inset 0 0 0 1px rgba(239, 236, 230, 0.4); }
+  .job.open:hover .job-plus { color: var(--ink); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js .job-panel, html.js .job-panel-content { transition: none; }
+}
+@media (max-width: 720px) {
+  .job { padding-right: 0; }
+  .job-plus { top: 26px; }
+  .job.has-panel h3 { padding-right: 48px; }
+}
