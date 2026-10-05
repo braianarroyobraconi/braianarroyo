@@ -3,376 +3,692 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Braian Arroyo Braconi — UX Manager</title>
-  <meta name="description" content="UX Manager focused on culture, craft, and teams that ship better products. Based in Córdoba / Buenos Aires, Argentina."/>
-  <meta name="keywords" content="UX Manager, UX Lead, Design Leader, Mercado Libre, PedidosYa, NaranjaX, Argentina, Córdoba, Buenos Aires"/>
-  <meta property="og:title" content="Braian Arroyo Braconi — UX Manager"/>
-  <meta property="og:description" content="UX Manager focused on culture, craft, and teams that ship better products."/>
+  <title>Braian Arroyo Braconi · UX Manager</title>
+  <meta name="description" content="UX Manager en NaranjaX. Lidero equipos de diseño y, después de hora, hago juegos, herramientas y electrónica. Córdoba, Argentina."/>
+  <meta name="keywords" content="UX Manager, UX Lead, Design Leader, NaranjaX, Mercado Libre, PedidosYa, DesignCore, Pegote, Argentina, Córdoba"/>
+  <meta property="og:title" content="Braian Arroyo Braconi · UX Manager"/>
+  <meta property="og:description" content="Lidero equipos de diseño y sigo haciendo cosas con las manos."/>
   <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://www.braianarroyo.com/"/>
+  <meta name="theme-color" content="#0f0f10" media="(prefers-color-scheme: dark)"/>
+  <meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)"/>
+  <link rel="canonical" href="https://www.braianarroyo.com/"/>
+  <link rel="preload" href="/assets/fonts/Geist.woff2" as="font" type="font/woff2" crossorigin/>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap');
+    @font-face { font-family: 'Geist'; src: url('/assets/fonts/Geist.woff2') format('woff2'); font-weight: 300 700; font-display: swap; }
+    @font-face { font-family: 'Geist Mono'; src: url('/assets/fonts/Geist-Mono.woff2') format('woff2'); font-weight: 400 500; font-display: swap; }
+
+    /* Tokens. Radii: pills for interactive (nav, buttons, tags), 14px for media and tiles. */
+    :root {
+      --bg: #fafaf9;
+      --surface: #f1f1ef;
+      --text: #161617;
+      --muted: #5c5c60;
+      --line: #e2e2df;
+      --accent: #c8471d;
+      --accent-soft: rgba(200, 71, 29, 0.09);
+      --radius: 14px;
+      --max: 1180px;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f0f10;
+        --surface: #18181a;
+        --text: #ececea;
+        --muted: #9b9b9f;
+        --line: #29292c;
+        --accent: #f0764a;
+        --accent-soft: rgba(240, 118, 74, 0.1);
+        color-scheme: dark;
+      }
+    }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --black: #111;
-      --gray: #666;
-      --light: #f5f3ef;
-      --accent: #e8643a;
-      --border: #e0ddd8;
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 17px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
-
-    html { font-size: 16px; scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; background: #fff; color: var(--black); line-height: 1.6; }
+    img { display: block; max-width: 100%; }
+    a { color: inherit; }
+    .mono { font-family: 'Geist Mono', ui-monospace, monospace; }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
 
     /* NAV */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0;
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 1.5rem 3rem;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--border);
-      z-index: 100;
+    .nav {
+      position: sticky; top: 0; z-index: 10;
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid transparent;
+      transition: border-color .3s;
     }
-    .nav-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; text-decoration: none; color: var(--black); }
-    .nav-right { display: flex; align-items: center; gap: 2rem; }
-    .nav-links { display: flex; gap: 2rem; list-style: none; }
-    .nav-links a { font-size: 0.85rem; text-decoration: none; color: var(--gray); letter-spacing: 0.02em; transition: color 0.2s; }
-    .nav-links a:hover { color: var(--black); }
-
-    /* LANG TOGGLE */
-    .lang-toggle {
-      display: flex; gap: 0;
-      border: 1px solid var(--border);
-      border-radius: 2rem;
-      overflow: hidden;
+    .nav.scrolled { border-bottom-color: var(--line); }
+    .nav-inner { height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { font-weight: 500; letter-spacing: -0.01em; text-decoration: none; white-space: nowrap; }
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+    .nav-links { display: flex; gap: 2px; list-style: none; }
+    .nav-links a {
+      display: block; padding: 7px 14px; border-radius: 999px;
+      font-size: 14px; color: var(--muted); text-decoration: none; white-space: nowrap;
+      transition: color .2s, background .2s;
     }
-    .lang-btn {
-      padding: 0.3rem 0.8rem;
-      font-size: 0.75rem;
-      font-family: 'Inter', sans-serif;
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      border: none;
-      background: transparent;
-      color: var(--gray);
-      cursor: pointer;
-      transition: all 0.2s;
+    .nav-links a:hover { color: var(--text); background: var(--surface); }
+    .lang { display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; margin-left: 8px; }
+    .lang button {
+      font: 500 12px 'Geist Mono', monospace; letter-spacing: .04em;
+      padding: 5px 10px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer;
+      transition: background .2s, color .2s;
     }
-    .lang-btn.active { background: var(--black); color: #fff; }
+    .lang button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
 
     /* HERO */
-    .hero { padding: 10rem 3rem 6rem; max-width: 780px; margin: 0 auto; }
-    .hero-label { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem; }
-    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; margin-bottom: 2rem; color: var(--black); }
-    .hero-bio { font-size: 1.1rem; color: #444; line-height: 1.8; max-width: 620px; font-weight: 300; }
-    .hero-bio strong { color: var(--black); font-weight: 500; }
-
-    .divider { width: 100%; height: 1px; background: var(--border); }
+    .hero { padding: 72px 0 96px; }
+    .hero-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 64px; align-items: end; }
+    .greet { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+    .hero h1 {
+      font-size: clamp(40px, 5.6vw, 72px); font-weight: 400; line-height: 1.04; letter-spacing: -0.035em;
+      max-width: 13ch; margin-bottom: 28px;
+    }
+    .hero h1 em { font-style: italic; font-weight: 300; color: var(--muted); }
+    .hero-sub { font-size: 18px; color: var(--muted); max-width: 40ch; margin-bottom: 36px; }
+    .ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+      padding: 13px 22px; border-radius: 999px; font: 500 15px 'Geist', sans-serif; text-decoration: none;
+      border: 1px solid var(--line); background: transparent; color: var(--text); cursor: pointer;
+      transition: transform .2s var(--ease), background .2s, border-color .2s;
+    }
+    .btn:hover { border-color: var(--muted); }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .btn-primary:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn svg { width: 16px; height: 16px; }
+    .portrait { border-radius: var(--radius); overflow: hidden; aspect-ratio: 4 / 5; background: var(--surface); }
+    .portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
 
     /* SECTIONS */
-    .section { max-width: 780px; margin: 0 auto; padding: 5rem 3rem; }
-    .section-header { display: flex; align-items: baseline; gap: 1.5rem; margin-bottom: 3.5rem; }
-    .section-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; }
+    section { padding: 112px 0; }
+    .rule { border-top: 1px solid var(--line); }
+    h2 { font-size: clamp(30px, 3.4vw, 44px); font-weight: 400; letter-spacing: -0.03em; line-height: 1.1; }
+    .lede { font-size: 18px; color: var(--muted); max-width: 58ch; margin-top: 18px; }
 
-    /* TIMELINE */
-    .timeline { display: flex; flex-direction: column; }
-    .timeline-item { display: grid; grid-template-columns: 140px 1fr; gap: 2rem; padding: 2.5rem 0; border-top: 1px solid var(--border); }
-    .timeline-item:last-child { border-bottom: 1px solid var(--border); }
-    .timeline-years { font-size: 0.8rem; color: var(--gray); letter-spacing: 0.04em; padding-top: 0.2rem; }
-    .timeline-content h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem; }
-    .timeline-role { font-size: 0.85rem; color: var(--accent); font-weight: 500; margin-bottom: 0.8rem; }
-    .timeline-desc { font-size: 0.95rem; color: #555; line-height: 1.7; font-weight: 300; }
+    /* WORK */
+    .work-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 80px; }
+    .work-intro { position: sticky; top: 112px; align-self: start; }
+    .pillars { display: grid; gap: 0; }
+    .pillar { padding: 32px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 40px 1fr; gap: 16px; }
+    .pillar:last-child { border-bottom: 1px solid var(--line); }
+    .pillar svg { width: 26px; height: 26px; color: var(--accent); margin-top: 2px; }
+    .pillar h3 { font-size: 20px; font-weight: 500; letter-spacing: -0.015em; margin-bottom: 8px; }
+    .pillar p { color: var(--muted); max-width: 52ch; }
+
+    /* CAREER */
+    .career { margin-top: 56px; display: grid; }
+    .job { display: grid; grid-template-columns: 180px 1fr 1.6fr; gap: 32px; padding: 28px 0; border-top: 1px solid var(--line); }
+    .job:last-child { border-bottom: 1px solid var(--line); }
+    .job-years { font-size: 13px; color: var(--muted); padding-top: 4px; }
+    .job h3 { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
+    .job-role { font-size: 15px; color: var(--accent); margin-top: 2px; }
+    .job p { color: var(--muted); }
+
+    /* AFTER HOURS */
+    .ah-head { max-width: 640px; }
+    .eyebrow { font-size: 13px; color: var(--accent); margin-bottom: 16px; }
+    .bento { margin-top: 56px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+    .tile {
+      position: relative; border-radius: var(--radius); background: var(--surface); overflow: hidden;
+      display: flex; flex-direction: column; border: 1px solid var(--line);
+    }
+    .tile-body { padding: 28px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .tile h3 { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; }
+    .tile p { color: var(--muted); font-size: 16px; max-width: 48ch; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 14px; }
+    .tag { font: 12px 'Geist Mono', monospace; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+    .tile-link {
+      display: inline-flex; align-items: center; gap: 6px; font-weight: 500; font-size: 15px; text-decoration: none; color: var(--accent);
+      width: fit-content;
+    }
+    .tile-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .tile-link svg { width: 15px; height: 15px; }
+
+    .t-pegote { grid-column: span 7; }
+    .t-pegote .media { aspect-ratio: 16 / 11; overflow: hidden; background: #1f3a33; }
+    .t-pegote .media img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; transition: transform .8s var(--ease); }
+    .t-pegote:hover .media img { transform: scale(1.025); }
+
+    .t-lamp { grid-column: span 5; background: #0b0b0c; border-color: #222; color: #ececea; }
+    .t-lamp p { color: #a2a2a6; }
+    .t-lamp .tag { border-color: #333; color: #a2a2a6; }
+    .lamp-stage { position: relative; aspect-ratio: 1 / 1; cursor: crosshair; touch-action: none; }
+    .lamp-stage canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+    .lamp-read {
+      position: absolute; left: 14px; bottom: 12px; right: 14px; display: flex; justify-content: space-between;
+      font: 12px 'Geist Mono', monospace; color: rgba(255,255,255,.78); pointer-events: none;
+      text-shadow: 0 1px 6px rgba(0,0,0,.6);
+    }
+
+    .t-monitor { grid-column: span 5; background: var(--accent-soft); }
+    .sources { display: flex; flex-wrap: wrap; gap: 8px; padding: 28px 28px 0; }
+    .source { font: 13px 'Geist Mono', monospace; padding: 8px 12px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); }
+    .source.off { color: var(--muted); border-style: dashed; background: transparent; }
+
+    .t-goals { grid-column: span 7; }
+    .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 28px 28px 0; }
+    .day {
+      border-radius: 10px; border: 1px solid var(--line); background: var(--bg); padding: 10px 8px 12px; text-align: center;
+      font: 12px 'Geist Mono', monospace; color: var(--muted);
+    }
+    .day b { display: block; font: 500 20px 'Geist', sans-serif; color: var(--text); margin-top: 2px; }
+    .day.today { border-color: var(--accent); }
+    .day.today b { color: var(--accent); }
 
     /* TALKS */
-    .talks-list { display: flex; flex-direction: column; }
-    .talk-item { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2rem; padding: 1.8rem 0; border-top: 1px solid var(--border); text-decoration: none; color: inherit; transition: opacity 0.2s; }
-    .talk-item:last-child { border-bottom: 1px solid var(--border); }
-    .talk-item:hover { opacity: 0.6; }
-    .talk-item h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 400; font-style: italic; margin-bottom: 0.3rem; }
-    .talk-item p { font-size: 0.85rem; color: var(--gray); font-weight: 300; }
-    .talk-venue { font-size: 0.8rem; color: var(--accent); white-space: nowrap; font-weight: 500; }
+    .talks { margin-top: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .talk {
+      display: flex; flex-direction: column; gap: 14px; padding: 32px; min-height: 260px;
+      border: 1px solid var(--line); border-radius: var(--radius); text-decoration: none;
+      transition: border-color .25s, transform .3s var(--ease);
+    }
+    a.talk:hover { border-color: var(--muted); transform: translateY(-2px); }
+    .talk-venue { font-size: 13px; color: var(--accent); }
+    .talk h3 { font-size: 24px; font-weight: 400; letter-spacing: -0.02em; line-height: 1.25; }
+    .talk p { color: var(--muted); font-size: 16px; margin-top: auto; }
 
-    /* PHILOSOPHY */
-    .philosophy { background: var(--light); padding: 6rem 3rem; }
-    .philosophy-inner { max-width: 780px; margin: 0 auto; }
-    .philosophy blockquote { font-family: 'Playfair Display', serif; font-size: clamp(1.3rem, 3vw, 1.9rem); font-style: italic; line-height: 1.5; letter-spacing: -0.02em; color: var(--black); margin-bottom: 2rem; position: relative; padding-left: 2rem; }
-    .philosophy blockquote::before { content: ''; position: absolute; left: 0; top: 0.3em; bottom: 0.3em; width: 3px; background: var(--accent); }
-    .philosophy-caption { font-size: 0.85rem; color: var(--gray); letter-spacing: 0.04em; padding-left: 2rem; }
+    /* QUOTE */
+    .quote { padding: 136px 0; text-align: center; }
+    .quote blockquote { font-size: clamp(28px, 4vw, 52px); font-weight: 300; letter-spacing: -0.03em; line-height: 1.18; max-width: 22ch; margin: 0 auto; }
+    .quote blockquote span { color: var(--muted); }
 
-    /* ABOUT */
-    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
-    .about-photo { width: 100%; max-width: 280px; aspect-ratio: 1; border-radius: 50%; object-fit: cover; margin-bottom: 2rem; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-    .about-text { font-size: 1rem; color: #444; line-height: 1.8; font-weight: 300; }
-    .about-text p + p { margin-top: 1rem; }
-    .about-details { display: flex; flex-direction: column; gap: 1.5rem; }
-    .about-detail-item { border-top: 1px solid var(--border); padding-top: 1rem; }
-    .about-detail-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.3rem; }
-    .about-detail-value { font-size: 0.95rem; color: var(--black); }
+    /* CONTACT */
+    .contact-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 64px; align-items: end; }
+    .mail {
+      display: inline-block; font-size: clamp(22px, 3vw, 38px); letter-spacing: -0.02em; text-decoration: none;
+      border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-top: 28px; word-break: break-all;
+      transition: border-color .2s, color .2s;
+    }
+    .mail:hover { color: var(--accent); border-color: var(--accent); }
+    .contact-actions { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+    .links { list-style: none; display: grid; gap: 0; }
+    .links a {
+      display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-top: 1px solid var(--line);
+      text-decoration: none; font-size: 18px; transition: color .2s;
+    }
+    .links li:last-child a { border-bottom: 1px solid var(--line); }
+    .links a:hover { color: var(--accent); }
+    .links svg { width: 18px; height: 18px; color: var(--muted); }
+    footer { padding: 40px 0 56px; color: var(--muted); font-size: 14px; }
+    footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
-    /* FOOTER */
-    footer { border-top: 1px solid var(--border); padding: 3rem; max-width: 780px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-    footer p { font-size: 0.8rem; color: var(--gray); }
-    .footer-links { display: flex; gap: 1.5rem; }
-    .footer-links a { font-size: 0.8rem; color: var(--gray); text-decoration: none; transition: color 0.2s; }
-    .footer-links a:hover { color: var(--accent); }
+    /* MOTION */
+    @media (prefers-reduced-motion: no-preference) {
+      .rise { opacity: 0; transform: translateY(18px); animation: rise .9s var(--ease) forwards; animation-delay: calc(var(--i, 0) * 90ms + 80ms); }
+      @keyframes rise { to { opacity: 1; transform: none; } }
+      .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s var(--ease), transform .8s var(--ease); transition-delay: calc(var(--i, 0) * 70ms); }
+      .reveal.in { opacity: 1; transform: none; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
-    /* LANG HIDDEN */
-    [data-lang] { display: none; }
-    .lang-es [data-lang="es"] { display: block; }
-    .lang-en [data-lang="en"] { display: block; }
-    .lang-es [data-lang-inline="es"] { display: inline; }
-    .lang-en [data-lang-inline="en"] { display: inline; }
-    [data-lang-inline] { display: none; }
-
-    @media (max-width: 640px) {
-      nav { padding: 1rem 1.2rem; }
+    /* RESPONSIVE */
+    @media (max-width: 960px) {
+      .hero-grid, .work-grid, .contact-grid { grid-template-columns: 1fr; gap: 48px; }
+      .work-intro { position: static; }
+      .portrait { max-width: 420px; aspect-ratio: 1 / 1; }
+      .t-pegote, .t-lamp, .t-monitor, .t-goals { grid-column: span 12; }
+      .job { grid-template-columns: 1fr; gap: 6px; }
+    }
+    @media (max-width: 720px) {
+      .wrap { padding: 0 16px; }
       .nav-links { display: none; }
-      .hero, .section { padding-left: 1.5rem; padding-right: 1.5rem; }
-      .timeline-item { grid-template-columns: 1fr; gap: 0.5rem; }
-      .about-grid { grid-template-columns: 1fr; gap: 2rem; }
-      .about-photo { max-width: 200px; }
-      .about-details { max-width: 100% !important; }
-      footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem 1.5rem; }
-      .philosophy { padding: 4rem 1.5rem; }
+      .hero { padding: 40px 0 72px; }
+      section { padding: 80px 0; }
+      .quote { padding: 96px 0; }
+      .talks { grid-template-columns: 1fr; }
+      .talk { min-height: 0; padding: 24px; }
+      .tile-body { padding: 22px; }
+      .sources, .week { padding: 22px 22px 0; }
+      .week { gap: 4px; }
+      .day { padding: 8px 2px 10px; font-size: 11px; }
+      .day b { font-size: 16px; }
     }
   </style>
 </head>
-<body class="lang-es">
+<body>
 
-  <!-- NAV -->
-  <nav>
-    <a href="#" class="nav-name">Braian Arroyo Braconi</a>
-    <div class="nav-right">
-      <ul class="nav-links">
-        <li><a href="#trayectoria"><span data-lang-inline="es">Trayectoria</span><span data-lang-inline="en">Career</span></a></li>
-        <li><a href="#charlas"><span data-lang-inline="es">Charlas</span><span data-lang-inline="en">Talks</span></a></li>
-        <li><a href="#sobre-mi"><span data-lang-inline="es">Sobre mí</span><span data-lang-inline="en">About</span></a></li>
-      </ul>
-      <div class="lang-toggle">
-        <button class="lang-btn active" onclick="setLang('es')">ES</button>
-        <button class="lang-btn" onclick="setLang('en')">EN</button>
+  <nav class="nav" id="nav">
+    <div class="wrap nav-inner">
+      <a href="#top" class="brand">Braian Arroyo Braconi</a>
+      <div class="nav-right">
+        <ul class="nav-links">
+          <li><a href="#trabajo" data-i18n="nav.work">Trabajo</a></li>
+          <li><a href="#despues-de-hora" data-i18n="nav.after">Después de hora</a></li>
+          <li><a href="#charlas" data-i18n="nav.talks">Charlas</a></li>
+        </ul>
+        <div class="lang" role="group" aria-label="Idioma / Language">
+          <button type="button" data-lang="es" aria-pressed="true">ES</button>
+          <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        </div>
       </div>
     </div>
   </nav>
 
-  <!-- HERO -->
-  <section class="hero">
-    <p class="hero-label">
-      <span data-lang-inline="es">UX Manager · Diseñador Industrial UNC · Córdoba / Buenos Aires, Argentina</span>
-      <span data-lang-inline="en">UX Manager · Industrial Designer UNC · Córdoba / Buenos Aires, Argentina</span>
-    </p>
+  <main id="top">
 
-    <h1>
-      <span data-lang-inline="es">UX Manager enfocado en la cultura, el oficio y los equipos que hacen la diferencia.</span>
-      <span data-lang-inline="en">UX Manager focused on culture, craft, and teams that ship better products.</span>
-    </h1>
-
-    <p class="hero-bio">
-      <span data-lang-inline="es">
-        Llevo más de 7 años en experiencias digitales de escala en Latinoamérica.
-        Pasé de diseñador a líder, y hoy gestiono equipos que ponen al usuario en el centro de cada decisión.
-        <strong>Trabajo en la intersección de cultura y técnica. Creo que la calidad de un producto es el reflejo de cómo trabaja el equipo que lo construye.</strong>
-      </span>
-      <span data-lang-inline="en">
-        Over 7 years building digital experiences at scale across Latin America.
-        I moved from designer to leader, and today I manage teams that put users at the center of every decision.
-        <strong>I work at the intersection of culture and craft. I believe product quality is a reflection of how the team building it works together.</strong>
-      </span>
-    </p>
-  </section>
-
-  <div class="divider"></div>
-
-  <!-- TRAYECTORIA -->
-  <section class="section" id="trayectoria">
-    <div class="section-header">
-      <h2 class="section-title">
-        <span data-lang-inline="es">La Trayectoria</span>
-        <span data-lang-inline="en">Career</span>
-      </h2>
-    </div>
-
-    <div class="timeline">
-
-      <div class="timeline-item">
-        <div class="timeline-years">Dic. 2024 — <span data-lang-inline="es">Presente</span><span data-lang-inline="en">Present</span></div>
-        <div class="timeline-content">
-          <h3>NaranjaX</h3>
-          <div class="timeline-role">UX Manager</div>
-          <p class="timeline-desc">
-            <span data-lang-inline="es">Liderando el área de experiencia de usuario en una de las fintech más relevantes de Argentina. Construyendo cultura de diseño, procesos y productos que impactan en la vida financiera de millones de personas.</span>
-            <span data-lang-inline="en">Leading the UX area at one of Argentina's most relevant fintechs. Building design culture, processes, and products that impact the financial lives of millions.</span>
-          </p>
-        </div>
-      </div>
-
-      <div class="timeline-item">
-        <div class="timeline-years">Ago. 2021 — <span data-lang-inline="es">Presente</span><span data-lang-inline="en">Present</span></div>
-        <div class="timeline-content">
-          <h3>DesignCore</h3>
-          <div class="timeline-role"><span data-lang-inline="es">Fundador</span><span data-lang-inline="en">Founder</span></div>
-          <p class="timeline-desc">
-            <span data-lang-inline="es">Fundé DesignCore, una academia de UX orientada a formar y potenciar diseñadores en Latinoamérica. Un proyecto en paralelo que creció con mucha fuerza, combinando enseñanza, comunidad y criterio de oficio.</span>
-            <span data-lang-inline="en">Founded DesignCore, a UX academy focused on training and empowering designers across Latin America. A side project that grew significantly, combining teaching, community, and a strong sense of craft.</span>
-          </p>
-        </div>
-      </div>
-
-      <div class="timeline-item">
-        <div class="timeline-years">Nov. 2021 — 2024</div>
-        <div class="timeline-content">
-          <h3>PedidosYa</h3>
-          <div class="timeline-role">UX Lead</div>
-          <p class="timeline-desc">
-            <span data-lang-inline="es">Más de dos años escalando responsabilidades en una de las plataformas de delivery más grandes de la región. Coordiné equipos multidisciplinarios para diseñar experiencias de alta demanda.</span>
-            <span data-lang-inline="en">Over two years growing responsibilities at one of the region's largest delivery platforms. Led multidisciplinary teams designing high-demand, low-error-tolerance experiences.</span>
-          </p>
-        </div>
-      </div>
-
-      <div class="timeline-item">
-        <div class="timeline-years">2018 — Nov. 2021</div>
-        <div class="timeline-content">
-          <h3>Mercado Libre</h3>
-          <div class="timeline-role">UX Designer → Sr. UX Designer</div>
-          <p class="timeline-desc">
-            <span data-lang-inline="es">Mis primeros años de carrera en el ecosistema de e-commerce más grande de Latinoamérica. Aprendí el oficio con rigor y entendí que el diseño de escala requiere tanto criterio como velocidad.</span>
-            <span data-lang-inline="en">My early career years at Latin America's largest e-commerce ecosystem. I learned the craft rigorously and understood that design at scale demands both judgment and speed.</span>
-          </p>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <!-- CHARLAS -->
-  <section class="section" id="charlas">
-    <div class="section-header">
-      <h2 class="section-title">
-        <span data-lang-inline="es">Charlas</span>
-        <span data-lang-inline="en">Talks</span>
-      </h2>
-    </div>
-
-    <div class="talks-list">
-      <a href="https://www.fadu.uba.ar/ux-uba/" target="_blank" class="talk-item">
+    <!-- HERO -->
+    <header class="hero" id="sobre-mi">
+      <div class="wrap hero-grid">
         <div>
-          <h3>
-            <span data-lang-inline="es">Toma de decisiones institucionales: El Diseño UX como escenario de conflictos</span>
-            <span data-lang-inline="en">Institutional Decision-Making: UX Design as a Conflict Arena</span>
-          </h3>
-          <p>
-            <span data-lang-inline="es">1º Encuentro de UX, FADU — Universidad de Buenos Aires. Con Emiliano Mallon Noya. Incluido en el libro colectivo del evento.</span>
-            <span data-lang-inline="en">1st UX Conference, FADU — University of Buenos Aires. With Emiliano Mallon Noya. Published in the conference anthology.</span>
-          </p>
+          <p class="greet mono rise" style="--i:0" id="greet">Hola</p>
+          <h1 class="rise" style="--i:1" data-i18n="hero.title" data-html>Lidero equipos de diseño y sigo haciendo cosas <em>con las manos.</em></h1>
+          <p class="hero-sub rise" style="--i:2" data-i18n="hero.sub">UX Manager en NaranjaX. Antes, Mercado Libre y PedidosYa. Diseñador industrial de la UNC, en Córdoba.</p>
+          <div class="ctas rise" style="--i:3">
+            <a class="btn btn-primary" href="mailto:braianarroyobraconi@gmail.com" data-i18n="cta.mail">Escribime</a>
+            <a class="btn" href="#despues-de-hora" data-i18n="cta.after">Ver proyectos personales</a>
+          </div>
         </div>
-        <span class="talk-venue">FADU UBA</span>
-      </a>
-      <a href="#" class="talk-item">
-        <div>
-          <h3>
-            <span data-lang-inline="es">El futuro de las experiencias de usuario</span>
-            <span data-lang-inline="en">The Future of User Experiences</span>
-          </h3>
-          <p>
-            <span data-lang-inline="es">Stanford University. Exploración sobre cómo la tecnología y el diseño están redefiniendo la forma en que las personas interactúan con productos y servicios.</span>
-            <span data-lang-inline="en">Stanford University. Exploring how technology and design are redefining how people interact with products and services.</span>
-          </p>
-        </div>
-        <span class="talk-venue">Stanford</span>
-      </a>
-    </div>
-  </section>
-
-  <!-- FILOSOFÍA -->
-  <div class="philosophy">
-    <div class="philosophy-inner">
-      <blockquote>
-        <span data-lang-inline="es">"Diseño para las personas. Lidero para el equipo. Construyo para lo que viene."</span>
-        <span data-lang-inline="en">"Design for people. Lead for the team. Build for what's next."</span>
-      </blockquote>
-      <p class="philosophy-caption">— Braian Arroyo Braconi</p>
-    </div>
-  </div>
-
-  <!-- SOBRE MÍ -->
-  <section class="section" id="sobre-mi">
-    <div class="section-header">
-      <h2 class="section-title">
-        <span data-lang-inline="es">Sobre mí</span>
-        <span data-lang-inline="en">About</span>
-      </h2>
-    </div>
-
-    <div class="about-grid">
-<div>
- <img src="/82b8d43b-ae3f-41b6-9bbe-b4ae07cde264 2.JPG" alt="Braian Arroyo Braconi" class="about-photo"/>
- </div>
-      <div class="about-text">
-        <span data-lang-inline="es">
-          <p>Soy UX Manager con base en Córdoba y Buenos Aires. Diseñador Industrial de la UNC que encontró en la experiencia de usuario el lugar donde el diseño impacta a más personas.</p>
-          <p>A lo largo de mi carrera en Mercado Libre, PedidosYa, DesignCore y NaranjaX aprendí que el diseño de calidad no depende solo de talento — depende de cómo están configurados los equipos, los procesos y la cultura. Eso es lo que intento transformar.</p>
-          <p>Sigo siendo alguien que prueba, arma, rompe y aprende. El craft no desaparece cuando te convertís en manager — se transforma en el estándar que le pedís al equipo. Hoy tengo especial foco en cómo la IA está redefiniendo el proceso de diseño, los roles, y la relación entre diseñadores y producto.</p>
-        </span>
-        <span data-lang-inline="en">
-          <p>I'm a UX Manager based in Córdoba and Buenos Aires. An Industrial Designer from UNC who found in user experience the place where design impacts the most people.</p>
-          <p>Throughout my career at Mercado Libre, PedidosYa, DesignCore, and NaranjaX I learned that quality design doesn't depend solely on talent — it depends on how teams, processes, and culture are configured. That's what I work to transform.</p>
-          <p>I'm still someone who experiments, builds, breaks things down, and learns. Craft doesn't disappear when you become a manager — it transforms into the standard you demand from your team. Today I'm especially focused on how AI is redefining the design process, roles, and the relationship between designers and product.</p>
-        </span>
-      </div>
-    </div>
-    <div class="about-details" style="max-width:780px;margin:0 auto;">
-        <div class="about-detail-item">
-          <div class="about-detail-label"><span data-lang-inline="es">Ubicación</span><span data-lang-inline="en">Location</span></div>
-          <div class="about-detail-value">Córdoba / Buenos Aires, Argentina</div>
-        </div>
-        <div class="about-detail-item">
-          <div class="about-detail-label"><span data-lang-inline="es">Rol actual</span><span data-lang-inline="en">Current role</span></div>
-          <div class="about-detail-value">UX Manager — NaranjaX</div>
-        </div>
-        <div class="about-detail-item">
-          <div class="about-detail-label"><span data-lang-inline="es">Experiencia</span><span data-lang-inline="en">Experience</span></div>
-          <div class="about-detail-value">8+ <span data-lang-inline="es">años en UX</span><span data-lang-inline="en">years in UX</span></div>
-        </div>
-        <div class="about-detail-item">
-          <div class="about-detail-label"><span data-lang-inline="es">Formación</span><span data-lang-inline="en">Education</span></div>
-          <div class="about-detail-value"><span data-lang-inline="es">Diseño Industrial, UNC</span><span data-lang-inline="en">Industrial Design, UNC</span></div>
-        </div>
-        <div class="about-detail-item">
-          <div class="about-detail-label">LinkedIn</div>
-          <div class="about-detail-value"><a href="https://linkedin.com/in/braianarroyobraconi" target="_blank" style="color:var(--accent);text-decoration:none;">braianarroyobraconi</a></div>
+        <div class="portrait rise" style="--i:2">
+          <img src="/assets/img/braian.webp" width="900" height="1200" alt="Braian Arroyo Braconi sonriendo, sentado en una oficina con plantas" data-i18n-alt="hero.alt" fetchpriority="high"/>
         </div>
       </div>
+    </header>
+
+    <!-- WORK -->
+    <section class="rule" id="trabajo">
+      <div class="wrap work-grid">
+        <div class="work-intro reveal">
+          <h2 data-i18n="work.title">Qué hago en el trabajo</h2>
+          <p class="lede" data-i18n="work.lede">Lidero el área de UX en NaranjaX, una de las fintech más grandes de Argentina. Mi trabajo es que el equipo diseñe mejor: con criterio, con buenos procesos y con un lugar donde dé ganas de trabajar.</p>
+        </div>
+        <div class="pillars">
+          <article class="pillar reveal">
+            <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M164.47,195.63a8,8,0,0,1-6.7,12.37H10.23a8,8,0,0,1-6.7-12.37,95.83,95.83,0,0,1,47.22-37.71,60,60,0,1,1,66.5,0A95.83,95.83,0,0,1,164.47,195.63Zm87.91-.15a95.87,95.87,0,0,0-47.13-37.56A60,60,0,0,0,144.7,54.59a4,4,0,0,0-1.33,6A75.83,75.83,0,0,1,147,150.53a4,4,0,0,0,1.07,5.53,112.32,112.32,0,0,1,29.85,30.83,23.92,23.92,0,0,1,3.65,16.47,4,4,0,0,0,3.95,4.64h60.3a8,8,0,0,0,7.73-5.93A8.22,8.22,0,0,0,252.38,195.48Z"/></svg>
+            <div>
+              <h3 data-i18n="p1.t">Equipo y cultura</h3>
+              <p data-i18n="p1.d">Armo y acompaño al equipo: contrataciones, carrera, feedback y rituales. Creo que la calidad de un producto refleja cómo trabaja el equipo que lo hace.</p>
+            </div>
+          </article>
+          <article class="pillar reveal">
+            <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></svg>
+            <div>
+              <h3 data-i18n="p2.t">Proceso y criterio</h3>
+              <p data-i18n="p2.d">Defino cómo diseñamos: estándares de calidad, investigación con usuarios y cómo decidimos junto a producto y tecnología. El oficio no desaparece cuando sos manager: se vuelve la vara que le pedís al equipo.</p>
+            </div>
+          </article>
+          <article class="pillar reveal">
+            <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144ZM152,48h16V64a8,8,0,0,0,16,0V48h16a8,8,0,0,0,0-16H184V16a8,8,0,0,0-16,0V32H152a8,8,0,0,0,0,16Zm88,32h-8V72a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0V96h8a8,8,0,0,0,0-16Z"/></svg>
+            <div>
+              <h3 data-i18n="p3.t">IA en el proceso de diseño</h3>
+              <p data-i18n="p3.d">Pruebo cómo la IA cambia el trabajo de diseño, los roles y la relación con producto. Armo herramientas propias para que el equipo la use en el día a día.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAREER -->
+    <section class="rule" id="trayectoria">
+      <div class="wrap">
+        <h2 class="reveal" data-i18n="career.title">Trayectoria</h2>
+        <div class="career">
+          <div class="job reveal">
+            <div class="job-years mono" data-i18n="j1.y">Dic 2024 - hoy</div>
+            <div><h3>NaranjaX</h3><div class="job-role">UX Manager</div></div>
+            <p data-i18n="j1.d">Lidero UX en una fintech que usan millones de personas en Argentina. Construyo cultura de diseño, procesos y producto.</p>
+          </div>
+          <div class="job reveal">
+            <div class="job-years mono" data-i18n="j2.y">Ago 2021 - hoy</div>
+            <div><h3>DesignCore</h3><div class="job-role" data-i18n="j2.r">Fundador</div></div>
+            <p data-i18n="j2.d">Academia de UX para formar diseñadores en Latinoamérica. Empezó como proyecto en paralelo y creció con enseñanza, comunidad y oficio.</p>
+          </div>
+          <div class="job reveal">
+            <div class="job-years mono">Nov 2021 - 2024</div>
+            <div><h3>PedidosYa</h3><div class="job-role">UX Lead</div></div>
+            <p data-i18n="j3.d">Coordiné equipos multidisciplinarios en una de las plataformas de delivery más grandes de la región, en experiencias de alta demanda y poco margen de error.</p>
+          </div>
+          <div class="job reveal">
+            <div class="job-years mono">2018 - Nov 2021</div>
+            <div><h3>Mercado Libre</h3><div class="job-role">UX Designer, Sr. UX Designer</div></div>
+            <p data-i18n="j4.d">Aprendí el oficio con rigor en el e-commerce más grande de Latinoamérica. Diseñar a escala pide tanto criterio como velocidad.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AFTER HOURS -->
+    <section class="rule" id="despues-de-hora">
+      <div class="wrap">
+        <div class="ah-head reveal">
+          <p class="eyebrow mono" data-i18n="ah.eyebrow">Proyectos personales</p>
+          <h2 data-i18n="ah.title">Después de hora</h2>
+          <p class="lede" data-i18n="ah.lede">Lo que hago cuando cierro la compu del trabajo: un juego, herramientas que uso y electrónica. Casi todo con código e IA.</p>
+        </div>
+
+        <div class="bento">
+          <article class="tile t-pegote reveal">
+            <a class="media" href="https://pegote.club" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+              <img src="/assets/img/pegote.webp" width="1080" height="1350" loading="lazy" alt=""/>
+            </a>
+            <div class="tile-body">
+              <h3>Pegote</h3>
+              <p data-i18n="pg.d">Un juego web de stickers y collage. Abrís sobres, despegás stickers con una animación muy física y armás hojas, cuadernos e historias para Instagram. Lo diseño y lo programo yo. Está en alfa abierta.</p>
+              <a class="tile-link" href="https://pegote.club" target="_blank" rel="noopener"><span data-i18n="pg.cta">Jugar en pegote.club</span>
+                <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+              <div class="tags"><span class="tag">Canvas 2D</span><span class="tag">Supabase</span><span class="tag">PostHog</span></div>
+            </div>
+          </article>
+
+          <article class="tile t-lamp reveal" style="--i:1">
+            <div class="lamp-stage" id="lampStage">
+              <canvas id="lamp" width="80" height="80" role="img" aria-label="Patrón generativo de la lámpara viva" data-i18n-aria="lamp.aria"></canvas>
+              <div class="lamp-read"><span id="lampLight">luz 70%</span><span id="lampTemp">temp 40%</span></div>
+            </div>
+            <div class="tile-body">
+              <h3 data-i18n="lamp.t">Lámpara viva</h3>
+              <p data-i18n="lamp.d">Un ESP32 lee un sensor de luz y uno de temperatura. Con más luz, el patrón se acelera y cambia de forma; con calor, cambia de color. Esta versión corre en tu navegador: mové el mouse o el dedo sobre ella.</p>
+              <div class="tags"><span class="tag">ESP32</span><span class="tag">Arduino</span><span class="tag">Processing</span></div>
+            </div>
+          </article>
+
+          <article class="tile t-monitor reveal">
+            <div class="sources" aria-hidden="true">
+              <span class="source">Google News</span><span class="source">GDELT</span><span class="source">Mastodon</span><span class="source">Hacker News</span><span class="source off">Reddit</span><span class="source off">YouTube</span><span class="source off">Bluesky</span>
+            </div>
+            <div class="tile-body">
+              <h3>Social Monitor</h3>
+              <p data-i18n="sm.d">Junta lo que se publica sobre una marca en noticias, redes y foros. Claude lo clasifica por relevancia, sentimiento, temas y urgencia, y todos los lunes arma un reporte.</p>
+              <div class="tags"><span class="tag">Next.js</span><span class="tag">Supabase</span><span class="tag">Claude</span></div>
+            </div>
+          </article>
+
+          <article class="tile t-goals reveal" style="--i:1">
+            <div class="week" id="week" aria-hidden="true"></div>
+            <div class="tile-body">
+              <h3>WeeklyGoals</h3>
+              <p data-i18n="wg.d">Una app para la barra de menú de la Mac: anoto los objetivos de la semana día por día y me avisa para que no se me pasen. La hice para mí y la uso todos los días.</p>
+              <div class="tags"><span class="tag">SwiftUI</span><span class="tag">macOS</span></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- TALKS -->
+    <section class="rule" id="charlas">
+      <div class="wrap">
+        <h2 class="reveal" data-i18n="talks.title">Charlas</h2>
+        <div class="talks">
+          <a class="talk reveal" href="https://www.fadu.uba.ar/ux-uba/" target="_blank" rel="noopener">
+            <span class="talk-venue mono">FADU UBA</span>
+            <h3 data-i18n="t1.t">Toma de decisiones institucionales: el diseño UX como escenario de conflictos</h3>
+            <p data-i18n="t1.d">1er Encuentro de UX de la Universidad de Buenos Aires, con Emiliano Mallon Noya. Publicada en el libro del encuentro.</p>
+          </a>
+          <div class="talk reveal" style="--i:1">
+            <span class="talk-venue mono">Stanford University</span>
+            <h3 data-i18n="t2.t">El futuro de las experiencias de usuario</h3>
+            <p data-i18n="t2.d">Cómo la tecnología y el diseño están cambiando la forma en que las personas usan productos y servicios.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUOTE -->
+    <div class="rule quote">
+      <div class="wrap">
+        <blockquote class="reveal" data-i18n="quote" data-html>Diseño para las personas. <span>Lidero para el equipo.</span> Construyo para lo que viene.</blockquote>
+      </div>
     </div>
-  </section>
 
-  <div class="divider"></div>
+    <!-- CONTACT -->
+    <section class="rule" id="contacto">
+      <div class="wrap contact-grid">
+        <div class="reveal">
+          <h2 data-i18n="contact.title">Hablemos</h2>
+          <p class="lede" data-i18n="contact.lede">Sobre equipos de diseño, IA en el proceso, DesignCore o algún proyecto raro.</p>
+          <a class="mail" href="mailto:braianarroyobraconi@gmail.com">braianarroyobraconi@gmail.com</a>
+          <div class="contact-actions">
+            <button class="btn" type="button" id="copy">
+              <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"/></svg>
+              <span id="copyLabel" data-i18n="contact.copy">Copiar email</span>
+            </button>
+          </div>
+        </div>
+        <ul class="links reveal" style="--i:1">
+          <li><a href="https://linkedin.com/in/braianarroyobraconi" target="_blank" rel="noopener">LinkedIn
+            <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a></li>
+          <li><a href="https://pegote.club" target="_blank" rel="noopener">Pegote
+            <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
 
-  <footer>
-    <p>© 2026 Braian Arroyo Braconi</p>
-    <div class="footer-links">
-      <a href="https://linkedin.com/in/braianarroyobraconi" target="_blank">LinkedIn</a>
-      <a href="mailto:braianarroyobraconi@gmail.com">Email</a>
+  <footer class="rule">
+    <div class="wrap">
+      <span>© 2026 Braian Arroyo Braconi</span>
+      <span data-i18n="footer">Hecho a mano, con un poco de ayuda.</span>
     </div>
   </footer>
 
   <script>
-    function setLang(lang) {
-      document.body.className = 'lang-' + lang;
-      document.documentElement.lang = lang;
-      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelector('.lang-btn[onclick="setLang(\'' + lang + '\')"]').classList.add('active');
-      // Update meta description
-      const desc = lang === 'es'
-        ? 'UX Manager focused on culture, craft, and teams that ship better products. Basado en Córdoba / Buenos Aires, Argentina.'
-        : 'UX Manager focused on culture, craft, and teams that ship better products. Based in Córdoba / Buenos Aires, Argentina.';
-      document.querySelector('meta[name="description"]').setAttribute('content', desc);
-    }
-  </script>
+    // Icons above: Phosphor Icons (fill weight), MIT license.
 
+    const I18N = {
+      en: {
+        'nav.work': 'Work', 'nav.after': 'After hours', 'nav.talks': 'Talks',
+        'hero.title': 'I lead design teams and still make things <em>with my hands.</em>',
+        'hero.sub': 'UX Manager at NaranjaX. Before that, Mercado Libre and PedidosYa. Industrial designer from UNC, based in Córdoba.',
+        'hero.alt': 'Braian Arroyo Braconi smiling, sitting in an office with plants',
+        'cta.mail': 'Email me', 'cta.after': 'See personal projects',
+        'work.title': 'What I do at work',
+        'work.lede': 'I lead UX at NaranjaX, one of the largest fintechs in Argentina. My job is helping the team design better: with judgment, good processes and a place people want to work in.',
+        'p1.t': 'Team and culture',
+        'p1.d': 'I build and support the team: hiring, career growth, feedback and rituals. I believe product quality reflects how the team behind it works.',
+        'p2.t': 'Process and judgment',
+        'p2.d': 'I shape how we design: quality standards, user research and how we make decisions with product and engineering. Craft doesn\'t go away when you become a manager. It becomes the bar you set for the team.',
+        'p3.t': 'AI in the design process',
+        'p3.d': 'I explore how AI is changing design work, roles and the relationship with product. I build my own tools so the team can use it every day.',
+        'career.title': 'Career',
+        'j1.y': 'Dec 2024 - now', 'j1.d': 'Leading UX at a fintech used by millions of people in Argentina. Building design culture, processes and product.',
+        'j2.y': 'Aug 2021 - now', 'j2.r': 'Founder', 'j2.d': 'A UX academy training designers across Latin America. It started as a side project and grew through teaching, community and craft.',
+        'j3.d': 'Led multidisciplinary teams at one of the region\'s largest delivery platforms, on high-demand experiences with little room for error.',
+        'j4.d': 'Learned the craft rigorously at Latin America\'s largest e-commerce. Design at scale takes as much judgment as speed.',
+        'ah.eyebrow': 'Personal projects', 'ah.title': 'After hours',
+        'ah.lede': 'What I make once the work laptop is closed: a game, tools I use and electronics. Almost all of it with code and AI.',
+        'pg.d': 'A web game about stickers and collage. Open packs, peel stickers with a very physical animation and make pages, notebooks and Instagram stories. I design and build it myself. It\'s in open alpha (in Spanish).',
+        'pg.cta': 'Play at pegote.club',
+        'lamp.t': 'Living lamp', 'lamp.aria': 'Generative pattern from the living lamp',
+        'lamp.d': 'An ESP32 reads a light sensor and a temperature sensor. More light makes the pattern speed up and change shape; heat shifts its color. This version runs in your browser: move your mouse or finger over it.',
+        'sm.d': 'Collects what gets published about a brand across news, social networks and forums. Claude sorts it by relevance, sentiment, topics and urgency, and every Monday it writes a report.',
+        'wg.d': 'A Mac menu bar app: I write down the week\'s goals day by day and it reminds me so nothing slips. I made it for myself and use it every day.',
+        'talks.title': 'Talks',
+        't1.t': 'Institutional decision-making: UX design as a conflict arena',
+        't1.d': '1st UX Conference at the University of Buenos Aires, with Emiliano Mallon Noya. Published in the conference book.',
+        't2.t': 'The future of user experiences',
+        't2.d': 'How technology and design are changing the way people use products and services.',
+        'quote': 'Design for people. <span>Lead for the team.</span> Build for what\'s next.',
+        'contact.title': 'Let\'s talk', 'contact.lede': 'About design teams, AI in the process, DesignCore or some odd project.',
+        'contact.copy': 'Copy email', 'contact.copied': 'Copied',
+        'footer': 'Made by hand, with a little help.',
+        'greet': ['Good morning', 'Good afternoon', 'Good evening'],
+        'light': 'light', 'temp': 'temp'
+      },
+      es: { 'contact.copied': 'Copiado', 'greet': ['Buen día', 'Buenas tardes', 'Buenas noches'], 'light': 'luz', 'temp': 'temp' }
+    };
+
+    // Capture the Spanish copy already in the markup so switching back restores it.
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const k = el.dataset.i18n;
+      I18N.es[k] = el.hasAttribute('data-html') ? el.innerHTML : el.textContent;
+    });
+    document.querySelectorAll('[data-i18n-alt]').forEach(el => { I18N.es[el.dataset.i18nAlt] = el.alt; });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => { I18N.es[el.dataset.i18nAria] = el.getAttribute('aria-label'); });
+
+    let lang = 'es';
+    function t(k) { return (I18N[lang] && I18N[lang][k]) ?? I18N.es[k]; }
+
+    function greet() {
+      const h = new Date().getHours();
+      document.getElementById('greet').textContent = t('greet')[h >= 5 && h < 13 ? 0 : h >= 13 && h < 20 ? 1 : 2];
+    }
+
+    function setLang(l) {
+      lang = l;
+      document.documentElement.lang = l;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const v = t(el.dataset.i18n);
+        if (el.hasAttribute('data-html')) el.innerHTML = v; else el.textContent = v;
+      });
+      document.querySelectorAll('[data-i18n-alt]').forEach(el => { el.alt = t(el.dataset.i18nAlt); });
+      document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+      document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+      greet();
+      renderWeek();
+      lampLabels();
+      try { localStorage.setItem('lang', l); } catch (e) {}
+    }
+    document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+    // Nav border once the page scrolls (IntersectionObserver on the hero, no scroll listener).
+    const nav = document.getElementById('nav');
+    new IntersectionObserver(([e]) => nav.classList.toggle('scrolled', !e.isIntersecting), { rootMargin: '-64px 0px 0px 0px', threshold: 0.98 })
+      .observe(document.querySelector('.greet'));
+
+    // Scroll reveal.
+    const io = new IntersectionObserver(entries => entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    }), { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Copy email.
+    document.getElementById('copy').addEventListener('click', async () => {
+      const label = document.getElementById('copyLabel');
+      try {
+        await navigator.clipboard.writeText('braianarroyobraconi@gmail.com');
+        label.textContent = t('contact.copied');
+        setTimeout(() => { label.textContent = t('contact.copy'); }, 1800);
+      } catch (e) {
+        window.location.href = 'mailto:braianarroyobraconi@gmail.com';
+      }
+    });
+
+    // WeeklyGoals: the current week, Monday first, today highlighted.
+    function renderWeek() {
+      const names = lang === 'en' ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+      const now = new Date();
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+      document.getElementById('week').innerHTML = names.map((n, i) => {
+        const d = new Date(monday); d.setDate(monday.getDate() + i);
+        const today = d.toDateString() === now.toDateString();
+        return `<div class="day${today ? ' today' : ''}">${n}<b>${d.getDate()}</b></div>`;
+      }).join('');
+    }
+
+    // ---- Living lamp: port of the Processing sketch (lampara_viva.pde) ----
+    const lamp = (() => {
+      const cv = document.getElementById('lamp');
+      const ctx = cv.getContext('2d');
+      const N = 80;
+      const img = ctx.createImageData(N, N);
+      const stage = document.getElementById('lampStage');
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Classic Perlin noise, scaled to 0..1 like Processing's noise().
+      const p = new Uint8Array(512);
+      { const b = [...Array(256).keys()]; for (let i = 255; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [b[i], b[j]] = [b[j], b[i]]; } for (let i = 0; i < 512; i++) p[i] = b[i & 255]; }
+      const fade = x => x * x * x * (x * (x * 6 - 15) + 10);
+      const lerp = (a, b, x) => a + (b - a) * x;
+      const grad = (h, x, y, z) => { const u = (h & 15) < 8 ? x : y, v = (h & 15) < 4 ? y : ((h & 15) === 12 || (h & 15) === 14) ? x : z; return ((h & 1) ? -u : u) + ((h & 2) ? -v : v); };
+      function noise(x, y, z) {
+        const X = Math.floor(x) & 255, Y = Math.floor(y) & 255, Z = Math.floor(z) & 255;
+        x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+        const u = fade(x), v = fade(y), w = fade(z);
+        const A = p[X] + Y, AA = p[A] + Z, AB = p[A + 1] + Z, B = p[X + 1] + Y, BA = p[B] + Z, BB = p[B + 1] + Z;
+        const r = lerp(lerp(lerp(grad(p[AA], x, y, z), grad(p[BA], x - 1, y, z), u), lerp(grad(p[AB], x, y - 1, z), grad(p[BB], x - 1, y - 1, z), u), v),
+          lerp(lerp(grad(p[AA + 1], x, y, z - 1), grad(p[BA + 1], x - 1, y, z - 1), u), lerp(grad(p[AB + 1], x, y - 1, z - 1), grad(p[BB + 1], x - 1, y - 1, z - 1), u), v), w);
+        return (r + 1) / 2;
+      }
+
+      let light = 72, temp = 38, t = 0, cur = 0, next = 0, blend = 0, running = false, raf = 0;
+      const dist = (x, y) => Math.hypot(x - 40, y - 40);
+      function pattern(m, nx, ny, x, y) {
+        switch (m) {
+          case 0: return noise(nx, ny, t);
+          case 1: return Math.sin(nx * 4 + t) * Math.cos(ny * 4 + t);
+          case 2: return Math.sin(dist(x, y) * 0.4 + t);
+          case 3: return noise(nx * 2, ny * 2, t * 1.5);
+          case 4: return Math.sin(nx * 3 + Math.sin(t) * 2);
+          case 5: return Math.cos(ny * 4 + t);
+          case 6: return noise(nx + Math.sin(t) * 2, ny + Math.cos(t) * 2, t);
+          case 7: return Math.sin((nx + ny) * 4 + t);
+          case 8: return Math.cos(dist(x, y) * 0.3 + t);
+          case 9: return noise(nx * 4, ny * 4, t * 0.5) * Math.sin(t);
+        }
+        return 0;
+      }
+      // HSB with all channels on a 0..255 scale, as in colorMode(HSB, 255).
+      function hsb(h, s, b) {
+        h = ((h % 255) + 255) % 255 / 255 * 6; s = Math.max(0, Math.min(1, s / 255)); b = Math.max(0, Math.min(1, b / 255));
+        const i = Math.floor(h), f = h - i, P = b * (1 - s), Q = b * (1 - s * f), T = b * (1 - s * (1 - f));
+        const [r, g, bl] = [[b, T, P], [Q, b, P], [P, b, T], [P, Q, b], [T, P, b], [b, P, Q]][i % 6];
+        return [r * 255, g * 255, bl * 255];
+      }
+
+      function step() {
+        let ln = light / 100;
+        ln = ln < 0.5 ? 0 : (ln - 0.5) / 0.5;
+        const stress = ln ** 3;
+        t += stress * 0.3 + 0.004; // small floor so the idle state still breathes
+        if (Math.random() < 0.001 + stress * 0.02 && blend === 0) { next = (Math.random() * 10) | 0; blend = 0.001; }
+        if (blend > 0) { blend += 0.02; if (blend >= 1) { cur = next; blend = 0; } }
+        const hueBase = 25 + (temp / 100) ** 1.5 * 175;
+        const sat = 200 - stress * 80;
+        const d = img.data;
+        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+          const nx = x * 0.08, ny = y * 0.08;
+          const v1 = pattern(cur, nx, ny, x, y);
+          const v = blend > 0 ? lerp(v1, pattern(next, nx, ny, x, y), blend) : v1;
+          const sh = Math.abs(v) ** 1.8;
+          const [r, g, b] = hsb(hueBase + (sh * 80 - 40), sat, sh * 255);
+          const o = (y * N + x) * 4; d[o] = r; d[o + 1] = g; d[o + 2] = b; d[o + 3] = 255;
+        }
+        ctx.putImageData(img, 0, 0);
+      }
+      function loop() { step(); raf = requestAnimationFrame(loop); }
+      function start() { if (!running && !reduce) { running = true; loop(); } }
+      function stop() { running = false; cancelAnimationFrame(raf); }
+
+      function labels() {
+        document.getElementById('lampLight').textContent = `${t_('light')} ${Math.round(light)}%`;
+        document.getElementById('lampTemp').textContent = `${t_('temp')} ${Math.round(temp)}%`;
+      }
+      const t_ = k => t(k);
+      function input(e) {
+        const r = stage.getBoundingClientRect();
+        light = Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100));
+        temp = Math.max(0, Math.min(100, 100 - (e.clientY - r.top) / r.height * 100));
+        labels();
+        if (reduce) step();
+      }
+      stage.addEventListener('pointermove', input);
+      stage.addEventListener('pointerdown', input);
+
+      new IntersectionObserver(([e]) => e.isIntersecting ? start() : stop()).observe(stage);
+      step();
+      return { labels };
+    })();
+    function lampLabels() { lamp.labels(); }
+
+    let saved = null;
+    try { saved = localStorage.getItem('lang'); } catch (e) {}
+    setLang(saved === 'en' ? 'en' : 'es');
+  </script>
 </body>
 </html>
