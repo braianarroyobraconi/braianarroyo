@@ -7,7 +7,7 @@ const SPANISH = new Set([
   'HN', 'MX', 'NI', 'PA', 'PE', 'PR', 'PY', 'SV', 'UY', 'VE',
 ]);
 
-export const config = { matcher: '/' };
+export const config = { matcher: ['/', '/projects/:path*'] };
 
 export default function middleware(request) {
   const { country } = geolocation(request);

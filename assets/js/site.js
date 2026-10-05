@@ -1,0 +1,229 @@
+// Shared behavior for every page: language (ES/EN), section pill, copy-email, and the motion system
+// (GSAP + ScrollTrigger, Lenis as the only smooth-scroll engine).
+// Pages declare their English copy in window.I18N_EN and register language hooks in window.SITE_HOOKS
+// before this file runs. Spanish is the markup itself.
+(() => {
+  const COMMON_EN = {
+    'nav.work': 'Work', 'nav.after': 'After hours', 'nav.contact': 'Contact',
+    'back': 'Back', 'contact.copy': 'Copy email', 'contact.copied': 'Copied',
+    'cta.title': 'Let\'s talk.', 'cta.button': 'Write to me',
+    'greet': ['Good morning', 'Good afternoon', 'Good evening'],
+    'light': 'light', 'temp': 'temp', 'lamp.hint': 'Move your cursor', 'lamp.hintTouch': 'Touch and drag',
+    'footer.top': 'Back to top'
+  };
+  const I18N = {
+    en: Object.assign({}, COMMON_EN, window.I18N_EN || {}),
+    es: { 'contact.copied': 'Copiado', 'greet': ['Buen día', 'Buenas tardes', 'Buenas noches'], 'light': 'luz', 'temp': 'temp', 'lamp.hint': 'Mové el cursor', 'lamp.hintTouch': 'Tocá y arrastrá' }
+  };
+
+  // Capture the Spanish copy from the markup so switching back restores it.
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n;
+    if (!(k in I18N.es)) I18N.es[k] = el.hasAttribute('data-html') ? el.innerHTML : el.textContent;
+  });
+  document.querySelectorAll('[data-i18n-alt]').forEach(el => { I18N.es[el.dataset.i18nAlt] = el.alt; });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => { I18N.es[el.dataset.i18nAria] = el.getAttribute('aria-label'); });
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let lang = 'es';
+  const t = k => (I18N[lang] && I18N[lang][k]) ?? I18N.es[k];
+  const hooks = window.SITE_HOOKS || [];
+  window.Site = { t, get lang() { return lang; }, reduce };
+
+  function greet() {
+    const el = document.getElementById('greet');
+    if (!el) return;
+    const h = new Date().getHours();
+    el.textContent = t('greet')[h >= 5 && h < 13 ? 0 : h >= 13 && h < 20 ? 1 : 2];
+  }
+
+  // ---- Section pill: the active tab is a restyled copy of the list, clipped to the current link ----
+  const pill = document.getElementById('pill');
+  const pillList = pill && pill.querySelector('.list');
+  const pillCopy = pill && pill.querySelector('.active-copy');
+  let activeSec = null;
+  function syncPill() {
+    if (!pill) return;
+    pill.setAttribute('aria-label', lang === 'en' ? 'Sections' : 'Secciones');
+    pillCopy.innerHTML = '';
+    const clone = pillList.cloneNode(true);
+    clone.querySelectorAll('a').forEach(a => { a.removeAttribute('href'); a.setAttribute('tabindex', '-1'); });
+    pillCopy.appendChild(clone);
+    placePill();
+  }
+  function placePill() {
+    if (!pill) return;
+    const link = activeSec && pillList.querySelector(`[data-sec="${activeSec}"]`);
+    pillList.querySelectorAll('a').forEach(a => a.toggleAttribute('aria-current', a === link));
+    if (!link) { pillCopy.style.opacity = '0'; return; }
+    const r = pillList.offsetWidth - link.offsetLeft - link.offsetWidth;
+    pillCopy.style.clipPath = `inset(0 ${r}px 0 ${link.offsetLeft}px round 999px)`;
+    pillCopy.style.opacity = '1';
+  }
+  if (pill) {
+    const secIO = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) activeSec = e.target.dataset.owner || null; });
+      placePill();
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    document.querySelectorAll('[data-owner]').forEach(el => secIO.observe(el));
+    new ResizeObserver(placePill).observe(pillList);
+  }
+
+  function setLang(l, remember = true) {
+    lang = l;
+    document.documentElement.lang = l;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const v = t(el.dataset.i18n);
+      if (el.hasAttribute('data-html')) el.innerHTML = v; else el.textContent = v;
+      // Split headings come back as plain, visible copy in the new language.
+      if (el.hasAttribute('data-split-done')) { el.removeAttribute('data-split-done'); el.removeAttribute('aria-label'); }
+    });
+    document.querySelectorAll('[data-i18n-alt]').forEach(el => { el.alt = t(el.dataset.i18nAlt); });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+    document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+    const toggle = document.querySelector('.lang');
+    if (toggle) toggle.dataset.active = l;
+    greet();
+    hooks.forEach(fn => fn(l, t));
+    syncPill();
+    if (remember) { try { localStorage.setItem('lang', l); } catch (e) {} }
+    if (window.ScrollTrigger) ScrollTrigger.refresh();
+  }
+  document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+  // ---- Copy email ----
+  const copyBtn = document.getElementById('copy');
+  if (copyBtn) {
+    let timer = 0;
+    copyBtn.addEventListener('click', async () => {
+      const status = document.getElementById('copyStatus');
+      try {
+        await navigator.clipboard.writeText('braianarroyobraconi@gmail.com');
+        copyBtn.setAttribute('data-copied', '');
+        if (status) status.textContent = t('contact.copied');
+        clearTimeout(timer);
+        timer = setTimeout(() => { copyBtn.removeAttribute('data-copied'); if (status) status.textContent = ''; }, 1800);
+      } catch (e) {
+        window.location.href = 'mailto:braianarroyobraconi@gmail.com';
+      }
+    });
+  }
+
+  // ---- Language: own choice, then country (middleware.js cookie), then browser ----
+  let saved = null;
+  try { saved = localStorage.getItem('lang'); } catch (e) {}
+  const geo = (document.cookie.match(/(?:^|; )geo-lang=(es|en)/) || [])[1];
+  const browser = (navigator.language || '').toLowerCase().startsWith('es') ? 'es' : 'en';
+  setLang(saved === 'es' || saved === 'en' ? saved : geo || browser, false);
+
+  // ---- Motion ----
+  if (!reduce) document.documentElement.classList.add('has-motion');
+
+  // Split into masked words; inline markup (em, span.dim) is re-applied around each word,
+  // and the element keeps an unsplit accessible name.
+  function split(el) {
+    if (el.hasAttribute('data-split-done')) return el.querySelectorAll('.w');
+    el.setAttribute('aria-label', el.textContent.replace(/\s+/g, ' ').trim());
+    const walk = (node, wrapIn) => {
+      const out = document.createDocumentFragment();
+      node.childNodes.forEach(n => {
+        if (n.nodeType === 3) {
+          n.textContent.split(/(\s+)/).forEach(part => {
+            if (!part) return;
+            if (!part.trim()) { out.appendChild(document.createTextNode(' ')); return; }
+            const mask = document.createElement('span'); mask.className = 'w-mask'; mask.setAttribute('aria-hidden', 'true');
+            let inner = document.createElement('span'); inner.className = 'w'; inner.textContent = part;
+            wrapIn.slice().reverse().forEach(tpl => { const c = tpl.cloneNode(false); c.appendChild(inner); inner = c; });
+            mask.appendChild(inner); out.appendChild(mask);
+          });
+        } else if (n.nodeType === 1) {
+          out.appendChild(walk(n, wrapIn.concat(n)));
+        }
+      });
+      return out;
+    };
+    const frag = walk(el, []);
+    el.textContent = ''; el.appendChild(frag);
+    el.setAttribute('data-split-done', '');
+    return el.querySelectorAll('.w');
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (reduce || !window.gsap || !window.ScrollTrigger) {
+      document.documentElement.classList.remove('has-motion');
+      return;
+    }
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.defaults({ ease: 'power3.out', duration: 0.85 });
+
+    if (window.Lenis) {
+      const lenis = new Lenis({ lerp: 0.09, smoothWheel: true, wheelMultiplier: 0.9, anchors: { offset: -80 } });
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add(time => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+    }
+
+    // Intro: the first media unveils, the title rises word by word, then supporting copy and actions.
+    const intro = document.querySelector('[data-intro-root]');
+    if (intro) {
+      const title = intro.querySelector('[data-split]');
+      const words = title ? split(title) : [];
+      const media = intro.querySelector('[data-unveil]');
+      if (title) gsap.set(title, { autoAlpha: 1 });
+      const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+      if (media) {
+        gsap.set(media, { autoAlpha: 1 });
+        tl.fromTo(media, { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 1.2, ease: 'expo.out' }, 0);
+        const img = media.querySelector('img, video');
+        if (img) tl.fromTo(img, { scale: 1.12 }, { scale: 1, duration: 1.6, ease: 'expo.out' }, 0);
+      }
+      tl.fromTo(words, { yPercent: 110 }, { yPercent: 0, duration: 1, stagger: 0.05 }, 0.15)
+        .fromTo(intro.querySelectorAll('[data-intro]'), { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.09 }, 0.55);
+    }
+
+    // Headings outside the intro: word by word as they enter.
+    document.querySelectorAll('[data-split]').forEach(el => {
+      if (intro && intro.contains(el)) return;
+      const words = split(el);
+      gsap.set(el, { autoAlpha: 1 });
+      gsap.fromTo(words, { yPercent: 110 }, { yPercent: 0, duration: 0.95, ease: 'power4.out', stagger: 0.035, scrollTrigger: { trigger: el, start: 'top 86%', once: true } });
+    });
+
+    // Groups stagger their children; single elements fade up.
+    document.querySelectorAll('[data-reveal-group]').forEach(group => {
+      const items = group.querySelectorAll('[data-reveal]');
+      gsap.fromTo(items, { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.07, scrollTrigger: { trigger: group, start: 'top 86%', once: true } });
+    });
+    document.querySelectorAll('[data-reveal]').forEach(el => {
+      if (el.closest('[data-reveal-group]')) return;
+      gsap.fromTo(el, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.8, scrollTrigger: { trigger: el, start: 'top 88%', once: true } });
+    });
+
+    // Media outside the intro: clip the image layer only; text stays selectable.
+    document.querySelectorAll('[data-unveil]').forEach(fig => {
+      if (intro && intro.contains(fig)) return;
+      gsap.set(fig, { autoAlpha: 1 });
+      gsap.fromTo(fig, { clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0% 0)', duration: 1.1, ease: 'power4.out', scrollTrigger: { trigger: fig, start: 'top 85%', once: true } });
+    });
+
+    // Parallax under 5% on project imagery.
+    document.querySelectorAll('[data-parallax]').forEach(img => {
+      gsap.fromTo(img, { yPercent: -3 }, { yPercent: 3, ease: 'none', scrollTrigger: { trigger: img.parentElement, start: 'top bottom', end: 'bottom top', scrub: 1.1 } });
+    });
+
+    // Lines that arrive one after another.
+    document.querySelectorAll('[data-lines]').forEach(block => {
+      gsap.set(block, { autoAlpha: 1 });
+      gsap.fromTo(block.children, { autoAlpha: 0, y: 40 }, { autoAlpha: 1, y: 0, duration: 1, ease: 'power4.out', stagger: 0.12, scrollTrigger: { trigger: block, start: 'top 78%', once: true } });
+    });
+
+    if (document.fonts) document.fonts.ready.then(() => ScrollTrigger.refresh());
+    window.addEventListener('load', () => ScrollTrigger.refresh());
+  });
+
+  // Autoplaying demo videos: only while visible, and never under reduced motion.
+  document.querySelectorAll('video[data-autoplay]').forEach(v => {
+    if (reduce) { v.removeAttribute('autoplay'); v.controls = true; return; }
+    new IntersectionObserver(([e]) => { if (e.isIntersecting) v.play().catch(() => {}); else v.pause(); }, { threshold: 0.25 }).observe(v);
+  });
+})();
