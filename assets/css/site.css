@@ -9,7 +9,6 @@
   --muted: #8e8e92;
   --faint: #77777b;
   --rule: #232326;
-  --signal: #e8643a;
   --panel: #141416;
   --light: #e6e6e3;
   --f-pegote: var(--panel);
@@ -36,7 +35,7 @@ img { display: block; max-width: 100%; }
 a { color: inherit; }
 a, button { touch-action: manipulation; }
 button { -webkit-user-select: none; user-select: none; font: inherit; }
-:focus-visible { outline: 2px solid var(--signal); outline-offset: 4px; border-radius: 4px; }
+:focus-visible { outline: 2px solid var(--paper); outline-offset: 4px; border-radius: 4px; }
 .mono { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
 .wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--edge); }
 .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; }
@@ -147,7 +146,7 @@ h2 { font-size: clamp(34px, 4.6vw, 68px); font-weight: 450; line-height: 1.02; l
 .lamp-chapter { margin-top: clamp(56px, 7vw, 96px); }
 .lamp-stage { position: relative; height: clamp(360px, 62vh, 640px); background: #000; overflow: hidden; cursor: crosshair; touch-action: pan-y; }
 .lamp-stage canvas { position: relative; width: 100%; height: 100%; image-rendering: pixelated; display: block; }
-.lamp-poster { position: absolute; inset: 0; background: radial-gradient(60% 70% at 40% 50%, #3b2a12, #000 70%); }
+.lamp-poster { position: absolute; inset: 0; background: radial-gradient(60% 70% at 40% 50%, #2a2a2c, #000 70%); }
 .lamp-read { position: absolute; left: var(--edge); right: var(--edge); bottom: 20px; display: flex; justify-content: space-between; gap: 12px; color: rgba(255, 255, 255, 0.85); pointer-events: none; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7); }
 .lamp-text { padding-top: 40px; row-gap: 24px; }
 .lamp-text .p-title { grid-column: 1 / span 5; }
@@ -183,7 +182,7 @@ h2 { font-size: clamp(34px, 4.6vw, 68px); font-weight: 450; line-height: 1.02; l
 .talks-head { grid-column: 1 / -1; margin-bottom: 48px; }
 .talk { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; padding: 32px 0; border-top: 1px solid var(--rule); text-decoration: none; align-items: baseline; }
 .talk:last-child { border-bottom: 1px solid var(--rule); }
-.talk-venue { grid-column: 1 / span 4; color: var(--signal); }
+.talk-venue { grid-column: 1 / span 4; color: var(--faint); }
 .talk-body { grid-column: 5 / span 8; }
 .talk h3 { font-size: clamp(20px, 1.8vw, 26px); font-weight: 500; letter-spacing: -0.02em; line-height: 1.25; text-wrap: balance; }
 .talk p { margin-top: 10px; color: var(--muted); font-size: 16px; max-width: 60ch; }
@@ -320,7 +319,7 @@ footer a { text-decoration: none; transition: color 200ms ease; }
 .cs-caption { margin-top: 12px; color: var(--faint); font-size: 14px; }
 .pipeline { display: grid; gap: 8px; margin-top: 8px; counter-reset: step; }
 .pipeline div { display: grid; grid-template-columns: 150px 1fr; gap: 20px; align-items: baseline; padding: 18px 20px; border-radius: var(--r); background: rgba(239, 236, 230, 0.05); }
-.pipeline .mono { color: var(--signal); font-size: 12px; }
+.pipeline .mono { color: var(--faint); font-size: 12px; }
 .pipeline p { font-size: 16px !important; line-height: 1.5 !important; color: rgba(239, 236, 230, 0.8) !important; }
 .spec { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 24px; margin-top: 8px; }
 .spec div { padding: 18px 0; border-top: 1px solid var(--rule); }
@@ -365,7 +364,7 @@ footer a { text-decoration: none; transition: color 200ms ease; }
 .job.has-panel { position: relative; }
 .job-toggle { all: unset; cursor: pointer; }
 .job-toggle::after { content: ''; position: absolute; inset: 0 0 auto; height: var(--row-h, 100%); }
-.job-toggle:focus-visible { outline: 2px solid var(--signal); outline-offset: 6px; border-radius: 4px; }
+.job-toggle:focus-visible { outline: 2px solid var(--paper); outline-offset: 6px; border-radius: 4px; }
 .job-plus { position: absolute; right: 0; top: 30px; width: 36px; height: 36px; border-radius: 999px; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--rule); color: var(--muted); pointer-events: none; transition: transform 260ms var(--ease-out), background-color 200ms ease, color 200ms ease; }
 .job-plus svg { width: 18px; height: 18px; }
 .job.open .job-plus { transform: rotate(45deg); background: var(--paper); color: var(--ink); box-shadow: none; }
@@ -404,3 +403,9 @@ html.js .job.open .job-panel-content { opacity: 1; transform: none; transition-d
 .cs-cover img[data-parallax] { position: absolute; left: 0; top: -8%; width: 100%; height: 116%; }
 .portrait figure { transform: translateZ(0); }
 .portrait img { transform-origin: 50% 40%; }
+
+/* The lamp is the only colorful thing on the site: it rests in grayscale and wakes up in color
+   while the pointer is over it (or for a few seconds after a touch). */
+.lamp-stage canvas { filter: grayscale(1) contrast(1.08); transition: filter 600ms ease; }
+.lamp-stage.awake canvas { filter: none; }
+@media (hover: hover) and (pointer: fine) { .lamp-stage:hover canvas { filter: none; } }

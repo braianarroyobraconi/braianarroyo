@@ -105,6 +105,11 @@
     }
     stage.addEventListener('pointermove', input);
     stage.addEventListener('pointerdown', input);
+    // Touch has no hover: a tap wakes the color for a few seconds.
+    let wake = 0;
+    const awake = () => { stage.classList.add('awake'); clearTimeout(wake); wake = setTimeout(() => stage.classList.remove('awake'), 4000); };
+    stage.addEventListener('pointerdown', awake);
+    stage.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') awake(); });
     new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible ? start() : stop(); }).observe(stage);
     document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
     new ResizeObserver(() => { size(); step(); }).observe(stage);
