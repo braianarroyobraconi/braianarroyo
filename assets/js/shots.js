@@ -942,6 +942,9 @@
 
   window.SITE_HOOKS = window.SITE_HOOKS || [];
   const kinds = { liquid, ripples, peel, grid, particles, scramble, rocket, jelly, morpho, attractor, cloth, rain, ink };
-  document.querySelectorAll('[data-shot]').forEach(stage => { try { kinds[stage.dataset.shot](stage); } catch (e) { console.warn('shot', stage.dataset.shot, e); } });
+  // Each piece is set up only when it is about to enter the screen, so the page loads without a long task.
+  const boot = stage => { if (stage.dataset.booted) return; stage.dataset.booted = '1'; try { kinds[stage.dataset.shot](stage); window.SITE_HOOKS.forEach(fn => fn(window.Site ? window.Site.lang : 'es', window.Site ? window.Site.t : k => k)); } catch (e) { console.warn('shot', stage.dataset.shot, e); } };
+  const lazy = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { lazy.unobserve(e.target); boot(e.target); } }), { rootMargin: '400px 0px' });
+  document.querySelectorAll('[data-shot]').forEach(stage => lazy.observe(stage));
   document.querySelectorAll('[data-pause]').forEach(pause);
 })();
