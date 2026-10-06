@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>After hours · Braian Arroyo Braconi</title>
+  <meta name="description" content="Side projects, coded micro-interactions and shaders by Braian Arroyo Braconi. Everything runs live."/>
+  <meta property="og:title" content="After hours · Braian Arroyo Braconi"/>
+  <meta property="og:description" content="Side projects, coded micro-interactions and shaders. Everything runs live."/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://www.braianarroyo.com/after-hours/"/>
+  <meta name="theme-color" content="#0b0b0c"/>
+  <meta name="color-scheme" content="dark"/>
+  <link rel="canonical" href="https://www.braianarroyo.com/after-hours/"/>
+  <link rel="preload" href="/assets/fonts/Geist.woff2" as="font" type="font/woff2" crossorigin/>
+  <link rel="stylesheet" href="/assets/css/site.css"/>
+</head>
+<body>
+
+  <div class="bar">
+    <div class="wrap bar-inner">
+      <a href="/" class="brand">Braian Arroyo Braconi</a>
+      <div class="bar-right">
+        <a class="back" href="/#despues-de-hora"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 12H4m0 0l6 6m-6-6l6-6"/></svg><span data-i18n="back">Volver</span></a>
+        <div class="lang" role="group" aria-label="Idioma / Language" data-active="es">
+          <button type="button" data-lang="es" aria-pressed="true">ES</button>
+          <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main id="top">
+    <header class="ah-hero" data-intro-root>
+      <div class="wrap">
+        <span class="chapter-label mono" data-intro data-i18n="ah.label">Después de hora</span>
+        <h1 data-split data-i18n="ahp.title">Lo que hago cuando cierro la compu del trabajo.</h1>
+        <p class="lede" data-intro data-i18n="ahp.lede">Estudio cohetería, armo electrónica, creo mi propio software y desarrollo un juego. Todo eso me mantiene cerca del oficio y me deja probar ideas, sobre todo con IA, antes de llevarlas al equipo.</p>
+      </div>
+    </header>
+
+    <!-- PROJECTS -->
+    <section style="padding:0">
+      <div class="wrap">
+        <span class="chapter-label mono" data-reveal data-i18n="ahp.projects">Proyectos</span>
+        <div class="ah-projects" data-reveal-group>
+          <a class="ah-card" href="/projects/pegote/" data-reveal>
+            <div class="ah-media"><img src="/assets/img/projects/pegote-pagina-diario.webp" alt="" loading="lazy" style="object-position:50% 30%"/></div>
+            <div class="ah-body"><h3>Pegote</h3><p data-i18n="ahp.pg">Un juego web de stickers y collage, en alfa abierta.</p><span class="case-link"><span data-i18n="case.cta">Ver caso completo</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 12h16m0 0l-6-6m6 6l-6 6"/></svg></span></div>
+          </a>
+          <a class="ah-card" href="/projects/living-lamp/" data-reveal>
+            <div class="ah-media"><div class="lamp-stage"><div class="lamp-poster" aria-hidden="true"></div><canvas role="img" aria-label="Patrón generativo de la lámpara viva" data-i18n-aria="lamp.aria"></canvas><div class="lamp-read mono" aria-hidden="true"><span data-lamp-light>luz 72%</span><span data-lamp-temp>temp 8%</span></div></div></div>
+            <div class="ah-body"><h3 data-i18n="lamp.t">Lámpara viva</h3><p data-i18n="ahp.lamp">Una lámpara con ESP32 que reacciona a la luz y la temperatura.</p><span class="case-link"><span data-i18n="case.cta">Ver caso completo</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 12h16m0 0l-6-6m6 6l-6 6"/></svg></span></div>
+          </a>
+          <a class="ah-card" href="/projects/social-monitor/" data-reveal>
+            <div class="ah-media"><div class="sources" aria-hidden="true"><span class="source">Google News</span><span class="source">GDELT</span><span class="source">Mastodon</span><span class="source">Hacker News</span><span class="source off">Reddit</span><span class="source off">YouTube</span><span class="source off">Bluesky</span></div></div>
+            <div class="ah-body"><h3>Social Monitor</h3><p data-i18n="ahp.sm">Monitoreo de marca con IA y un reporte semanal.</p><span class="case-link"><span data-i18n="case.cta">Ver caso completo</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 12h16m0 0l-6-6m6 6l-6 6"/></svg></span></div>
+          </a>
+          <a class="ah-card" href="/projects/weeklygoals/" data-reveal>
+            <div class="ah-media"><img class="goals-shot" src="/assets/img/projects/weeklygoals-app.webp" alt="" loading="lazy"/></div>
+            <div class="ah-body"><h3>WeeklyGoals</h3><p data-i18n="ahp.wg">Una app de barra de menú para planificar la semana.</p><span class="case-link"><span data-i18n="case.cta">Ver caso completo</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 12h16m0 0l-6-6m6 6l-6 6"/></svg></span></div>
+          </a>
+        </div>
+
+        <!-- PAUSE: a small gift for recruiters -->
+        <div class="pause" id="pausa" data-pause data-reveal>
+          <div class="pause-copy">
+            <span class="chapter-label mono" data-i18n="pause.label">Para quien está revisando perfiles</span>
+            <h2 data-i18n="pause.title">¿Muchos perfiles por hoy? Tomate 30 segundos.</h2>
+            <p data-i18n="pause.text">Dos respiraciones guiadas y volvés a lo tuyo. Lo hice pensando en quien lee portfolios todo el día.</p>
+            <button class="btn btn-solid" type="button" data-pause-start>Empezar la pausa</button>
+          </div>
+          <div class="pause-stage" aria-live="polite">
+            <div class="pause-ring" aria-hidden="true"></div>
+            <div class="pause-circle" aria-hidden="true"></div>
+            <div class="pause-say">Cuando quieras.</div>
+            <div class="pause-bar" aria-hidden="true"><i></i></div>
+          </div>
+        </div>
+
+        <!-- SHOTS -->
+        <div class="shots-head">
+          <div>
+            <span class="chapter-label mono" data-reveal data-i18n="shots.label">Shots</span>
+            <h2 data-split data-i18n="shots.title">Micro-interacciones y shaders.</h2>
+            <p class="lede" data-reveal data-i18n="shots.lede">Experimentos chicos de código. Todo funciona en vivo: tocalos.</p>
+          </div>
+        </div>
+
+        <div class="shots">
+          <figure class="shot" style="--span:7" data-reveal>
+            <div class="shot-stage" data-shot="liquid"><canvas role="img" aria-label="Shader de ruido líquido"></canvas><span class="shot-hint mono" data-i18n="hint.move">Mové el cursor</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s1.t">Ruido líquido</h3><span class="mono">WebGL · GLSL</span><p data-i18n="s1.d">Un shader de ruido fractal que se deforma alrededor del cursor.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:5" data-reveal>
+            <div class="shot-stage" data-shot="peel" style="touch-action:none;cursor:grab"><canvas role="img" aria-label="Sticker para despegar"></canvas><span class="shot-hint mono" data-i18n="hint.peel">Arrastrá desde el borde</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s2.t">Despegar</h3><span class="mono">Canvas 2D</span><p data-i18n="s2.d">El gesto central de Pegote: el pliegue sigue al dedo y se vuelve a pegar al soltar.</p></figcaption>
+          </figure>
+
+          <figure class="shot" style="--span:4" data-reveal>
+            <div class="shot-stage" data-shot="grid"><canvas role="img" aria-label="Grilla de puntos magnética"></canvas></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s3.t">Grilla magnética</h3><span class="mono">Canvas 2D</span><p data-i18n="s3.d">Puntos que se apartan del cursor y vuelven con resorte.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:4" data-reveal>
+            <div class="shot-stage" data-shot="dither"><canvas role="img" aria-label="Retrato con tramado ordenado"></canvas></div>
+            <figcaption class="shot-cap"><h3>Dithering</h3><span class="mono">WebGL · GLSL</span><p data-i18n="s4.d">Mi retrato con tramado ordenado; la lupa sigue al cursor con más resolución.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:4" data-reveal>
+            <div class="shot-stage" data-shot="hold">
+              <button class="hold" type="button"><span class="fill" aria-hidden="true"></span><span class="lbl"><span class="go" data-i18n="s5.btn">Mantené apretado</span><span class="ok" data-i18n="s5.ok">Confirmado</span></span><span class="fill-lbl" aria-hidden="true" data-i18n="s5.btn">Mantené apretado</span></button>
+            </div>
+            <figcaption class="shot-cap"><h3 data-i18n="s5.t">Mantener para confirmar</h3><span class="mono">CSS · clip-path</span><p data-i18n="s5.d">Para acciones que no se deshacen: lento al apretar, rápido al soltar.</p></figcaption>
+          </figure>
+
+          <figure class="shot" style="--span:8" data-reveal>
+            <div class="shot-stage" data-shot="particles"><canvas role="img" aria-label="Nombre hecho de partículas"></canvas><span class="shot-hint mono" data-i18n="hint.move">Mové el cursor</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s6.t">Partículas</h3><span class="mono">Canvas 2D</span><p data-i18n="s6.d">Mi nombre hecho de partículas: pasá el cursor para dispersarlas.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:4" data-reveal>
+            <div class="shot-stage" data-shot="toggle"><button class="sw" type="button" role="switch" aria-checked="false" aria-label="Interruptor de ejemplo" data-i18n-aria="s7.aria"><span class="thumb"></span></button><span class="sw-state mono">Apagado</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s7.t">Interruptor con resorte</h3><span class="mono" data-i18n="s7.tech">JS · física</span><p data-i18n="s7.d">Se puede tocar o arrastrar; al soltar, conserva la velocidad del gesto.</p></figcaption>
+          </figure>
+
+          <figure class="shot" style="--span:5" data-reveal>
+            <div class="shot-stage" data-shot="bubbles"><canvas role="img" aria-label="Plástico de burbujas"></canvas><span class="shot-hint mono" data-count>0/0</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s8.t">Plástico de burbujas</h3><span class="mono">Canvas · Web Audio</span><p data-i18n="s8.d">Para un minuto de calma. Con sonido, si tu dispositivo lo permite.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:7" data-reveal>
+            <div class="shot-stage" data-shot="scramble"><p class="scramble" tabindex="0" data-i18n="sh.scramble.text">Los detalles que nadie ve son los que todos sienten.</p></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s9.t">Texto que se decodifica</h3><span class="mono">JS</span><p data-i18n="s9.d">Las letras se ordenan una por una al pasar el cursor.</p></figcaption>
+          </figure>
+
+          <figure class="shot" style="--span:4" data-reveal>
+            <div class="shot-stage" data-shot="ripples"><canvas role="img" aria-label="Ondas sobre líneas"></canvas><span class="shot-hint mono" data-i18n="hint.tap">Tocá</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s10.t">Ondas</h3><span class="mono">WebGL · GLSL</span><p data-i18n="s10.d">Tocá para tirar una piedra sobre una superficie de líneas.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:4" data-reveal>
+            <div class="shot-stage" data-shot="tabs">
+              <div class="ctabs"><ul class="list" role="tablist"><li><button type="button" role="tab" data-i18n="s11.a">Diseño</button></li><li><button type="button" role="tab" data-i18n="s11.b">Código</button></li><li><button type="button" role="tab" data-i18n="s11.c">Cohetes</button></li></ul><div class="copy"></div></div>
+            </div>
+            <figcaption class="shot-cap"><h3 data-i18n="s11.t">Pestañas con recorte</h3><span class="mono">CSS · clip-path</span><p data-i18n="s11.d">El indicador es una copia recortada: el color cambia sin fundidos.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:4" data-reveal>
+            <div class="shot-stage" data-shot="copy">
+              <div class="copy-demo">
+                <button class="btn btn-solid" type="button"><span class="copy-state"><span class="idle"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M6 11C6 8.17157 6 6.75736 6.87868 5.87868C7.75736 5 9.17157 5 12 5H15C17.8284 5 19.2426 5 20.1213 5.87868C21 6.75736 21 8.17157 21 11V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H12C9.17157 22 7.75736 22 6.87868 21.1213C6 20.2426 6 18.8284 6 16V11Z"/><path d="M6 19C4.34315 19 3 17.6569 3 16V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H15C16.6569 2 18 3.34315 18 5"/></g></svg><span data-i18n="contact.copy">Copiar email</span></span><span class="done" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path stroke-linejoin="round" d="M8.5 12.5L10.5 14.5L15.5 9.5"/></g></svg><span data-i18n="contact.copied">Copiado</span></span></span></button>
+              </div>
+            </div>
+            <figcaption class="shot-cap"><h3 data-i18n="s12.t">Copiar con estado</h3><span class="mono">CSS</span><p data-i18n="s12.d">Un cambio de estado con desenfoque para que se lea como una sola pieza.</p></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-band" aria-labelledby="cta-title" style="margin-top:clamp(96px,12vw,160px)">
+      <div class="wrap">
+        <h2 id="cta-title" data-i18n="cta.title">Hablemos.</h2>
+        <a class="btn btn-solid" href="mailto:braianarroyobraconi@gmail.com"><span data-i18n="cta.button">Escribime</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M18 15V6H9"/></svg></a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 Braian Arroyo Braconi</span>
+      <nav aria-label="Footer">
+        <a href="/">Home</a>
+        <a href="https://linkedin.com/in/braianarroyobraconi" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="#top" data-i18n="footer.top">Volver arriba</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="/assets/vendor/gsap.min.js" defer></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
+  <script src="/assets/vendor/lenis.min.js" defer></script>
+  <script>
+    window.I18N_ES = {
+      'sh.toggle.on': 'Encendido', 'sh.toggle.off': 'Apagado', 'pause.start': 'Empezar la pausa', 'pause.ready': 'Cuando quieras.',
+      'pause.in': 'Inhalá', 'pause.hold': 'Sostené', 'pause.out': 'Exhalá',
+      'pause.done': 'Gracias por la pausa. Seguí con lo tuyo.', 'pause.again': 'Otra pausa', 'pause.stop': 'Terminar'
+    };
+    window.I18N_EN = {
+      'ah.label': 'After hours', 'case.cta': 'Read the case study',
+      'ahp.title': 'What I make once the work laptop is closed.',
+      'ahp.lede': 'I study rocketry, tinker with electronics, build my own software and develop a game. All of it keeps me close to the craft and lets me test ideas, especially with AI, before bringing them to the team.',
+      'ahp.projects': 'Projects',
+      'ahp.pg': 'A web game about stickers and collage, in open alpha.',
+      'ahp.lamp': 'An ESP32 lamp that reacts to light and temperature.',
+      'ahp.sm': 'AI-assisted brand monitoring with a weekly report.',
+      'ahp.wg': 'A menu bar app for planning the week.',
+      'lamp.t': 'Living lamp', 'lamp.aria': 'Generative pattern from the living lamp',
+      'pause.label': 'For whoever is reviewing profiles',
+      'pause.title': 'Too many profiles today? Take 30 seconds.',
+      'pause.text': 'Two guided breaths and you are back to it. I made it for the people who read portfolios all day.',
+      'pause.start': 'Start the pause', 'pause.ready': 'Whenever you are ready.',
+      'pause.in': 'Breathe in', 'pause.hold': 'Hold', 'pause.out': 'Breathe out',
+      'pause.done': 'Thanks for pausing. Back to it.', 'pause.again': 'Another pause', 'pause.stop': 'Stop',
+      'shots.label': 'Shots', 'shots.title': 'Micro-interactions and shaders.',
+      'shots.lede': 'Small code experiments. Everything runs live: go ahead and touch them.',
+      'hint.move': 'Move your cursor', 'hint.peel': 'Drag from the edge', 'hint.tap': 'Tap',
+      's1.t': 'Liquid noise', 's1.d': 'A fractal noise shader that bends around your cursor.',
+      's2.t': 'Peel', 's2.d': 'Pegote\'s core gesture: the fold follows your finger and sticks back on release.',
+      's3.t': 'Magnetic grid', 's3.d': 'Dots that move away from the cursor and spring back.',
+      's4.d': 'My portrait in ordered dithering; the lens follows your cursor at a finer grain.',
+      's5.t': 'Hold to confirm', 's5.btn': 'Press and hold', 's5.ok': 'Confirmed', 's5.d': 'For actions that can\'t be undone: slow to press, quick to release.',
+      's6.t': 'Particles', 's6.d': 'My name made of particles: move your cursor to scatter them.',
+      's7.t': 'Spring toggle', 's7.tech': 'JS · physics', 's7.aria': 'Example switch', 's7.d': 'Tap it or drag it; on release it keeps the gesture\'s velocity.',
+      'sh.toggle.on': 'On', 'sh.toggle.off': 'Off',
+      's8.t': 'Bubble wrap', 's8.d': 'For a minute of calm. With sound, if your device allows it.',
+      'sh.scramble.text': 'The details nobody sees are the ones everybody feels.',
+      's9.t': 'Scramble text', 's9.d': 'Letters settle one by one on hover.',
+      's10.t': 'Ripples', 's10.d': 'Tap to drop a stone into a surface of lines.',
+      's11.a': 'Design', 's11.b': 'Code', 's11.c': 'Rockets', 's11.t': 'Clipped tabs', 's11.d': 'The indicator is a clipped copy: color changes without crossfades.',
+      's12.t': 'Copy with state', 's12.d': 'A state change with blur so it reads as one piece.'
+    };
+  </script>
+  <script src="/assets/js/lamp.js"></script>
+  <script src="/assets/js/shots.js"></script>
+  <script src="/assets/js/site.js"></script>
+</body>
+</html>

@@ -14,7 +14,7 @@
   };
   const I18N = {
     en: Object.assign({}, COMMON_EN, window.I18N_EN || {}),
-    es: { 'contact.copied': 'Copiado', 'greet': ['Buen día', 'Buenas tardes', 'Buenas noches'], 'light': 'luz', 'temp': 'temp', 'lamp.hint': 'Mové el cursor', 'lamp.hintTouch': 'Tocá y arrastrá' }
+    es: Object.assign({ 'contact.copied': 'Copiado', 'greet': ['Buen día', 'Buenas tardes', 'Buenas noches'], 'light': 'luz', 'temp': 'temp', 'lamp.hint': 'Mové el cursor', 'lamp.hintTouch': 'Tocá y arrastrá' }, window.I18N_ES || {})
   };
 
   // Capture the Spanish copy from the markup so switching back restores it.
