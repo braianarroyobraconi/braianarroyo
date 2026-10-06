@@ -103,6 +103,14 @@
             <div class="shot-stage" data-shot="jelly" style="touch-action:none;cursor:grab"><canvas role="img" aria-label="Gelatina con cara"></canvas><span class="shot-hint mono" data-i18n="hint.jelly">Estirala</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s14.t">Gelatina</h3><span class="mono" data-i18n="s14.tech">Canvas · física</span><p data-i18n="s14.d">Un blob blando con bounce: estiralo, soltalo y mirá cómo te sigue con los ojos.</p></figcaption>
           </figure>
+          <figure class="shot" style="--span:6" data-reveal>
+            <div class="shot-stage" data-shot="morpho" style="touch-action:none;cursor:crosshair"><canvas role="img" aria-label="Simulación de reacción-difusión" data-i18n-aria="s15.aria"></canvas><span class="shot-hint mono" data-i18n="hint.feed">Tocá para alimentar</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s15.t">Morfogénesis</h3><span class="mono">Gray-Scott · JS</span><p data-i18n="s15.d">Dos químicos imaginarios que se comen entre sí. Tocá para alimentarlos; de izquierda a derecha cambian de especie.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:6" data-reveal>
+            <div class="shot-stage" data-shot="attractor"><canvas role="img" aria-label="Atractor de Peter de Jong" data-i18n-aria="s16.aria"></canvas><span class="shot-hint mono" data-i18n="hint.move">Mové el cursor</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s16.t">Atractor</h3><span class="mono">De Jong · Canvas</span><p data-i18n="s16.d">Cuatro números y una ecuación que nunca repite su recorrido. El cursor cambia los números.</p></figcaption>
+          </figure>
           <figure class="shot" style="--span:4" data-reveal>
             <div class="shot-stage" data-shot="grid"><canvas role="img" aria-label="Grilla de puntos magnética"></canvas></div>
             <figcaption class="shot-cap"><h3 data-i18n="s3.t">Grilla magnética</h3><span class="mono">Canvas 2D</span><p data-i18n="s3.d">Puntos que se apartan del cursor y vuelven con bounce.</p></figcaption>
@@ -117,14 +125,6 @@
             <div class="shot-stage" data-shot="toggle"><button class="sw" type="button" role="switch" aria-checked="false" aria-label="Interruptor de ejemplo" data-i18n-aria="s7.aria"><span class="thumb"></span></button><span class="sw-state mono">Apagado</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s7.t">Interruptor con bounce</h3><span class="mono" data-i18n="s7.tech">JS · bounce</span><p data-i18n="s7.d">Se puede tocar o arrastrar; al soltar, rebota con la velocidad del gesto.</p></figcaption>
           </figure>
-          <figure class="shot" style="--span:5" data-reveal>
-            <div class="shot-stage" data-shot="bubbles"><canvas role="img" aria-label="Plástico de burbujas"></canvas><span class="shot-hint mono" data-count>0/0</span></div>
-            <figcaption class="shot-cap"><h3 data-i18n="s8.t">Plástico de burbujas</h3><span class="mono">Canvas · Web Audio</span><p data-i18n="s8.d">Para un minuto de calma. Con sonido, si tu dispositivo lo permite.</p></figcaption>
-          </figure>
-          <figure class="shot" style="--span:7" data-reveal>
-            <div class="shot-stage" data-shot="scramble"><p class="scramble" tabindex="0" data-i18n="sh.scramble.text">Los detalles que nadie ve son los que todos sienten.</p></div>
-            <figcaption class="shot-cap"><h3 data-i18n="s9.t">Texto que se decodifica</h3><span class="mono">JS</span><p data-i18n="s9.d">Las letras se ordenan una por una al pasar el cursor.</p></figcaption>
-          </figure>
           <figure class="shot" style="--span:8" data-reveal>
             <div class="shot-stage" data-shot="particles"><canvas role="img" aria-label="Nombre hecho de partículas"></canvas><span class="shot-hint mono" data-i18n="hint.move">Mové el cursor</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s6.t">Partículas</h3><span class="mono">Canvas 2D</span><p data-i18n="s6.d">Mi nombre hecho de partículas: pasá el cursor para dispersarlas.</p></figcaption>
@@ -133,13 +133,17 @@
             <div class="shot-stage" data-shot="ripples"><canvas role="img" aria-label="Ondas sobre líneas"></canvas><span class="shot-hint mono" data-i18n="hint.tap">Tocá</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s10.t">Ondas</h3><span class="mono">WebGL · GLSL</span><p data-i18n="s10.d">Tocá para tirar una piedra sobre una superficie de líneas.</p></figcaption>
           </figure>
-          <figure class="shot" style="--span:6" data-reveal>
+          <figure class="shot" style="--span:4" data-reveal>
+            <div class="shot-stage" data-shot="scramble"><p class="scramble" tabindex="0" data-i18n="sh.scramble.text">Los detalles que nadie ve son los que todos sienten.</p></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s9.t">Texto que se decodifica</h3><span class="mono">JS</span><p data-i18n="s9.d">Las letras se ordenan una por una al pasar el cursor.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:4" data-reveal>
             <div class="shot-stage" data-shot="tabs">
               <div class="ctabs"><ul class="list" role="tablist"><li><button type="button" role="tab" data-i18n="s11.a">Diseño</button></li><li><button type="button" role="tab" data-i18n="s11.b">Código</button></li><li><button type="button" role="tab" data-i18n="s11.c">Cohetes</button></li></ul><div class="copy"></div></div>
             </div>
             <figcaption class="shot-cap"><h3 data-i18n="s11.t">Pestañas con recorte</h3><span class="mono">CSS · clip-path</span><p data-i18n="s11.d">El indicador es una copia recortada: el color cambia sin fundidos.</p></figcaption>
           </figure>
-          <figure class="shot" style="--span:6" data-reveal>
+          <figure class="shot" style="--span:4" data-reveal>
             <div class="shot-stage" data-shot="copy">
               <div class="copy-demo">
                 <button class="btn btn-solid" type="button"><span class="copy-state"><span class="idle"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M6 11C6 8.17157 6 6.75736 6.87868 5.87868C7.75736 5 9.17157 5 12 5H15C17.8284 5 19.2426 5 20.1213 5.87868C21 6.75736 21 8.17157 21 11V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H12C9.17157 22 7.75736 22 6.87868 21.1213C6 20.2426 6 18.8284 6 16V11Z"/><path d="M6 19C4.34315 19 3 17.6569 3 16V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H15C16.6569 2 18 3.34315 18 5"/></g></svg><span data-i18n="contact.copy">Copiar email</span></span><span class="done" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path stroke-linejoin="round" d="M8.5 12.5L10.5 14.5L15.5 9.5"/></g></svg><span data-i18n="contact.copied">Copiado</span></span></span></button>
@@ -205,7 +209,6 @@
       's6.t': 'Particles', 's6.d': 'My name made of particles: move your cursor to scatter them.',
       's7.t': 'Bounce toggle', 's7.tech': 'JS · bounce', 's7.aria': 'Example switch', 's7.d': 'Tap it or drag it; on release it bounces with the gesture\'s velocity.',
       'sh.toggle.on': 'On', 'sh.toggle.off': 'Off',
-      's8.t': 'Bubble wrap', 's8.d': 'For a minute of calm. With sound, if your device allows it.',
       'sh.scramble.text': 'The details nobody sees are the ones everybody feels.',
       's9.t': 'Scramble text', 's9.d': 'Letters settle one by one on hover.',
       's10.t': 'Ripples', 's10.d': 'Tap to drop a stone into a surface of lines.',
@@ -213,6 +216,8 @@
       's13.t': 'Rocket', 's13.d': 'Hold for the countdown, release to lift off. A nod to my hobby.', 'rk.aria': 'Rocket: press and hold to launch',
       'rk.idle': 'Press and hold to launch', 'rk.go': 'Liftoff!', 'rk.alt': 'ALT', 'rk.back': 'Coming back by parachute',
       's14.t': 'Jelly', 's14.tech': 'Canvas · physics', 's14.d': 'A soft blob with bounce: stretch it, let go and watch its eyes follow you.', 'hint.jelly': 'Stretch it',
+      's15.t': 'Morphogenesis', 's15.aria': 'Reaction-diffusion simulation', 'hint.feed': 'Tap to feed', 's15.d': 'Two imaginary chemicals eating each other. Tap to feed them; from left to right they change species.',
+      's16.t': 'Attractor', 's16.aria': 'Peter de Jong attractor', 's16.d': 'Four numbers and an equation that never repeats its path. Your cursor changes the numbers.',
       's12.t': 'Copy with state', 's12.d': 'A state change with blur so it reads as one piece.'
     };
   </script>

@@ -394,57 +394,84 @@
     runner(stage, step);
   }
 
-  // ---------------------------------------------------------------- 7. Bubble wrap
-  function bubbles(stage) {
+  // ---------------------------------------------------------------- Morphogenesis: Gray-Scott reaction-diffusion
+  // Two imaginary chemicals: B eats A and reproduces. Feed and kill rates shape spots, worms or coral.
+  function morpho(stage) {
     const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
-    let cells = [], d = 1, W = 0, H = 0, R = 0, popped = 0;
-    const counter = stage.querySelector('[data-count]');
+    let W = 0, H = 0, A, B, A2, B2, img, off, octx, feed = .0367, kill = .0649, tf = feed, tk = kill, mx = -1, my = -1, down = false;
+    const PRESETS = [[.0367, .0649], [.029, .057], [.055, .062], [.039, .058], [.026, .051], [.078, .061]]; // spots, worms, coral, labyrinth, chaos, mitosis
     function build() {
-      d = fit(cv); W = cv.width; H = cv.height; cells = []; popped = 0;
-      R = Math.max(16, Math.min(W, H) / 9);
-      const dx = R * 2.2, dy = R * 1.95;
-      for (let row = 0, y = R * 1.3; y < H - R * .6; y += dy, row++) for (let x = R * 1.3 + (row % 2) * dx / 2; x < W - R * .6; x += dx) cells.push({ x, y, p: 0, t: 0 });
-      label(); paint();
+      const r = stage.getBoundingClientRect(); const k = Math.max(r.width, r.height) > 600 ? 3.2 : 2.6;
+      W = Math.max(60, Math.round(r.width / k)); H = Math.max(45, Math.round(r.height / k));
+      A = new Float32Array(W * H).fill(1); B = new Float32Array(W * H); A2 = new Float32Array(W * H); B2 = new Float32Array(W * H);
+      for (let n = 0; n < 14; n++) seed(Math.random() * W, Math.random() * H, 3 + Math.random() * 3);
+      off = document.createElement('canvas'); off.width = W; off.height = H; octx = off.getContext('2d'); img = octx.createImageData(W, H);
     }
-    function label() { if (counter) counter.textContent = `${popped}/${cells.length}`; }
-    function pop() {
-      try {
-        const ac = audio(); if (!ac) return; const t = ac.currentTime, len = .06;
-        const b = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), ch = b.getChannelData(0);
-        for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / ch.length, 6);
-        const src = ac.createBufferSource(); src.buffer = b;
-        const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1400 + Math.random() * 900; f.Q.value = 1.2;
-        const g = ac.createGain(); g.gain.value = .5;
-        src.connect(f).connect(g).connect(ac.destination); src.start(t);
-      } catch (e) { /* sound is optional */ }
-      if (navigator.vibrate) navigator.vibrate(8);
-    }
-    function paint() {
-      ctx.clearRect(0, 0, W, H);
-      for (const c of cells) {
-        const k = c.p; // 0 = full bubble, 1 = popped
-        const g = ctx.createRadialGradient(c.x - R * .35, c.y - R * .4, R * .1, c.x, c.y, R);
-        g.addColorStop(0, `rgba(255,255,255,${.55 * (1 - k)})`); g.addColorStop(.6, `rgba(237,237,235,${.12 + .05 * (1 - k)})`); g.addColorStop(1, 'rgba(237,237,235,.05)');
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c.x, c.y, R * (1 - k * .12), 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = `rgba(237,237,235,${.18 + .12 * (1 - k)})`; ctx.lineWidth = 1 * d; ctx.stroke();
-        if (k > .5) { ctx.strokeStyle = 'rgba(237,237,235,.25)'; ctx.beginPath(); ctx.moveTo(c.x - R * .35, c.y - R * .1); ctx.lineTo(c.x + R * .1, c.y + R * .2); ctx.lineTo(c.x + R * .35, c.y - R * .15); ctx.stroke(); }
+    function seed(x, y, rad) { for (let j = -rad; j <= rad; j++) for (let i = -rad; i <= rad; i++) { if (i * i + j * j > rad * rad) continue; const xx = Math.round(x + i), yy = Math.round(y + j); if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue; B[yy * W + xx] = 1; } }
+    function step() {
+      feed += (tf - feed) * .02; kill += (tk - kill) * .02;
+      for (let it = 0; it < 10; it++) {
+        for (let y = 0; y < H; y++) {
+          const ym = ((y - 1 + H) % H) * W, y0 = y * W, yp = ((y + 1) % H) * W;
+          for (let x = 0; x < W; x++) {
+            const xm = (x - 1 + W) % W, xp = (x + 1) % W, i = y0 + x;
+            const a = A[i], bb = B[i];
+            const la = -a + .2 * (A[y0 + xm] + A[y0 + xp] + A[ym + x] + A[yp + x]) + .05 * (A[ym + xm] + A[ym + xp] + A[yp + xm] + A[yp + xp]);
+            const lb = -bb + .2 * (B[y0 + xm] + B[y0 + xp] + B[ym + x] + B[yp + x]) + .05 * (B[ym + xm] + B[ym + xp] + B[yp + xm] + B[yp + xp]);
+            const abb = a * bb * bb;
+            A2[i] = Math.min(1, Math.max(0, a + (1.0 * la - abb + feed * (1 - a))));
+            B2[i] = Math.min(1, Math.max(0, bb + (.5 * lb + abb - (kill + feed) * bb)));
+          }
+        }
+        [A, A2] = [A2, A]; [B, B2] = [B2, B];
       }
+      if (down && mx >= 0) seed(mx, my, 2.5);
+      const d = img.data;
+      for (let i = 0; i < W * H; i++) { const v = Math.max(0, Math.min(1, (A[i] - B[i]) * 1.6 - .25)); const c = 14 + v * 222; d[i * 4] = c; d[i * 4 + 1] = c; d[i * 4 + 2] = c - 2; d[i * 4 + 3] = 255; }
+      octx.putImageData(img, 0, 0);
+      fit(cv, 1.5); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(off, 0, 0, cv.width, cv.height);
     }
-    let anim = false;
-    function tick() {
-      let busy = false;
-      for (const c of cells) if (c.t && c.p < 1) { c.p = Math.min(1, c.p + .16); busy = true; }
-      paint(); if (busy) requestAnimationFrame(tick); else anim = false;
-    }
-    stage.addEventListener('pointerdown', e => {
-      const l = local(stage, e); const x = l.x * d, y = l.y * d;
-      const c = cells.find(c => !c.t && Math.hypot(c.x - x, c.y - y) < R);
-      if (!c) return;
-      c.t = 1; popped++; label(); pop();
-      if (reduce) { c.p = 1; paint(); } else if (!anim) { anim = true; requestAnimationFrame(tick); }
-      if (popped === cells.length) setTimeout(build, 900);
+    const toGrid = e => { const l = local(stage, e); return [l.x / l.w * W, l.y / l.h * H, l.x / l.w]; };
+    stage.addEventListener('pointerdown', e => { const [x, y] = toGrid(e); mx = x; my = y; down = true; seed(x, y, 4); stage.setPointerCapture(e.pointerId); if (reduce) step(); });
+    stage.addEventListener('pointermove', e => {
+      const [x, y, u] = toGrid(e); mx = x; my = y;
+      // the horizontal position morphs the "species" of pattern
+      const t = Math.max(0, Math.min(.999, u)) * (PRESETS.length - 1), i = Math.floor(t), f = t - i;
+      tf = PRESETS[i][0] + (PRESETS[i + 1][0] - PRESETS[i][0]) * f; tk = PRESETS[i][1] + (PRESETS[i + 1][1] - PRESETS[i][1]) * f;
     });
-    new ResizeObserver(build).observe(stage); build();
+    const up = () => { down = false; }; stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+    stage.addEventListener('dblclick', build);
+    new ResizeObserver(() => { build(); step(); }).observe(stage);
+    runner(stage, step);
+  }
+
+  // ---------------------------------------------------------------- Attractor: Peter de Jong
+  // x' = sin(a·y) − cos(b·x), y' = sin(c·x) − cos(d·y). Chaotic almost everywhere; four numbers decide its shape.
+  function attractor(stage) {
+    const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
+    let W = 0, H = 0, dens = null, img = null, off, octx, x = .1, y = .1, ta = 1.4, tb = -2.3, hover = false;
+    let a = 1.4, b = -2.3, c = 2.4, d = -2.1;
+    function build() { fit(cv, 1); W = Math.max(80, Math.round(cv.width / 1.2)); H = Math.max(60, Math.round(cv.height / 1.2)); dens = new Float32Array(W * H); off = document.createElement('canvas'); off.width = W; off.height = H; octx = off.getContext('2d'); img = octx.createImageData(W, H); }
+    function step(now) {
+      const t = (now || 0) / 1000;
+      const ga = hover ? ta : 1.4 + Math.sin(t * .13) * .5, gb = hover ? tb : -2.3 + Math.cos(t * .09) * .5;
+      a += (ga - a) * .05; b += (gb - b) * .05; c = 2.4 + Math.sin(t * .07) * .35; d = -2.1 + Math.cos(t * .05) * .35;
+      for (let i = 0; i < dens.length; i++) dens[i] *= .86;
+      const sc = Math.min(W, H * 1.25) / 4.9;
+      for (let i = 0; i < 90000; i++) {
+        const nx = Math.sin(a * y) - Math.cos(b * x), ny = Math.sin(c * x) - Math.cos(d * y); x = nx; y = ny;
+        const px = (W / 2 + x * sc) | 0, py = (H / 2 + y * sc * .8) | 0;
+        if (px >= 0 && py >= 0 && px < W && py < H) dens[py * W + px] += 1;
+      }
+      let mxd = 1; for (let i = 0; i < dens.length; i += 5) if (dens[i] > mxd) mxd = dens[i];
+      const L = Math.log(1 + mxd), dd = img.data;
+      for (let i = 0; i < dens.length; i++) { const v = Math.pow(Math.log(1 + dens[i]) / L, .75); const c2 = 11 + v * 232; dd[i * 4] = c2; dd[i * 4 + 1] = c2; dd[i * 4 + 2] = c2 - 3; dd[i * 4 + 3] = 255; }
+      octx.putImageData(img, 0, 0); fit(cv, 1); ctx.imageSmoothingEnabled = true; ctx.drawImage(off, 0, 0, cv.width, cv.height);
+    }
+    stage.addEventListener('pointermove', e => { const l = local(stage, e); hover = true; ta = .6 + l.x / l.w * 2.2; tb = -3 + (1 - l.y / l.h) * 1.8; if (reduce) step(performance.now()); });
+    stage.addEventListener('pointerleave', () => { hover = false; });
+    new ResizeObserver(() => { build(); step(performance.now()); }).observe(stage);
+    runner(stage, step);
   }
 
   // ---------------------------------------------------------------- Rocket: hold to count down, release to launch
@@ -764,7 +791,7 @@
   }
 
   window.SITE_HOOKS = window.SITE_HOOKS || [];
-  const kinds = { liquid, ripples, peel, grid, particles, bubbles, hold, scramble, toggle, tabs, copy, rocket, jelly };
+  const kinds = { liquid, ripples, peel, grid, particles, hold, scramble, toggle, tabs, copy, rocket, jelly, morpho, attractor };
   document.querySelectorAll('[data-shot]').forEach(stage => { try { kinds[stage.dataset.shot](stage); } catch (e) { console.warn('shot', stage.dataset.shot, e); } });
   document.querySelectorAll('[data-pause]').forEach(pause);
 })();
