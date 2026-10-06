@@ -395,53 +395,107 @@
   }
 
   // ---------------------------------------------------------------- Morphogenesis: Gray-Scott reaction-diffusion
-  // Two imaginary chemicals: B eats A and reproduces. Feed and kill rates shape spots, worms or coral.
+  // Two imaginary chemicals: B eats A and reproduces. Draw with your finger and coral grows from the stroke.
+  // Feed/kill drift slowly between stable "species"; if the culture dies out or floods, it reseeds itself.
   function morpho(stage) {
     const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
-    let W = 0, H = 0, A, B, A2, B2, img, off, octx, feed = .0367, kill = .0649, tf = feed, tk = kill, mx = -1, my = -1, down = false;
-    const PRESETS = [[.0367, .0649], [.029, .057], [.055, .062], [.039, .058], [.026, .051], [.078, .061]]; // spots, worms, coral, labyrinth, chaos, mitosis
+    const SPECIES = [[.0545, .062], [.029, .057], [.0367, .0649], [.039, .058]]; // coral, worms, spots, labyrinth
+    let W = 0, H = 0, A, B, A2, B2, img, off, octx, feed = SPECIES[0][0], kill = SPECIES[0][1], last = null, down = false, frames = 0;
     function build() {
-      const r = stage.getBoundingClientRect(); const k = Math.max(r.width, r.height) > 600 ? 3.2 : 2.6;
+      const r = stage.getBoundingClientRect(); const k = Math.max(r.width, r.height) > 600 ? 3.4 : 2.8;
       W = Math.max(60, Math.round(r.width / k)); H = Math.max(45, Math.round(r.height / k));
       A = new Float32Array(W * H).fill(1); B = new Float32Array(W * H); A2 = new Float32Array(W * H); B2 = new Float32Array(W * H);
-      for (let n = 0; n < 14; n++) seed(Math.random() * W, Math.random() * H, 3 + Math.random() * 3);
+      reseed();
       off = document.createElement('canvas'); off.width = W; off.height = H; octx = off.getContext('2d'); img = octx.createImageData(W, H);
     }
-    function seed(x, y, rad) { for (let j = -rad; j <= rad; j++) for (let i = -rad; i <= rad; i++) { if (i * i + j * j > rad * rad) continue; const xx = Math.round(x + i), yy = Math.round(y + j); if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue; B[yy * W + xx] = 1; } }
-    function step() {
-      feed += (tf - feed) * .02; kill += (tk - kill) * .02;
-      for (let it = 0; it < 10; it++) {
+    function reseed() { for (let n = 0; n < 6; n++) seed(W * (.15 + Math.random() * .7), H * (.15 + Math.random() * .7), 3); }
+    function seed(x, y, rad) { for (let j = -rad; j <= rad; j++) for (let i = -rad; i <= rad; i++) { if (i * i + j * j > rad * rad) continue; const xx = Math.round(x + i), yy = Math.round(y + j); if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue; B[yy * W + xx] = 1; A[yy * W + xx] = .5; } }
+    function step(now) {
+      // the species changes slowly on its own, always within the stable range
+      const t = (now || 0) / 1000 / 14, i = Math.floor(t) % SPECIES.length, f = (Math.sin((t % 1) * Math.PI - Math.PI / 2) + 1) / 2, n2 = (i + 1) % SPECIES.length;
+      feed = SPECIES[i][0] + (SPECIES[n2][0] - SPECIES[i][0]) * f; kill = SPECIES[i][1] + (SPECIES[n2][1] - SPECIES[i][1]) * f;
+      for (let it = 0; it < 5; it++) {
         for (let y = 0; y < H; y++) {
           const ym = ((y - 1 + H) % H) * W, y0 = y * W, yp = ((y + 1) % H) * W;
           for (let x = 0; x < W; x++) {
-            const xm = (x - 1 + W) % W, xp = (x + 1) % W, i = y0 + x;
-            const a = A[i], bb = B[i];
+            const xm = (x - 1 + W) % W, xp = (x + 1) % W, k = y0 + x;
+            const a = A[k], bb = B[k];
             const la = -a + .2 * (A[y0 + xm] + A[y0 + xp] + A[ym + x] + A[yp + x]) + .05 * (A[ym + xm] + A[ym + xp] + A[yp + xm] + A[yp + xp]);
             const lb = -bb + .2 * (B[y0 + xm] + B[y0 + xp] + B[ym + x] + B[yp + x]) + .05 * (B[ym + xm] + B[ym + xp] + B[yp + xm] + B[yp + xp]);
             const abb = a * bb * bb;
-            A2[i] = Math.min(1, Math.max(0, a + (1.0 * la - abb + feed * (1 - a))));
-            B2[i] = Math.min(1, Math.max(0, bb + (.5 * lb + abb - (kill + feed) * bb)));
+            A2[k] = Math.min(1, Math.max(0, a + (la - abb + feed * (1 - a))));
+            B2[k] = Math.min(1, Math.max(0, bb + (.5 * lb + abb - (kill + feed) * bb)));
           }
         }
         [A, A2] = [A2, A]; [B, B2] = [B2, B];
       }
-      if (down && mx >= 0) seed(mx, my, 2.5);
+      // keep the culture alive: reseed if it fades, thin it out if it floods
+      if (++frames % 30 === 0) { let sum = 0; for (let k = 0; k < B.length; k += 3) sum += B[k]; const m = sum / (B.length / 3); if (m < .004) reseed(); else if (m > .35) { A.fill(1); B.fill(0); reseed(); } }
       const d = img.data;
-      for (let i = 0; i < W * H; i++) { const v = Math.max(0, Math.min(1, (A[i] - B[i]) * 1.6 - .25)); const c = 14 + v * 222; d[i * 4] = c; d[i * 4 + 1] = c; d[i * 4 + 2] = c - 2; d[i * 4 + 3] = 255; }
+      for (let k = 0; k < W * H; k++) { const v = Math.max(0, Math.min(1, B[k] * 3.2)); const c = 16 + v * 222; d[k * 4] = c; d[k * 4 + 1] = c; d[k * 4 + 2] = c - 2; d[k * 4 + 3] = 255; }
       octx.putImageData(img, 0, 0);
       fit(cv, 1.5); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(off, 0, 0, cv.width, cv.height);
     }
-    const toGrid = e => { const l = local(stage, e); return [l.x / l.w * W, l.y / l.h * H, l.x / l.w]; };
-    stage.addEventListener('pointerdown', e => { const [x, y] = toGrid(e); mx = x; my = y; down = true; seed(x, y, 4); stage.setPointerCapture(e.pointerId); if (reduce) step(); });
+    const toGrid = e => { const l = local(stage, e); return { x: l.x / l.w * W, y: l.y / l.h * H }; };
+    stage.addEventListener('pointerdown', e => { const p = toGrid(e); down = true; last = p; seed(p.x, p.y, 3); stage.setPointerCapture(e.pointerId); if (reduce) step(); });
     stage.addEventListener('pointermove', e => {
-      const [x, y, u] = toGrid(e); mx = x; my = y;
-      // the horizontal position morphs the "species" of pattern
-      const t = Math.max(0, Math.min(.999, u)) * (PRESETS.length - 1), i = Math.floor(t), f = t - i;
-      tf = PRESETS[i][0] + (PRESETS[i + 1][0] - PRESETS[i][0]) * f; tk = PRESETS[i][1] + (PRESETS[i + 1][1] - PRESETS[i][1]) * f;
+      if (!down) return; const p = toGrid(e);
+      const dist = Math.hypot(p.x - last.x, p.y - last.y), n = Math.ceil(dist / 1.5);
+      for (let i = 1; i <= n; i++) seed(last.x + (p.x - last.x) * i / n, last.y + (p.y - last.y) * i / n, 2);
+      last = p; if (reduce) step();
     });
     const up = () => { down = false; }; stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
-    stage.addEventListener('dblclick', build);
+    stage.addEventListener('dblclick', () => { A.fill(1); B.fill(0); reseed(); });
     new ResizeObserver(() => { build(); step(); }).observe(stage);
+    runner(stage, step);
+  }
+
+  // ---------------------------------------------------------------- Eyes: a wall of eyes that watch you
+  function eyes(stage) {
+    const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
+    let E = [], mx = null, my = null, lastMove = 0, wave = null, startle = 0;
+    function build() {
+      fit(cv); const W = cv.width, H = cv.height, base = Math.min(W, H) / 7.5; E = [];
+      // loose packing of circles of varied sizes
+      for (let tries = 0; tries < 1400 && E.length < 70; tries++) {
+        const r = base * (.35 + Math.random() ** 2 * .9), x = r + Math.random() * (W - 2 * r), y = r + Math.random() * (H - 2 * r);
+        if (E.every(e => Math.hypot(e.x - x, e.y - y) > e.r + r + base * .08)) E.push({ x, y, r, lid: 0, blinkAt: performance.now() + Math.random() * 6000, px: 0, py: 0, dil: 1 });
+      }
+    }
+    function step(now) {
+      fit(cv); const W = cv.width, H = cv.height;
+      ctx.clearRect(0, 0, W, H);
+      const idle = mx === null || now - lastMove > 2600, sleepy = idle && mx !== null ? Math.min(.62, (now - lastMove - 2600) / 2500) : 0;
+      if (!wave && Math.random() < .002) wave = { t0: now, x: Math.random() * W };
+      startle *= .94;
+      for (const e of E) {
+        // look at the cursor, or wander when there is none
+        const tx = mx ?? (W / 2 + Math.sin(now / 1700 + e.x) * W * .3), ty = my ?? (H / 2 + Math.cos(now / 2100 + e.y) * H * .3);
+        const dx = tx - e.x, dy = ty - e.y, dist = Math.hypot(dx, dy) || 1, reach = Math.min(1, dist / (e.r * 4)) * e.r * .42;
+        e.px += (dx / dist * reach - e.px) * .18; e.py += (dy / dist * reach - e.py) * .18;
+        e.dil += ((1 + startle * .9) - e.dil) * .2;
+        let blink = 0;
+        if (now > e.blinkAt) { const k = (now - e.blinkAt) / 160; blink = k < 1 ? Math.sin(k * Math.PI) : 0; if (k >= 1) e.blinkAt = now + 2500 + Math.random() * 7000; }
+        if (wave) { const k = (now - wave.t0) / 900 - Math.abs(e.x - wave.x) / W; if (k > 0 && k < .25) blink = Math.max(blink, Math.sin(k / .25 * Math.PI)); }
+        const lidT = Math.max(blink, sleepy * (1 - startle));
+        e.lid += (lidT - e.lid) * .35;
+        // eye
+        ctx.save(); ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2); ctx.fillStyle = '#e6e6e2'; ctx.fill(); ctx.clip();
+        const ir = e.r * .5 * e.dil, ix = e.x + e.px, iy = e.y + e.py;
+        ctx.fillStyle = '#2a2a2d'; ctx.beginPath(); ctx.arc(ix, iy, ir, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#0b0b0c'; ctx.beginPath(); ctx.arc(ix, iy, ir * (.55 + startle * .25), 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.beginPath(); ctx.arc(ix - ir * .3, iy - ir * .35, ir * .18, 0, Math.PI * 2); ctx.fill();
+        // lids close from top and bottom
+        if (e.lid > .01) { ctx.fillStyle = '#1a1a1c'; const h = e.r * e.lid; ctx.fillRect(e.x - e.r, e.y - e.r, e.r * 2, h * 1.02); ctx.fillRect(e.x - e.r, e.y + e.r - h * .6, e.r * 2, h * .6); }
+        ctx.restore();
+        ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = Math.max(1, e.r * .06); ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2); ctx.stroke();
+      }
+      if (wave && now - wave.t0 > 2200) wave = null;
+    }
+    stage.addEventListener('pointermove', e => { const l = local(stage, e), d = fit(cv); mx = l.x * d; my = l.y * d; lastMove = performance.now(); if (reduce) step(lastMove); });
+    stage.addEventListener('pointerleave', () => { mx = my = null; });
+    stage.addEventListener('pointerdown', e => { const l = local(stage, e), d = fit(cv); mx = l.x * d; my = l.y * d; lastMove = performance.now(); startle = 1; E.forEach(x => { x.blinkAt = performance.now() + Math.random() * 120; }); if (reduce) step(lastMove); });
+    new ResizeObserver(() => { build(); step(performance.now()); }).observe(stage);
     runner(stage, step);
   }
 
@@ -641,17 +695,6 @@
     runner(stage, step);
   }
 
-  // ---------------------------------------------------------------- 8. Hold to confirm
-  function hold(stage) {
-    const b = stage.querySelector('.hold'); let timer = 0;
-    const start = e => { if (b.classList.contains('done')) return; if (e && e.type === 'keydown' && (e.repeat || (e.key !== ' ' && e.key !== 'Enter'))) return; if (e) e.preventDefault(); b.classList.add('holding'); timer = setTimeout(done, reduce ? 900 : 1400); };
-    const cancel = () => { clearTimeout(timer); if (!b.classList.contains('done')) b.classList.remove('holding'); };
-    const done = () => { b.classList.add('done'); b.classList.remove('holding'); setTimeout(() => b.classList.remove('done'), 1800); };
-    b.addEventListener('pointerdown', start); b.addEventListener('pointerup', cancel); b.addEventListener('pointerleave', cancel); b.addEventListener('pointercancel', cancel);
-    b.addEventListener('keydown', start); b.addEventListener('keyup', cancel);
-    b.addEventListener('contextmenu', e => e.preventDefault());
-  }
-
   // ---------------------------------------------------------------- 9. Scramble
   function scramble(stage) {
     const el = stage.querySelector('.scramble'); const glyphs = '▖▗▘▙▚▛▜▝▞▟/\\|-_+*#<>';
@@ -677,44 +720,6 @@
     stage.addEventListener('pointerenter', run); stage.addEventListener('pointerdown', run); el.addEventListener('focus', run);
     new IntersectionObserver(([e], o) => { if (e.isIntersecting) { run(); o.disconnect(); } }, { threshold: .6 }).observe(stage);
     window.SITE_HOOKS.push(() => { el.textContent = T('sh.scramble.text'); });
-  }
-
-  // ---------------------------------------------------------------- 10. Spring toggle
-  function toggle(stage) {
-    const sw = stage.querySelector('.sw'), th = sw.querySelector('.thumb'), st = stage.querySelector('.sw-state');
-    const travel = () => sw.clientWidth - th.offsetWidth - 12;
-    let on = false, x = 0, v = 0, target = 0, raf = 0, drag = null, moved = false;
-    const paint = () => {
-      const k = Math.max(0, Math.min(1, x / travel()));
-      th.style.transform = `translateX(${x}px) scaleX(${drag ? 1.12 : 1})`;
-      sw.style.backgroundColor = `rgb(${42 + k * 195},${42 + k * 195},${45 + k * 190})`;
-      th.style.backgroundColor = k > .5 ? '#0b0b0c' : '#ededeb';
-    };
-    const animate = () => {
-      cancelAnimationFrame(raf);
-      if (reduce) { x = target; v = 0; paint(); return; }
-      const f = () => { // spring with a little overshoot
-        const a = (target - x) * .2 - v * .38; v += a; x += v; paint();
-        if (Math.abs(target - x) > .2 || Math.abs(v) > .2) raf = requestAnimationFrame(f); else { x = target; paint(); }
-      };
-      raf = requestAnimationFrame(f);
-    };
-    const set = val => { on = val; target = on ? travel() : 0; sw.setAttribute('aria-checked', String(on)); st.textContent = T(on ? 'sh.toggle.on' : 'sh.toggle.off'); animate(); };
-    sw.addEventListener('pointerdown', e => { drag = { sx: e.clientX, x0: x, last: e.clientX, lt: performance.now(), vel: 0 }; moved = false; sw.setPointerCapture(e.pointerId); paint(); });
-    sw.addEventListener('pointermove', e => {
-      if (!drag) return; const dx = e.clientX - drag.sx; if (Math.abs(dx) > 3) moved = true;
-      const now = performance.now(); drag.vel = (e.clientX - drag.last) / Math.max(1, now - drag.lt); drag.last = e.clientX; drag.lt = now;
-      x = Math.max(-8, Math.min(travel() + 8, drag.x0 + dx)); cancelAnimationFrame(raf); paint();
-    });
-    const end = () => {
-      if (!drag) return; const vel = drag.vel; drag = null;
-      if (!moved) set(!on); else set(Math.abs(vel) > .3 ? vel > 0 : x > travel() / 2);
-    };
-    sw.addEventListener('pointerup', end); sw.addEventListener('pointercancel', end);
-    sw.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); set(!on); } });
-    new ResizeObserver(() => { target = on ? travel() : 0; x = target; paint(); }).observe(sw);
-    window.SITE_HOOKS.push(() => { st.textContent = T(on ? 'sh.toggle.on' : 'sh.toggle.off'); });
-    set(false);
   }
 
   // ---------------------------------------------------------------- 11. Clip-path tabs
@@ -791,7 +796,7 @@
   }
 
   window.SITE_HOOKS = window.SITE_HOOKS || [];
-  const kinds = { liquid, ripples, peel, grid, particles, hold, scramble, toggle, tabs, copy, rocket, jelly, morpho, attractor };
+  const kinds = { liquid, ripples, peel, grid, particles, scramble, tabs, copy, rocket, jelly, morpho, attractor, eyes };
   document.querySelectorAll('[data-shot]').forEach(stage => { try { kinds[stage.dataset.shot](stage); } catch (e) { console.warn('shot', stage.dataset.shot, e); } });
   document.querySelectorAll('[data-pause]').forEach(pause);
 })();

@@ -104,26 +104,20 @@
             <figcaption class="shot-cap"><h3 data-i18n="s14.t">Gelatina</h3><span class="mono" data-i18n="s14.tech">Canvas · física</span><p data-i18n="s14.d">Un blob blando con bounce: estiralo, soltalo y mirá cómo te sigue con los ojos.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:6" data-reveal>
-            <div class="shot-stage" data-shot="morpho" style="touch-action:none;cursor:crosshair"><canvas role="img" aria-label="Simulación de reacción-difusión" data-i18n-aria="s15.aria"></canvas><span class="shot-hint mono" data-i18n="hint.feed">Tocá para alimentar</span></div>
-            <figcaption class="shot-cap"><h3 data-i18n="s15.t">Morfogénesis</h3><span class="mono">Gray-Scott · JS</span><p data-i18n="s15.d">Dos químicos imaginarios que se comen entre sí. Tocá para alimentarlos; de izquierda a derecha cambian de especie.</p></figcaption>
+            <div class="shot-stage" data-shot="morpho" style="touch-action:none;cursor:crosshair"><canvas role="img" aria-label="Simulación de reacción-difusión" data-i18n-aria="s15.aria"></canvas><span class="shot-hint mono" data-i18n="hint.draw">Dibujá con el dedo</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s15.t">Morfogénesis</h3><span class="mono">Gray-Scott · JS</span><p data-i18n="s15.d">Dos químicos imaginarios que se comen entre sí. Dibujá y de tu trazo crece un coral que muta solo.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:6" data-reveal>
             <div class="shot-stage" data-shot="attractor"><canvas role="img" aria-label="Atractor de Peter de Jong" data-i18n-aria="s16.aria"></canvas><span class="shot-hint mono" data-i18n="hint.move">Mové el cursor</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s16.t">Atractor</h3><span class="mono">De Jong · Canvas</span><p data-i18n="s16.d">Cuatro números y una ecuación que nunca repite su recorrido. El cursor cambia los números.</p></figcaption>
           </figure>
+          <figure class="shot" style="--span:8" data-reveal>
+            <div class="shot-stage" data-shot="eyes"><canvas role="img" aria-label="Pared de ojos que siguen el cursor" data-i18n-aria="s17.aria"></canvas><span class="shot-hint mono" data-i18n="hint.eyes">Te están mirando</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s17.t">Ojos</h3><span class="mono">Canvas 2D</span><p data-i18n="s17.d">Te siguen, parpadean en ola y se duermen si te quedás quieto. Hacé click para asustarlos.</p></figcaption>
+          </figure>
           <figure class="shot" style="--span:4" data-reveal>
             <div class="shot-stage" data-shot="grid"><canvas role="img" aria-label="Grilla de puntos magnética"></canvas></div>
             <figcaption class="shot-cap"><h3 data-i18n="s3.t">Grilla magnética</h3><span class="mono">Canvas 2D</span><p data-i18n="s3.d">Puntos que se apartan del cursor y vuelven con bounce.</p></figcaption>
-          </figure>
-          <figure class="shot" style="--span:4" data-reveal>
-            <div class="shot-stage" data-shot="hold">
-              <button class="hold" type="button"><span class="fill" aria-hidden="true"></span><span class="lbl"><span class="go" data-i18n="s5.btn">Mantené apretado</span><span class="ok" data-i18n="s5.ok">Confirmado</span></span><span class="fill-lbl" aria-hidden="true" data-i18n="s5.btn">Mantené apretado</span></button>
-            </div>
-            <figcaption class="shot-cap"><h3 data-i18n="s5.t">Mantener para confirmar</h3><span class="mono">CSS · clip-path</span><p data-i18n="s5.d">Para acciones que no se deshacen: lento al apretar, rápido al soltar.</p></figcaption>
-          </figure>
-          <figure class="shot" style="--span:4" data-reveal>
-            <div class="shot-stage" data-shot="toggle"><button class="sw" type="button" role="switch" aria-checked="false" aria-label="Interruptor de ejemplo" data-i18n-aria="s7.aria"><span class="thumb"></span></button><span class="sw-state mono">Apagado</span></div>
-            <figcaption class="shot-cap"><h3 data-i18n="s7.t">Interruptor con bounce</h3><span class="mono" data-i18n="s7.tech">JS · bounce</span><p data-i18n="s7.d">Se puede tocar o arrastrar; al soltar, rebota con la velocidad del gesto.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:8" data-reveal>
             <div class="shot-stage" data-shot="particles"><canvas role="img" aria-label="Nombre hecho de partículas"></canvas><span class="shot-hint mono" data-i18n="hint.move">Mové el cursor</span></div>
@@ -179,7 +173,7 @@
   <script src="/assets/vendor/lenis.min.js" defer></script>
   <script>
     window.I18N_ES = {
-      'sh.toggle.on': 'Encendido', 'sh.toggle.off': 'Apagado', 'pause.start': 'Tomar la pausa', 'pause.ready': 'Cuando quieras.',
+      'pause.start': 'Tomar la pausa', 'pause.ready': 'Cuando quieras.',
       'pause.in': 'Inhalá', 'pause.hold': 'Sostené', 'pause.out': 'Exhalá',
       'pause.done': 'Espero que te haya servido. Gracias.', 'pause.again': 'Otra pausa', 'pause.stop': 'Terminar',
       'rk.idle': 'Mantené apretado para lanzar', 'rk.3': 'T-3', 'rk.2': 'T-2', 'rk.1': 'T-1', 'rk.go': '¡Despegue!', 'rk.alt': 'ALT', 'rk.back': 'Volviendo en paracaídas'
@@ -205,10 +199,7 @@
       's1.t': 'Liquid noise', 's1.d': 'A fractal noise shader that bends around your cursor.',
       's2.t': 'Peel', 's2.d': 'Pegote\'s core gesture: the fold follows your finger and sticks back on release.',
       's3.t': 'Magnetic grid', 's3.d': 'Dots that move away from the cursor and bounce back.',
-      's5.t': 'Hold to confirm', 's5.btn': 'Press and hold', 's5.ok': 'Confirmed', 's5.d': 'For actions that can\'t be undone: slow to press, quick to release.',
       's6.t': 'Particles', 's6.d': 'My name made of particles: move your cursor to scatter them.',
-      's7.t': 'Bounce toggle', 's7.tech': 'JS · bounce', 's7.aria': 'Example switch', 's7.d': 'Tap it or drag it; on release it bounces with the gesture\'s velocity.',
-      'sh.toggle.on': 'On', 'sh.toggle.off': 'Off',
       'sh.scramble.text': 'The details nobody sees are the ones everybody feels.',
       's9.t': 'Scramble text', 's9.d': 'Letters settle one by one on hover.',
       's10.t': 'Ripples', 's10.d': 'Tap to drop a stone into a surface of lines.',
@@ -216,8 +207,9 @@
       's13.t': 'Rocket', 's13.d': 'Hold for the countdown, release to lift off. A nod to my hobby.', 'rk.aria': 'Rocket: press and hold to launch',
       'rk.idle': 'Press and hold to launch', 'rk.go': 'Liftoff!', 'rk.alt': 'ALT', 'rk.back': 'Coming back by parachute',
       's14.t': 'Jelly', 's14.tech': 'Canvas · physics', 's14.d': 'A soft blob with bounce: stretch it, let go and watch its eyes follow you.', 'hint.jelly': 'Stretch it',
-      's15.t': 'Morphogenesis', 's15.aria': 'Reaction-diffusion simulation', 'hint.feed': 'Tap to feed', 's15.d': 'Two imaginary chemicals eating each other. Tap to feed them; from left to right they change species.',
+      's15.t': 'Morphogenesis', 's15.aria': 'Reaction-diffusion simulation', 'hint.draw': 'Draw with your finger', 's15.d': 'Two imaginary chemicals eating each other. Draw, and coral grows from your stroke and mutates on its own.',
       's16.t': 'Attractor', 's16.aria': 'Peter de Jong attractor', 's16.d': 'Four numbers and an equation that never repeats its path. Your cursor changes the numbers.',
+      's17.t': 'Eyes', 's17.aria': 'A wall of eyes that follow the cursor', 'hint.eyes': 'They are watching you', 's17.d': 'They follow you, blink in waves and fall asleep if you stay still. Click to startle them.',
       's12.t': 'Copy with state', 's12.d': 'A state change with blur so it reads as one piece.'
     };
   </script>
