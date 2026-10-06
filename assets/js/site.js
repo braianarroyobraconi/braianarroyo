@@ -262,8 +262,25 @@
       const k = ctx.conditions.wide ? 1 : 0.5;
       const scrub = { scrub: 1.2, invalidateOnRefresh: true };
 
+      // Hub hero: layered depth. The photo pans slower than the page and zooms out, the frame recedes
+      // (smaller, rounder, darker) and the copy leaves faster. On desktop the photo also follows the pointer.
+      const hub = document.querySelector('.hub-hero');
+      if (hub) {
+        const fig = hub.querySelector('.portrait figure'), layer = hub.querySelector('.ph-inner'), shade = hub.querySelector('.ph-shade');
+        const st = { trigger: hub, start: 'top top', end: 'bottom top', ...scrub };
+        gsap.fromTo(layer, { yPercent: -6 * k, scale: 1 + .15 * k }, { yPercent: 6 * k, scale: 1, ease: 'none', scrollTrigger: st });
+        gsap.fromTo(fig, { scale: 1, borderRadius: 6 }, { scale: 1 - .08 * k, borderRadius: 28, ease: 'none', scrollTrigger: st });
+        gsap.fromTo(shade, { opacity: 0 }, { opacity: .45, ease: 'none', scrollTrigger: st });
+        gsap.to('.hub-hero .hero-copy', { y: -90 * k, autoAlpha: .3, ease: 'none', scrollTrigger: st });
+        if (ctx.conditions.wide && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+          const xTo = gsap.quickTo(layer, 'x', { duration: .9, ease: 'power3.out' }), yTo = gsap.quickTo(layer, 'y', { duration: .9, ease: 'power3.out' });
+          hub.addEventListener('pointermove', e => { const r = fig.getBoundingClientRect(); xTo(((e.clientX - r.left) / r.width - .5) * -22); yTo(((e.clientY - r.top) / r.height - .5) * -16); });
+          hub.addEventListener('pointerleave', () => { xTo(0); yTo(0); });
+        }
+      }
+
       // Hero: copy sinks and dims, the portrait rises a little faster, the photo pans inside its frame.
-      const hero = document.querySelector('.hero');
+      const hero = document.querySelector('.hero:not(.hub-hero)');
       if (hero) {
         const st = { trigger: hero, start: 'top top', end: 'bottom top', ...scrub };
         gsap.to('.hero-copy', { y: 110 * k, autoAlpha: 0.35, ease: 'none', scrollTrigger: st });
