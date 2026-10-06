@@ -119,21 +119,21 @@
             <div class="shot-stage" data-shot="grid"><canvas role="img" aria-label="Grilla de puntos magnética"></canvas></div>
             <figcaption class="shot-cap"><h3 data-i18n="s3.t">Grilla magnética</h3><span class="mono">Canvas 2D</span><p data-i18n="s3.d">Puntos que se apartan del cursor y vuelven con bounce.</p></figcaption>
           </figure>
-          <figure class="shot" style="--span:4" data-reveal>
+          <figure class="shot" style="--span:7" data-reveal>
+            <div class="shot-stage" data-shot="cloth" style="touch-action:none;cursor:grab"><canvas role="img" aria-label="Tela con física que se puede romper" data-i18n-aria="s18.aria"></canvas><span class="shot-hint mono" data-i18n="hint.cloth">Agarrala y tirá fuerte</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s18.t">Tela</h3><span class="mono" data-i18n="s18.tech">Verlet · Canvas</span><p data-i18n="s18.d">Una tela colgada con física de verdad. Sacudila; si tirás demasiado, los hilos se cortan. Doble click cuelga una nueva.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:5" data-reveal>
+            <div class="shot-stage" data-shot="rain" style="touch-action:none;cursor:crosshair"><canvas role="img" aria-label="Ventana empañada con lluvia" data-i18n-aria="s19.aria"></canvas><span class="shot-hint mono" data-i18n="hint.rain">Escribí en el vidrio</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s19.t">Lluvia</h3><span class="mono" data-i18n="s19.tech">Canvas · Web Audio</span><p data-i18n="s19.d">Una ventana empañada un día de lluvia. Escribí algo con el dedo; el vidrio lo va olvidando.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:5" data-reveal>
             <div class="shot-stage" data-shot="ripples"><canvas role="img" aria-label="Ondas sobre líneas"></canvas><span class="shot-hint mono" data-i18n="hint.tap">Tocá</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s10.t">Ondas</h3><span class="mono">WebGL · GLSL</span><p data-i18n="s10.d">Tocá para tirar una piedra sobre una superficie de líneas.</p></figcaption>
           </figure>
-          <figure class="shot" style="--span:4" data-reveal>
+          <figure class="shot" style="--span:7" data-reveal>
             <div class="shot-stage" data-shot="scramble"><p class="scramble" tabindex="0" data-i18n="sh.scramble.text">Los detalles que nadie ve son los que todos sienten.</p></div>
             <figcaption class="shot-cap"><h3 data-i18n="s9.t">Texto que se decodifica</h3><span class="mono">JS</span><p data-i18n="s9.d">Las letras se ordenan una por una al pasar el cursor.</p></figcaption>
-          </figure>
-          <figure class="shot" style="--span:4" data-reveal>
-            <div class="shot-stage" data-shot="copy">
-              <div class="copy-demo">
-                <button class="btn btn-solid" type="button"><span class="copy-state"><span class="idle"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M6 11C6 8.17157 6 6.75736 6.87868 5.87868C7.75736 5 9.17157 5 12 5H15C17.8284 5 19.2426 5 20.1213 5.87868C21 6.75736 21 8.17157 21 11V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H12C9.17157 22 7.75736 22 6.87868 21.1213C6 20.2426 6 18.8284 6 16V11Z"/><path d="M6 19C4.34315 19 3 17.6569 3 16V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H15C16.6569 2 18 3.34315 18 5"/></g></svg><span data-i18n="contact.copy">Copiar email</span></span><span class="done" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path stroke-linejoin="round" d="M8.5 12.5L10.5 14.5L15.5 9.5"/></g></svg><span data-i18n="contact.copied">Copiado</span></span></span></button>
-              </div>
-            </div>
-            <figcaption class="shot-cap"><h3 data-i18n="s12.t">Copiar con estado</h3><span class="mono">CSS</span><p data-i18n="s12.d">Un cambio de estado con desenfoque para que se lea como una sola pieza.</p></figcaption>
           </figure>
         </div>
       </div>
@@ -196,9 +196,10 @@
       's13.t': 'Rocket', 's13.d': 'Hold for the countdown, release to lift off. A nod to my hobby.', 'rk.aria': 'Rocket: press and hold to launch',
       'rk.idle': 'Press and hold to launch', 'rk.go': 'Liftoff!', 'rk.alt': 'ALT', 'rk.back': 'Coming back by parachute',
       's14.t': 'Jelly', 's14.tech': 'Canvas · physics', 's14.d': 'A soft blob with bounce: stretch it, let go and watch its eyes follow you.', 'hint.jelly': 'Stretch it',
+      's18.t': 'Cloth', 's18.tech': 'Verlet · Canvas', 's18.aria': 'Cloth with physics that can tear', 'hint.cloth': 'Grab it and pull hard', 's18.d': 'A hanging cloth with real physics. Shake it; pull too hard and the threads snap. Double click hangs a new one.',
+      's19.t': 'Rain', 's19.tech': 'Canvas · Web Audio', 's19.aria': 'A fogged window in the rain', 'hint.rain': 'Write on the glass', 's19.d': 'A fogged window on a rainy day. Write something with your finger; the glass slowly forgets it.',
       's15.t': 'Morphogenesis', 's15.aria': 'Reaction-diffusion simulation', 'hint.draw': 'Draw with your finger', 's15.d': 'Two imaginary chemicals eating each other. Draw, and coral grows from your stroke and mutates on its own.',
       's16.t': 'Attractor', 's16.aria': 'Peter de Jong attractor', 's16.d': 'Four numbers and an equation that never repeats its path. Your cursor changes the numbers.',
-      's12.t': 'Copy with state', 's12.d': 'A state change with blur so it reads as one piece.'
     };
   </script>
   <script src="/assets/js/lamp.js"></script>

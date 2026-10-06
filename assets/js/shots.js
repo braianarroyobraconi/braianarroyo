@@ -673,13 +673,132 @@
     window.SITE_HOOKS.push(() => { el.textContent = T('sh.scramble.text'); });
   }
 
-  // ---------------------------------------------------------------- 12. Copy with state
-  function copy(stage) {
-    const b = stage.querySelector('button'); let t = 0;
-    b.addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText('braianarroyobraconi@gmail.com'); } catch (e) { /* the state change is the demo */ }
-      b.setAttribute('data-copied', ''); clearTimeout(t); t = setTimeout(() => b.removeAttribute('data-copied'), 1600);
+  // ---------------------------------------------------------------- Cloth: Verlet points and stick constraints
+  // Grab it, swing it; pull too hard and the threads snap. Double click hangs a new one.
+  function cloth(stage) {
+    const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
+    let P = [], C = [], cols = 0, rows = 0, gap = 0, grab = null, mx = 0, my = 0, t = 0;
+    function build() {
+      const d = fit(cv); const W = cv.width, H = cv.height;
+      cols = 34; rows = 22; gap = Math.min(W * .78 / (cols - 1), H * .78 / (rows - 1));
+      const x0 = (W - gap * (cols - 1)) / 2, y0 = H * .1; P = []; C = [];
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        const x = x0 + i * gap, y = y0 + j * gap;
+        P.push({ x, y, px: x, py: y, pin: j === 0 && (i % 3 === 0) });
+      }
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        const k = j * cols + i;
+        if (i < cols - 1) C.push({ a: k, b: k + 1, len: gap, on: true });
+        if (j < rows - 1) C.push({ a: k, b: k + cols, len: gap, on: true });
+      }
+    }
+    function snap() { // a soft thread snap
+      const ac = audio(); if (!ac) return; const t0 = ac.currentTime;
+      const n = ac.createBufferSource(); n.buffer = noiseBuffer(ac, .03); const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 2500 + Math.random() * 2500; f.Q.value = 3;
+      const g = ac.createGain(); g.gain.setValueAtTime(.12, t0); g.gain.exponentialRampToValueAtTime(.001, t0 + .03); n.connect(f).connect(g).connect(ac.destination); n.start(t0);
+    }
+    let snapCool = 0;
+    function step(now) {
+      const d = fit(cv); const W = cv.width, H = cv.height, g = .35 * d;
+      t = (now || 0) / 1000; const wind = Math.sin(t * .7) * .06 * d + Math.sin(t * 2.3) * .03 * d;
+      for (const p of P) {
+        if (p.pin) continue;
+        const vx = (p.x - p.px) * .99, vy = (p.y - p.py) * .99;
+        p.px = p.x; p.py = p.y; p.x += vx + wind; p.y += vy + g;
+        if (p.y > H - 2) { p.y = H - 2; p.px = p.x; }
+      }
+      if (grab) { const p = P[grab]; p.x += (mx - p.x) * .6; p.y += (my - p.y) * .6; }
+      let snaps = 0;
+      for (let it = 0; it < 4; it++) for (const c of C) {
+        if (!c.on) continue;
+        const a = P[c.a], b = P[c.b], dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy) || .001;
+        if (dist > c.len * 2.7) { c.on = false; snaps++; continue; }
+        const diff = (dist - c.len) / dist * .5, ox = dx * diff, oy = dy * diff;
+        if (!a.pin) { a.x += ox; a.y += oy; } if (!b.pin) { b.x -= ox; b.y -= oy; }
+      }
+      if (snaps && now - snapCool > 40) { snap(); snapCool = now; }
+      ctx.clearRect(0, 0, W, H);
+      ctx.lineWidth = Math.max(1, d * 1.1);
+      for (const c of C) {
+        if (!c.on) continue;
+        const a = P[c.a], b = P[c.b], st = Math.hypot(b.x - a.x, b.y - a.y) / c.len;
+        const v = Math.max(0, Math.min(1, (st - 1) * 1.6));
+        ctx.strokeStyle = `rgba(${237},${237 - v * 40},${235 - v * 40},${.45 + v * .5})`;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+      ctx.fillStyle = 'rgba(237,237,235,.9)';
+      for (const p of P) if (p.pin) { ctx.beginPath(); ctx.arc(p.x, p.y, 2.4 * d, 0, Math.PI * 2); ctx.fill(); }
+    }
+    stage.addEventListener('pointerdown', e => {
+      const d = fit(cv); const l = local(stage, e); mx = l.x * d; my = l.y * d; audio();
+      let best = -1, bd = Infinity; P.forEach((p, i) => { const dd = Math.hypot(p.x - mx, p.y - my); if (dd < bd && !p.pin) { bd = dd; best = i; } });
+      if (bd < gap * 3) { grab = best; stage.setPointerCapture(e.pointerId); stage.style.cursor = 'grabbing'; }
     });
+    stage.addEventListener('pointermove', e => { const d = fit(cv); const l = local(stage, e); mx = l.x * d; my = l.y * d; if (reduce && grab !== null) step(performance.now()); });
+    const up = () => { grab = null; stage.style.cursor = 'grab'; }; stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+    stage.addEventListener('dblclick', () => { build(); step(performance.now()); });
+    new ResizeObserver(() => { build(); step(performance.now()); }).observe(stage);
+    runner(stage, step);
+  }
+
+  // ---------------------------------------------------------------- Rain: a fogged window
+  // City lights out of focus behind the glass. Drops slide down in stick-slip jumps and clear a trail;
+  // write on the fog with your finger and the glass slowly forgets it.
+  function rain(stage) {
+    const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
+    let bg, fog, fctx, drops = [], W = 0, H = 0, d = 1, last = null, spawnAt = 0, sound = null;
+    function build() {
+      d = fit(cv, 1.5); W = cv.width; H = cv.height;
+      bg = document.createElement('canvas'); bg.width = W; bg.height = H; const b = bg.getContext('2d');
+      const g = b.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#141416'); g.addColorStop(1, '#0b0b0c'); b.fillStyle = g; b.fillRect(0, 0, W, H);
+      b.filter = `blur(${Math.round(10 * d)}px)`;
+      for (let i = 0; i < 46; i++) { // out-of-focus city lights
+        const r = (6 + Math.random() * 26) * d, x = Math.random() * W, y = H * (.35 + Math.random() * .6), a = .18 + Math.random() * .45;
+        b.fillStyle = `rgba(230,230,226,${a})`; b.beginPath(); b.arc(x, y, r, 0, Math.PI * 2); b.fill();
+      }
+      b.filter = 'none';
+      fog = document.createElement('canvas'); fog.width = W; fog.height = H; fctx = fog.getContext('2d');
+      fctx.fillStyle = 'rgba(58,58,62,.86)'; fctx.fillRect(0, 0, W, H);
+      drops = [];
+    }
+    function clearFog(x0, y0, x1, y1, w) { fctx.save(); fctx.globalCompositeOperation = 'destination-out'; fctx.lineCap = 'round'; fctx.lineWidth = w; fctx.strokeStyle = 'rgba(0,0,0,.95)'; fctx.beginPath(); fctx.moveTo(x0, y0); fctx.lineTo(x1, y1); fctx.stroke(); fctx.restore(); }
+    function rainSound(on) {
+      const ac = audio(); if (!ac) return;
+      if (on && !sound) {
+        const src = ac.createBufferSource(); src.buffer = noiseBuffer(ac, 2); src.loop = true;
+        const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400;
+        const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 300;
+        const g = ac.createGain(); g.gain.value = 0; src.connect(hp).connect(lp).connect(g).connect(ac.destination); src.start();
+        sound = { src, g };
+      }
+      if (sound) sound.g.gain.setTargetAtTime(on ? .07 : 0, ac.currentTime, on ? .8 : .6);
+    }
+    function step(now) {
+      if (!fog) build();
+      // the glass slowly fogs up again
+      fctx.fillStyle = 'rgba(58,58,62,.016)'; fctx.fillRect(0, 0, W, H);
+      if (now > spawnAt) { drops.push({ x: Math.random() * W, y: -10, r: (1.6 + Math.random() * 2.6) * d, v: 0, hold: 0 }); spawnAt = now + 380 + Math.random() * 700; }
+      for (const p of drops) {
+        // stick-slip: a drop waits, then slides, then catches again
+        if (p.hold > 0) { p.hold--; p.v *= .6; } else { p.v += .06 * d * (p.r / (3 * d)); if (Math.random() < .02) p.hold = 20 + Math.random() * 60; }
+        const y0 = p.y; p.y += p.v; p.x += Math.sin(p.y * .03) * .15 * d;
+        if (p.v > .2) clearFog(p.x, y0, p.x, p.y, p.r * 1.15);
+      }
+      drops = drops.filter(p => p.y < H + 10).slice(-120);
+      ctx.drawImage(bg, 0, 0); ctx.drawImage(fog, 0, 0);
+      for (const p of drops) { // a drop refracts light: bright rim, dark core
+        ctx.fillStyle = 'rgba(10,10,12,.55)'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(235,235,232,.55)'; ctx.beginPath(); ctx.arc(p.x - p.r * .3, p.y - p.r * .35, p.r * .35, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    const pt = e => { const l = local(stage, e); return { x: l.x * d, y: l.y * d }; };
+    stage.addEventListener('pointerdown', e => { last = pt(e); clearFog(last.x, last.y, last.x + .1, last.y, 16 * d); stage.setPointerCapture(e.pointerId); rainSound(true); if (reduce) step(performance.now()); });
+    stage.addEventListener('pointermove', e => { if (!last) return; const p = pt(e); clearFog(last.x, last.y, p.x, p.y, 16 * d); last = p; if (reduce) step(performance.now()); });
+    const up = () => { last = null; }; stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+    stage.addEventListener('pointerleave', () => rainSound(false));
+    new IntersectionObserver(([e]) => { if (!e.isIntersecting) rainSound(false); }).observe(stage);
+    new ResizeObserver(() => { build(); step(performance.now()); }).observe(stage);
+    runner(stage, step);
   }
 
   // ---------------------------------------------------------------- Pause for recruiters
@@ -723,7 +842,7 @@
   }
 
   window.SITE_HOOKS = window.SITE_HOOKS || [];
-  const kinds = { liquid, ripples, peel, grid, particles, scramble, copy, rocket, jelly, morpho, attractor };
+  const kinds = { liquid, ripples, peel, grid, particles, scramble, rocket, jelly, morpho, attractor, cloth, rain };
   document.querySelectorAll('[data-shot]').forEach(stage => { try { kinds[stage.dataset.shot](stage); } catch (e) { console.warn('shot', stage.dataset.shot, e); } });
   document.querySelectorAll('[data-pause]').forEach(pause);
 })();
