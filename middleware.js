@@ -9,7 +9,7 @@ const SPANISH = new Set([
 ]);
 const BOT = /bot|crawl|spider|slurp|bingpreview|facebookexternalhit|embedly|quora link preview|whatsapp|telegram|slack|discord|gptbot|chatgpt|oai-searchbot|claude|anthropic|perplexity|google-extended|ccbot|bytespider|amazonbot|applebot|duckassist|cohere|mistral|youbot|lighthouse|headless/i;
 
-export const config = { matcher: ['/', '/after-hours/:path*', '/projects/:path*', '/en', '/en/:path*'] };
+export const config = { matcher: ['/', '/experience/:path*', '/after-hours/:path*', '/projects/:path*', '/en', '/en/:path*'] };
 
 export default function middleware(request) {
   if (BOT.test(request.headers.get('user-agent') || '')) return next();
