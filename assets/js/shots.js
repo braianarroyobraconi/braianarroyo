@@ -72,46 +72,6 @@
     R.once();
   }
 
-  // ---------------------------------------------------------------- 2. Dithered portrait
-  function dither(stage) {
-    const cv = stage.querySelector('canvas');
-    const P = glProgram(cv, `precision highp float;uniform vec2 r;uniform vec2 m;uniform float px;uniform sampler2D img;uniform float ia;
-      float b2(vec2 a){a=floor(a);return fract(dot(a,vec2(.5,a.y*.75)));}
-      float b4(vec2 a){return b2(.5*a)*.25+b2(a);}
-      void main(){vec2 uv=gl_FragCoord.xy/r;float a=r.x/r.y;
-      float lens=1.-smoothstep(.16,.19,length((uv-m)*vec2(a,1.)));
-      float cell=mix(px*4.,px*1.5,lens);
-      vec2 g=floor(gl_FragCoord.xy/cell)*cell+cell*.5;vec2 cuv=g/r;
-      vec2 s=a>ia?vec2(1.,ia/a):vec2(a/ia,1.);vec2 tuv=(cuv-.5)*s+vec2(.5,.56);
-      vec3 c=texture2D(img,tuv).rgb;float l=dot(c,vec3(.299,.587,.114));l=pow(l,.9)*1.08;
-      float on=step(b4(gl_FragCoord.xy/cell),l);
-      float ring=smoothstep(.003,0.,abs(length((uv-m)*vec2(a,1.))-.185))*.5;
-      vec3 col=mix(vec3(.043),vec3(.93),on);col=mix(col,vec3(.6),ring);gl_FragColor=vec4(col,1.);}`);
-    if (!P) return fallback(stage, 'WebGL no disponible.');
-    const { gl } = P;
-    const tex = gl.createTexture(); let ready = false;
-    const img = new Image();
-    img.onload = () => {
-      gl.bindTexture(gl.TEXTURE_2D, tex); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-      [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(p => gl.texParameteri(gl.TEXTURE_2D, p, gl.CLAMP_TO_EDGE));
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      ready = true; R.once();
-    };
-    img.src = '/assets/img/braian.webp';
-    let mx = .5, my = .55, tx = .5, ty = .55, hover = false;
-    stage.addEventListener('pointermove', e => { const l = local(stage, e); tx = l.x / l.w; ty = 1 - l.y / l.h; hover = true; if (reduce) { mx = tx; my = ty; R.once(); } });
-    stage.addEventListener('pointerleave', () => { hover = false; });
-    const R = runner(stage, t => {
-      if (!ready) return;
-      if (!hover) { tx = .5 + Math.sin(t / 2400) * .22; ty = .58 + Math.cos(t / 3100) * .16; }
-      mx += (tx - mx) * .09; my += (ty - my) * .09;
-      const d = fit(cv, 1.5);
-      gl.uniform2f(P.u.r, cv.width, cv.height); gl.uniform2f(P.u.m, mx, my); gl.uniform1f(P.u.px, d);
-      gl.uniform1f(P.u.ia, img.width / img.height); gl.uniform1i(P.u.img, 0); P.draw();
-    });
-  }
-
   // ---------------------------------------------------------------- 3. Ripples
   function ripples(stage) {
     const cv = stage.querySelector('canvas');
@@ -145,58 +105,69 @@
   const audio = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) { AC = null; } return AC; };
   const noiseBuffer = (ac, secs) => { const b = ac.createBuffer(1, ac.sampleRate * secs, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; };
 
+  // ---------------------------------------------------------------- Sticker sounds
+  // Peeling adhesive is a crackle, not a hiss: tiny filtered clicks at random, more of them the faster you pull.
+  let GRAIN = null;
+  function crackle(speed) {
+    const ac = audio(); if (!ac) return;
+    GRAIN = GRAIN || (() => { const b = ac.createBuffer(1, ac.sampleRate * .006, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3); return b; })();
+    const n = Math.min(7, Math.round(speed * .45 + Math.random()));
+    for (let i = 0; i < n; i++) {
+      const t = ac.currentTime + Math.random() * .018;
+      const src = ac.createBufferSource(); src.buffer = GRAIN; src.playbackRate.value = .6 + Math.random() * 1.2;
+      const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 700 + Math.random() * 2600; f.Q.value = 2 + Math.random() * 4;
+      const g = ac.createGain(); g.gain.value = (.04 + Math.random() * .2) * Math.min(1, .35 + speed / 18);
+      src.connect(f).connect(g).connect(ac.destination); src.start(t);
+    }
+  }
+  function thump(vol = .5) { // pressing a sticker down: a short, muffled knock
+    const ac = audio(); if (!ac) return; const t = ac.currentTime;
+    const n = ac.createBufferSource(); n.buffer = noiseBuffer(ac, .05);
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(900, t); lp.frequency.exponentialRampToValueAtTime(140, t + .05);
+    const g = ac.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + .07);
+    n.connect(lp).connect(g).connect(ac.destination); n.start(t);
+    const o = ac.createOscillator(); o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(60, t + .08);
+    const og = ac.createGain(); og.gain.setValueAtTime(vol * .5, t); og.gain.exponentialRampToValueAtTime(.001, t + .09);
+    o.connect(og).connect(ac.destination); o.start(t); o.stop(t + .1);
+    if (navigator.vibrate) navigator.vibrate(8);
+  }
+
   // ---------------------------------------------------------------- 4. Peel (Pegote's core gesture)
+  // The sticker sits on a backing sheet. Pull it and it folds along the line between grab point and finger;
+  // pull far enough and it comes off, leaving its die-cut outline on the sheet. Drop it anywhere to stick it.
   function peel(stage) {
     const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
-    let fx = .5, fy = .5;                     // sticker center, relative to the stage
+    let fx = .5, fy = .5, onSheet = true;
     let G = null, Pp = null, tgt = null, vx = 0, vy = 0;
-    let mode = 'rest';                        // rest | peel | carry | drop
-    let lift = 0, liftV = 0, tilt = 0, last = null, carryOff = null, hint = true;
-    let snd = null;                           // live peel noise while dragging
-    const geo = () => ({ cx: fx * cv.width, cy: fy * cv.height, r: Math.min(cv.width, cv.height) * .27 });
-
-    function peelSound(speed) {
-      const ac = audio(); if (!ac) return;
-      if (!snd) {
-        const src = ac.createBufferSource(); src.buffer = noiseBuffer(ac, 1); src.loop = true;
-        const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 2600; f.Q.value = .8;
-        const g = ac.createGain(); g.gain.value = 0;
-        src.connect(f).connect(g).connect(ac.destination); src.start();
-        snd = { src, f, g };
-      }
-      const k = Math.min(1, speed / 26);
-      snd.g.gain.setTargetAtTime(.02 + k * .16, ac.currentTime, .03);
-      snd.f.frequency.setTargetAtTime(1800 + k * 2600, ac.currentTime, .05);
+    let mode = 'rest', lift = 0, liftV = 0, tilt = 0, last = null, carryOff = null, hint = true, press = null;
+    const geo = () => { const r = Math.min(cv.width, cv.height) * .22; return { cx: fx * cv.width, cy: fy * cv.height, r, hx: cv.width / 2, hy: cv.height / 2 }; };
+    const dpr = () => Math.min(window.devicePixelRatio || 1, 2);
+    function shadow(blur, oy, a) { const d = dpr(); ctx.shadowColor = `rgba(0,0,0,${a})`; ctx.shadowBlur = blur * d; ctx.shadowOffsetY = oy * d; }
+    function sheet() { // backing sheet with the die-cut outline
+      const { r, hx, hy } = geo(), w = r * 3.1, h = r * 3.1, rr = r * .22;
+      ctx.save(); shadow(18, 8, .5);
+      ctx.beginPath(); ctx.roundRect(hx - w / 2, hy - h / 2, w, h, rr); ctx.fillStyle = '#2a2a2d'; ctx.fill(); ctx.restore();
+      ctx.save(); ctx.beginPath(); ctx.arc(hx, hy, r + 2 * dpr(), 0, Math.PI * 2); ctx.fillStyle = '#232326'; ctx.fill();
+      ctx.setLineDash([4 * dpr(), 4 * dpr()]); ctx.strokeStyle = 'rgba(237,237,235,.18)'; ctx.lineWidth = 1 * dpr(); ctx.stroke(); ctx.restore();
+      ctx.fillStyle = 'rgba(237,237,235,.35)'; ctx.font = `${Math.round(r * .11)}px "Geist Mono", monospace`; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText('PEGOTE · Nº 01', hx - w / 2 + rr * .7, hy + h / 2 - rr * .6);
     }
-    function stopPeel() { if (!snd || !AC) return; const s = snd; snd = null; s.g.gain.setTargetAtTime(0, AC.currentTime, .04); setTimeout(() => s.src.stop(), 300); }
-    function tap(freq = 180, vol = .35) { // soft "thup" when it sticks
-      const ac = audio(); if (!ac) return; const t = ac.currentTime;
-      const o = ac.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(freq * 1.6, t); o.frequency.exponentialRampToValueAtTime(freq, t + .08);
-      const g = ac.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + .14);
-      const n = ac.createBufferSource(); n.buffer = noiseBuffer(ac, .05); const nf = ac.createBiquadFilter(); nf.type = 'highpass'; nf.frequency.value = 3000; const ng = ac.createGain(); ng.gain.value = .05;
-      o.connect(g).connect(ac.destination); n.connect(nf).connect(ng).connect(ac.destination); o.start(t); o.stop(t + .15); n.start(t);
-      if (navigator.vibrate) navigator.vibrate(6);
-    }
-
     function face(cx, cy, r) {
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#e9e9e6'; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#ededea'; ctx.fill();
+      ctx.lineWidth = r * .035; ctx.strokeStyle = '#ffffff'; ctx.stroke();
       ctx.fillStyle = '#0b0b0c'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.font = `500 ${r * .24}px Geist, sans-serif`; ctx.fillText(lang() === 'en' ? 'peel me' : 'despegame', cx, cy);
     }
-    function shadow(blur, oy, a = .45) { const d = window.devicePixelRatio || 1; ctx.shadowColor = `rgba(0,0,0,${a})`; ctx.shadowBlur = blur * d; ctx.shadowOffsetY = oy * d; }
+    function flat(cx, cy, r) { ctx.save(); shadow(onSheet ? 3 : 10, onSheet ? 1 : 4, .4); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#ededea'; ctx.fill(); ctx.restore(); face(cx, cy, r); }
     function draw() {
       fit(cv); const { cx, cy, r } = geo();
-      ctx.clearRect(0, 0, cv.width, cv.height);
-      if (mode === 'carry' || mode === 'drop') { // fully lifted: bigger shadow, slight scale and tilt
-        ctx.save(); ctx.translate(cx, cy); ctx.rotate(tilt); ctx.scale(1 + lift * .06, 1 + lift * .06); ctx.translate(-cx, -cy);
-        ctx.save(); shadow(10 + lift * 30, 4 + lift * 18, .35 + lift * .2); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#e9e9e6'; ctx.fill(); ctx.restore();
+      ctx.clearRect(0, 0, cv.width, cv.height); sheet();
+      if (mode === 'carry' || mode === 'drop') {
+        ctx.save(); ctx.translate(cx, cy); ctx.rotate(tilt); const k = 1 + lift * .07; ctx.scale(k, k); ctx.translate(-cx, -cy);
+        ctx.save(); shadow(10 + lift * 34, 4 + lift * 22, .35 + lift * .25); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#ededea'; ctx.fill(); ctx.restore();
         face(cx, cy, r); ctx.restore(); return;
       }
-      if (!G || !Pp || Math.hypot(Pp.x - G.x, Pp.y - G.y) < 1) {
-        ctx.save(); shadow(14, 4, .4); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#e9e9e6'; ctx.fill(); ctx.restore();
-        face(cx, cy, r); return;
-      }
-      // Fold line = perpendicular bisector of the grab point G and the finger P; the part on G's side flips over it.
+      if (!G || !Pp || Math.hypot(Pp.x - G.x, Pp.y - G.y) < 1) { flat(cx, cy, r); return; }
       const mx = (G.x + Pp.x) / 2, my = (G.y + Pp.y) / 2;
       let nx = Pp.x - G.x, ny = Pp.y - G.y; const L = Math.hypot(nx, ny); nx /= L; ny /= L;
       const BIG = Math.max(cv.width, cv.height) * 4, tx = -ny, ty = nx;
@@ -206,9 +177,7 @@
         ctx.lineTo(mx - tx * BIG + nx * BIG * sign, my - ty * BIG + ny * BIG * sign);
         ctx.lineTo(mx + tx * BIG + nx * BIG * sign, my + ty * BIG + ny * BIG * sign); ctx.closePath();
       };
-      ctx.save(); half(1); ctx.clip();
-      ctx.save(); shadow(14, 4, .4); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#e9e9e6'; ctx.fill(); ctx.restore();
-      face(cx, cy, r); ctx.restore();
+      ctx.save(); half(1); ctx.clip(); flat(cx, cy, r); ctx.restore();
       const dot = mx * nx + my * ny;
       ctx.save();
       ctx.transform(1 - 2 * nx * nx, -2 * nx * ny, -2 * nx * ny, 1 - 2 * ny * ny, 2 * dot * nx, 2 * dot * ny);
@@ -216,67 +185,70 @@
       shadow(22, 10, .55);
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
       const g = ctx.createLinearGradient(mx, my, mx - nx * r, my - ny * r);
-      g.addColorStop(0, '#cfcfcb'); g.addColorStop(1, '#a6a6a2');
+      g.addColorStop(0, '#d6d6d2'); g.addColorStop(1, '#a9a9a5');
       ctx.fillStyle = g; ctx.fill();
       ctx.restore();
     }
-
-    const R = runner(stage, () => {
+    runner(stage, () => {
       const { cx, cy, r } = geo();
-      if (mode === 'peel' && tgt) { Pp.x += (tgt.x - Pp.x) * .5; Pp.y += (tgt.y - Pp.y) * .5; }
-      if (mode === 'rest' && G && Pp) { // let go before it came off: spring back and stick again
-        const ax = (G.x - Pp.x) * .16 - vx * .5, ay = (G.y - Pp.y) * .16 - vy * .5;
+      if (mode === 'peel' && tgt) { Pp.x += (tgt.x - Pp.x) * .55; Pp.y += (tgt.y - Pp.y) * .55; }
+      if (mode === 'rest' && G && Pp) {
+        const ax = (G.x - Pp.x) * .18 - vx * .5, ay = (G.y - Pp.y) * .18 - vy * .5;
         vx += ax; vy += ay; Pp.x += vx; Pp.y += vy;
-        if (Math.hypot(G.x - Pp.x, G.y - Pp.y) < .5 && Math.hypot(vx, vy) < .5) { G = Pp = null; tap(150, .2); }
+        if (Math.hypot(G.x - Pp.x, G.y - Pp.y) < .5 && Math.hypot(vx, vy) < .5) { G = Pp = null; thump(.25); }
       }
       if (mode === 'carry' && tgt) {
         const nfx = (tgt.x - carryOff.x) / cv.width, nfy = (tgt.y - carryOff.y) / cv.height;
-        const dx = (nfx - fx) * cv.width; fx += (nfx - fx) * .35; fy += (nfy - fy) * .35;
-        tilt += ((Math.max(-1, Math.min(1, dx / (r * 1.5))) * .18) - tilt) * .2;
-        lift += (1 - lift) * .2;
+        const dx = (nfx - fx) * cv.width; fx += (nfx - fx) * .4; fy += (nfy - fy) * .4;
+        tilt += ((Math.max(-1, Math.min(1, dx / (r * 1.2))) * .22) - tilt) * .2; lift += (1 - lift) * .25;
       }
-      if (mode === 'drop') { // settle onto the table with a tiny overshoot
-        liftV += (0 - lift) * .25 - liftV * .45; lift += liftV; tilt *= .8;
+      if (mode === 'drop') {
+        liftV += (0 - lift) * .3 - liftV * .42; lift += liftV; tilt *= .78;
         if (Math.abs(lift) < .004 && Math.abs(liftV) < .004) { lift = 0; tilt = 0; mode = 'rest'; }
       }
-      if (hint && mode === 'rest' && !G && !reduce) { // a gentle hint: a corner lifts every few seconds
-        const s = (performance.now() % 4200) / 4200, k = Math.max(0, Math.sin(s * Math.PI * 2)) ** 3 * .22;
+      if (hint && mode === 'rest' && !G && !reduce) {
+        const s = (performance.now() % 3600) / 3600, k = Math.max(0, Math.sin(s * Math.PI * 2)) ** 3 * .28;
         if (k > .002) { const a = -0.75; G = { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }; Pp = { x: G.x - Math.cos(a) * r * k, y: G.y - Math.sin(a) * r * k }; draw(); G = Pp = null; return; }
       }
       draw();
     });
-
     stage.addEventListener('pointerdown', e => {
       const d = fit(cv); const l = local(stage, e); const x = l.x * d, y = l.y * d; const { cx, cy, r } = geo();
-      if (Math.hypot(x - cx, y - cy) > r * 1.25) return;
+      if (Math.hypot(x - cx, y - cy) > r * 1.3) return;
       audio(); hint = false; stage.setPointerCapture(e.pointerId); stage.style.cursor = 'grabbing';
-      // grab point = the edge in the direction of the finger, so a press anywhere peels from the nearest rim
-      const a = Math.atan2(y - cy, x - cx || 1e-3);
+      const a = Math.atan2(y - cy, (x - cx) || 1e-3);
       G = { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }; Pp = { x: G.x, y: G.y }; tgt = { x, y }; vx = vy = 0;
-      mode = 'peel'; last = { x, y, t: performance.now() };
+      mode = 'peel'; last = { x, y, t: performance.now() }; press = { x, y };
       if (reduce) { Pp = { x, y }; draw(); }
     });
     stage.addEventListener('pointermove', e => {
       if (mode !== 'peel' && mode !== 'carry') return;
       const d = fit(cv); const l = local(stage, e); const x = l.x * d, y = l.y * d; const { cx, cy, r } = geo();
-      const now = performance.now(), speed = last ? Math.hypot(x - last.x, y - last.y) / Math.max(1, now - last.t) * 16 / d : 0; last = { x, y, t: now };
-      tgt = { x, y }; peelSound(speed);
-      if (mode === 'peel' && Math.hypot(x - G.x, y - G.y) > r * 1.7) { // pulled far enough: it comes off
-        mode = 'carry'; G = Pp = null; carryOff = { x: x - cx, y: y - cy }; lift = .6; tap(320, .12);
+      const now = performance.now(), speed = last ? Math.hypot(x - last.x, y - last.y) / d / Math.max(1, now - last.t) * 16 : 0; last = { x, y, t: now };
+      tgt = { x, y };
+      if (mode === 'peel') {
+        crackle(speed);
+        // measured from where the finger went down, so the fold is always visible before it comes off
+        if (Math.hypot(x - press.x, y - press.y) > r * 1.25) { // it comes off
+          mode = 'carry'; onSheet = false; G = Pp = null; carryOff = { x: x - cx, y: y - cy }; lift = .5; crackle(20);
+        }
       }
       if (reduce) { if (mode === 'peel') Pp = { x, y }; else { fx = (x - carryOff.x) / cv.width; fy = (y - carryOff.y) / cv.height; lift = 1; } draw(); }
     });
     const up = () => {
-      stopPeel(); stage.style.cursor = 'grab';
-      if (mode === 'carry') { // stick it where it was dropped, kept inside the stage
-        const { r } = geo(); const mxr = r / cv.width + .02, myr = r / cv.height + .02;
+      stage.style.cursor = 'grab';
+      if (mode === 'carry') {
+        const { r, hx, hy } = geo();
+        // dropped back over its outline: it snaps home onto the sheet
+        if (Math.hypot(fx * cv.width - hx, fy * cv.height - hy) < r * .6) { fx = .5; fy = .5; onSheet = true; }
+        const mxr = r / cv.width + .02, myr = r / cv.height + .02;
         fx = Math.min(1 - mxr, Math.max(mxr, fx)); fy = Math.min(1 - myr, Math.max(myr, fy));
-        mode = 'drop'; liftV = -.05; tap();
+        mode = 'drop'; liftV = -.06; thump();
         if (reduce) { mode = 'rest'; lift = 0; tilt = 0; draw(); }
       } else if (mode === 'peel') { mode = 'rest'; if (reduce) { G = Pp = null; draw(); } }
     };
     stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
-    stage.addEventListener('dblclick', () => { fx = .5; fy = .5; mode = 'rest'; G = Pp = null; draw(); });
+    stage.addEventListener('dblclick', () => { fx = .5; fy = .5; onSheet = true; mode = 'rest'; G = Pp = null; draw(); });
     new ResizeObserver(draw).observe(stage);
     draw();
     window.SITE_HOOKS.push(() => draw());
@@ -398,6 +370,173 @@
       if (popped === cells.length) setTimeout(build, 900);
     });
     new ResizeObserver(build).observe(stage); build();
+  }
+
+  // ---------------------------------------------------------------- Rocket: hold to count down, release to launch
+  function rocket(stage) {
+    const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
+    const read = stage.querySelector('[data-rocket-read]');
+    let mode = 'idle', charge = 0, y = 0, vy = 0, x = .5, vx = 0, alt = 0, t0 = 0, smoke = [], stars = [], chute = 0, aimX = .5;
+    let rumble = null;
+    const say = k => { if (read) read.textContent = T(k); };
+    function engine(on, level = 1) {
+      const ac = audio(); if (!ac) return;
+      if (on && !rumble) {
+        const src = ac.createBufferSource(); src.buffer = noiseBuffer(ac, 1); src.loop = true;
+        const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 400;
+        const g = ac.createGain(); g.gain.value = 0; src.connect(lp).connect(g).connect(ac.destination); src.start(); rumble = { src, lp, g };
+      }
+      if (!rumble) return;
+      rumble.g.gain.setTargetAtTime(on ? .08 + level * .3 : 0, ac.currentTime, on ? .05 : .4);
+      rumble.lp.frequency.setTargetAtTime(250 + level * 900, ac.currentTime, .1);
+      if (!on) { const r = rumble; rumble = null; setTimeout(() => r.src.stop(), 1600); }
+    }
+    function puff(px, py, n, spread, up) {
+      for (let i = 0; i < n; i++) smoke.push({ x: px + (Math.random() - .5) * spread * .3, y: py, vx: (Math.random() - .5) * spread, vy: up * (Math.random() * 1.5 + .5), r: 4 + Math.random() * 8, a: .5 + Math.random() * .3 });
+    }
+    function drawRocket(cx, cy, s, flame, angle) {
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(angle); ctx.scale(s, s);
+      if (flame > 0) { // flame: layered teardrops that flicker
+        for (let i = 0; i < 3; i++) {
+          const len = (18 + flame * 46) * (1 - i * .28) * (.85 + Math.random() * .3), w = 9 - i * 2.5;
+          ctx.beginPath(); ctx.moveTo(-w, 30); ctx.quadraticCurveTo(0, 30 + len * 1.3, w, 30); ctx.closePath();
+          ctx.fillStyle = `rgba(${237 - i * 10},${237 - i * 10},${235 - i * 10},${.35 + i * .25})`; ctx.fill();
+        }
+      }
+      ctx.fillStyle = '#ededea';
+      ctx.beginPath(); ctx.moveTo(-11, 26); ctx.lineTo(-11, -14); ctx.quadraticCurveTo(-11, -40, 0, -52); ctx.quadraticCurveTo(11, -40, 11, -14); ctx.lineTo(11, 26); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-11, 8); ctx.lineTo(-22, 30); ctx.lineTo(-11, 26); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(11, 8); ctx.lineTo(22, 30); ctx.lineTo(11, 26); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#0b0b0c'; ctx.beginPath(); ctx.arc(0, -16, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+    function frame(now) {
+      const d = fit(cv), W = cv.width, H = cv.height, s = Math.min(W, H) / 330;
+      const pad = H * .86;
+      ctx.clearRect(0, 0, W, H);
+      const dt = Math.min(3, (now - (t0 || now)) / 16.7); t0 = now;
+      // stars stream past once the rocket is high
+      const speedLines = mode === 'flying' ? Math.min(1, alt / 3) : 0;
+      if (stars.length < 60) for (let i = stars.length; i < 60; i++) stars.push({ x: Math.random(), y: Math.random(), z: Math.random() });
+      for (const st of stars) {
+        st.y += (.0006 + speedLines * .02) * (st.z + .3) * dt; if (st.y > 1) { st.y = 0; st.x = Math.random(); }
+        ctx.fillStyle = `rgba(237,237,235,${.15 + st.z * .35})`;
+        ctx.fillRect(st.x * W, st.y * H, 1.2 * d, (1.2 + speedLines * 26 * st.z) * d);
+      }
+      // pad
+      ctx.fillStyle = '#2a2a2d'; ctx.fillRect(W * .3, pad, W * .4, 3 * d);
+      let rx = x * W, ry = pad - 30 * s + y, flame = 0, angle = 0;
+      if (mode === 'charging') {
+        charge = Math.min(1, charge + .012 * dt);
+        rx += (Math.random() - .5) * charge * 5 * d; flame = charge * .35;
+        if (Math.random() < .6) puff(rx, pad, 2, 3 * d * (1 + charge * 3), -.3);
+        say(charge < .34 ? 'rk.3' : charge < .67 ? 'rk.2' : charge < 1 ? 'rk.1' : 'rk.go');
+        engine(true, charge * .5);
+        if (charge >= 1) launch();
+      } else if (mode === 'flying') {
+        vy -= (.16 + charge * .22) * s * dt; y += vy * dt; alt += -vy * .004 * dt;
+        vx += ((aimX - x) * .002 - vx * .05) * dt; x += vx * dt; angle = vx * 18;
+        flame = 1; puff(rx, ry + 30 * s, 2, 2 * d, 2 * d);
+        if (read) read.textContent = `${T('rk.alt')} ${alt.toFixed(1)} km`;
+        if (ry < -120 * s && alt > 6) { mode = 'away'; t0 = now; engine(false); setTimeout(() => { if (mode === 'away') { mode = 'chute'; y = -(pad + 60 * s); vy = 0; x = .5; vx = 0; chute = 0; say('rk.back'); } }, 1400); }
+      } else if (mode === 'chute') {
+        chute = Math.min(1, chute + .03 * dt); vy = 1.1 * s; y += vy * dt; angle = Math.sin(now / 500) * .08;
+        if (y >= 0) { y = 0; mode = 'idle'; charge = 0; alt = 0; puff(rx, pad, 18, 6 * d, -.5); say('rk.idle'); }
+      }
+      // smoke
+      for (const p of smoke) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .97; p.vy *= .97; p.r += .35 * dt * d; p.a -= .012 * dt; }
+      smoke = smoke.filter(p => p.a > 0).slice(-220);
+      for (const p of smoke) { ctx.fillStyle = `rgba(200,200,196,${p.a * .5})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * d * .6, 0, Math.PI * 2); ctx.fill(); }
+      if (mode !== 'away') {
+        rx = x * W; ry = pad - 30 * s + y;
+        if (mode === 'chute') { // parachute
+          ctx.strokeStyle = 'rgba(237,237,235,.5)'; ctx.lineWidth = 1 * d;
+          const cy2 = ry - 52 * s - 40 * s * chute;
+          ctx.beginPath(); ctx.moveTo(rx - 10 * s, ry - 40 * s); ctx.lineTo(rx - 34 * s * chute, cy2); ctx.moveTo(rx + 10 * s, ry - 40 * s); ctx.lineTo(rx + 34 * s * chute, cy2); ctx.stroke();
+          ctx.fillStyle = '#d4d4d0'; ctx.beginPath(); ctx.ellipse(rx, cy2, 36 * s * chute, 20 * s * chute, 0, Math.PI, 0); ctx.fill();
+        }
+        drawRocket(rx, ry, s, flame, angle);
+      }
+    }
+    function launch() { if (mode !== 'charging') return; mode = 'flying'; vy = -2 * (window.devicePixelRatio || 1); puff(x * cv.width, cv.height * .86, 40, 7, -.6); engine(true, 1); }
+    const R = runner(stage, frame);
+    stage.addEventListener('pointerdown', e => { if (mode !== 'idle') return; audio(); mode = 'charging'; charge = 0; stage.setPointerCapture(e.pointerId); if (reduce) { say('rk.go'); } });
+    stage.addEventListener('pointermove', e => { const l = local(stage, e); aimX = Math.max(.15, Math.min(.85, l.x / l.w)); });
+    const release = () => { if (mode === 'charging') { if (charge > .2) launch(); else { mode = 'idle'; engine(false); say('rk.idle'); } } };
+    stage.addEventListener('pointerup', release); stage.addEventListener('pointercancel', release);
+    stage.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat && mode === 'idle') { e.preventDefault(); audio(); mode = 'charging'; charge = 0; } });
+    stage.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') release(); });
+    window.SITE_HOOKS.push(() => { if (mode === 'idle') say('rk.idle'); });
+    R.once();
+  }
+
+  // ---------------------------------------------------------------- Jelly with a face
+  function jelly(stage) {
+    const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
+    const N = 28; let pts = [], cx = 0, cy = 0, R0 = 0, drag = null, mx = null, my = null, stretch = 0, blink = 0;
+    function build() {
+      fit(cv); cx = cv.width / 2; cy = cv.height * .54; R0 = Math.min(cv.width, cv.height) * .26;
+      pts = Array.from({ length: N }, (_, i) => { const a = i / N * Math.PI * 2; return { a, x: cx + Math.cos(a) * R0, y: cy + Math.sin(a) * R0, vx: 0, vy: 0 }; });
+    }
+    function boing() {
+      const ac = audio(); if (!ac) return; const t = ac.currentTime;
+      const o = ac.createOscillator(); o.type = 'sine';
+      o.frequency.setValueAtTime(330, t); o.frequency.exponentialRampToValueAtTime(140, t + .35);
+      const lfo = ac.createOscillator(); lfo.frequency.value = 18; const lg = ac.createGain(); lg.gain.value = 22; lfo.connect(lg).connect(o.frequency);
+      const g = ac.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.22, t + .02); g.gain.exponentialRampToValueAtTime(.001, t + .45);
+      o.connect(g).connect(ac.destination); o.start(t); lfo.start(t); o.stop(t + .5); lfo.stop(t + .5);
+    }
+    function step(now) {
+      const d = fit(cv); const W = cv.width, H = cv.height;
+      if (!pts.length) build();
+      // physics: each point is pulled toward its rest spot around the current center, plus neighbor springs
+      let sx = 0, sy = 0; pts.forEach(p => { sx += p.x; sy += p.y; }); const ccx = sx / N, ccy = sy / N;
+      const homeX = cx + (ccx - cx) * .0, homeY = cy;
+      pts.forEach((p, i) => {
+        if (drag && drag.i === i) return;
+        const rx = homeX + Math.cos(p.a) * R0, ry = homeY + Math.sin(p.a) * R0;
+        p.vx += (rx - p.x) * .035; p.vy += (ry - p.y) * .035;
+        const a = pts[(i + 1) % N], b = pts[(i + N - 1) % N];
+        p.vx += ((a.x + b.x) / 2 - p.x) * .12; p.vy += ((a.y + b.y) / 2 - p.y) * .12;
+        if (mx !== null && !drag) { const dx = p.x - mx, dy = p.y - my, dist = Math.hypot(dx, dy); if (dist < R0 * .5) { const f = (1 - dist / (R0 * .5)) * 1.6 * d; p.vx += dx / (dist || 1) * f; p.vy += dy / (dist || 1) * f; } }
+        p.vx *= .9; p.vy *= .9; p.x += p.vx; p.y += p.vy;
+      });
+      if (drag) { const p = pts[drag.i]; p.x += (drag.x - p.x) * .5; p.y += (drag.y - p.y) * .5; }
+      stretch = Math.max(0, Math.min(1, (Math.max(...pts.map(p => Math.hypot(p.x - ccx, p.y - ccy))) / R0 - 1.15) * 1.5));
+      ctx.clearRect(0, 0, W, H);
+      // shadow on the floor
+      ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(ccx, cy + R0 * 1.12, R0 * .9, R0 * .14, 0, 0, Math.PI * 2); ctx.fill();
+      // body: smooth closed curve through the midpoints
+      ctx.beginPath();
+      for (let i = 0; i <= N; i++) { const p = pts[i % N], q = pts[(i + 1) % N]; const mx2 = (p.x + q.x) / 2, my2 = (p.y + q.y) / 2; if (i === 0) ctx.moveTo(mx2, my2); else ctx.quadraticCurveTo(p.x, p.y, mx2, my2); }
+      const g = ctx.createRadialGradient(ccx - R0 * .35, ccy - R0 * .45, R0 * .1, ccx, ccy, R0 * 1.3);
+      g.addColorStop(0, '#f5f5f2'); g.addColorStop(.55, '#d9d9d5'); g.addColorStop(1, '#a8a8a4');
+      ctx.fillStyle = g; ctx.fill();
+      // face: eyes follow the pointer, the mouth opens when stretched
+      const lx = mx ?? ccx, ly = my ?? (ccy - R0);
+      const ex = Math.max(-1, Math.min(1, (lx - ccx) / (R0 * 2))), ey = Math.max(-1, Math.min(1, (ly - ccy) / (R0 * 2)));
+      blink = (now % 4200) < 120 ? 1 : 0;
+      [-1, 1].forEach(side => {
+        const ox = ccx + side * R0 * .3, oy = ccy - R0 * .12;
+        ctx.fillStyle = '#0b0b0c';
+        if (blink) { ctx.fillRect(ox - R0 * .07, oy, R0 * .14, 2 * d); return; }
+        ctx.beginPath(); ctx.ellipse(ox + ex * R0 * .06, oy + ey * R0 * .06, R0 * (.07 + stretch * .03), R0 * (.09 + stretch * .05), 0, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.strokeStyle = '#0b0b0c'; ctx.fillStyle = '#0b0b0c'; ctx.lineWidth = 2.2 * d; ctx.lineCap = 'round';
+      if (stretch > .25) { ctx.beginPath(); ctx.ellipse(ccx, ccy + R0 * .22, R0 * .08 * stretch + R0 * .03, R0 * .12 * stretch + R0 * .03, 0, 0, Math.PI * 2); ctx.fill(); }
+      else { ctx.beginPath(); ctx.arc(ccx, ccy + R0 * .12, R0 * .14, .2 * Math.PI, .8 * Math.PI); ctx.stroke(); }
+    }
+    stage.addEventListener('pointerdown', e => {
+      const d = fit(cv); const l = local(stage, e); const x = l.x * d, y = l.y * d;
+      let best = -1, bd = Infinity; pts.forEach((p, i) => { const dd = Math.hypot(p.x - x, p.y - y); if (dd < bd) { bd = dd; best = i; } });
+      if (bd > R0 * .9) return; audio(); drag = { i: best, x, y }; stage.setPointerCapture(e.pointerId); stage.style.cursor = 'grabbing';
+    });
+    stage.addEventListener('pointermove', e => { const d = fit(cv); const l = local(stage, e); mx = l.x * d; my = l.y * d; if (drag) { drag.x = mx; drag.y = my; } if (reduce) step(performance.now()); });
+    stage.addEventListener('pointerleave', () => { if (!drag) mx = my = null; });
+    const up = () => { if (!drag) return; drag = null; stage.style.cursor = 'grab'; if (stretch > .1) boing(); };
+    stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+    new ResizeObserver(() => { build(); step(performance.now()); }).observe(stage);
+    runner(stage, step);
   }
 
   // ---------------------------------------------------------------- 8. Hold to confirm
@@ -550,7 +689,7 @@
   }
 
   window.SITE_HOOKS = window.SITE_HOOKS || [];
-  const kinds = { liquid, dither, ripples, peel, grid, particles, bubbles, hold, scramble, toggle, tabs, copy };
+  const kinds = { liquid, ripples, peel, grid, particles, bubbles, hold, scramble, toggle, tabs, copy, rocket, jelly };
   document.querySelectorAll('[data-shot]').forEach(stage => { try { kinds[stage.dataset.shot](stage); } catch (e) { console.warn('shot', stage.dataset.shot, e); } });
   document.querySelectorAll('[data-pause]').forEach(pause);
 })();
