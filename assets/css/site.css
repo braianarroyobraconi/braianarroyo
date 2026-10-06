@@ -461,12 +461,6 @@ html.js .job.open .job-panel-content { opacity: 1; transform: none; transition-d
 .sw .thumb { position: absolute; top: 6px; left: 6px; width: 60px; height: 60px; border-radius: 999px; background: var(--paper); box-shadow: 0 6px 16px -4px rgba(0,0,0,.6); will-change: transform; }
 .sw-state { position: absolute; bottom: 14px; left: 0; right: 0; text-align: center; color: var(--faint); font-size: 11px; }
 
-/* Clip tabs */
-.ctabs { position: relative; padding: 5px; border-radius: 999px; background: #1d1d20; box-shadow: inset 0 0 0 1px var(--rule); }
-.ctabs ul { display: flex; list-style: none; }
-.ctabs button { border: 0; background: none; font: 500 15px 'Geist', sans-serif; color: var(--muted); padding: 10px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
-.ctabs .copy { position: absolute; inset: 5px; pointer-events: none; transition: clip-path 300ms var(--ease-out); }
-.ctabs .copy button { background: var(--paper); color: var(--ink); }
 
 /* Copy morph (dark) */
 .copy-demo { display: grid; justify-items: center; gap: 14px; }
@@ -476,7 +470,6 @@ html.js .job.open .job-panel-content { opacity: 1; transform: none; transition-d
   .ah-card:hover { transform: translateY(-3px); }
   .ah-card:hover .ah-media img { scale: 1.03; }
   .ah-card:hover .case-link .icon { transform: translateX(3px); }
-  .ctabs .list button:hover { color: var(--paper); }
   .hold:hover { background: #2c2c30; }
 }
 @media (max-width: 1024px) {
@@ -490,7 +483,6 @@ html.js .job.open .job-panel-content { opacity: 1; transform: none; transition-d
   .shots { gap: 28px; }
   .shot, .shot.wide { grid-column: span 12; }
   .shot-stage { height: 78vw; max-height: 420px; }
-  .ctabs button { padding: 9px 12px; font-size: 14px; }
 }
 
 /* Copy state outside the contact button */

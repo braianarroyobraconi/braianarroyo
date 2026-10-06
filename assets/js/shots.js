@@ -450,55 +450,6 @@
     runner(stage, step);
   }
 
-  // ---------------------------------------------------------------- Eyes: a wall of eyes that watch you
-  function eyes(stage) {
-    const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
-    let E = [], mx = null, my = null, lastMove = 0, wave = null, startle = 0;
-    function build() {
-      fit(cv); const W = cv.width, H = cv.height, base = Math.min(W, H) / 7.5; E = [];
-      // loose packing of circles of varied sizes
-      for (let tries = 0; tries < 1400 && E.length < 70; tries++) {
-        const r = base * (.35 + Math.random() ** 2 * .9), x = r + Math.random() * (W - 2 * r), y = r + Math.random() * (H - 2 * r);
-        if (E.every(e => Math.hypot(e.x - x, e.y - y) > e.r + r + base * .08)) E.push({ x, y, r, lid: 0, blinkAt: performance.now() + Math.random() * 6000, px: 0, py: 0, dil: 1 });
-      }
-    }
-    function step(now) {
-      fit(cv); const W = cv.width, H = cv.height;
-      ctx.clearRect(0, 0, W, H);
-      const idle = mx === null || now - lastMove > 2600, sleepy = idle && mx !== null ? Math.min(.62, (now - lastMove - 2600) / 2500) : 0;
-      if (!wave && Math.random() < .002) wave = { t0: now, x: Math.random() * W };
-      startle *= .94;
-      for (const e of E) {
-        // look at the cursor, or wander when there is none
-        const tx = mx ?? (W / 2 + Math.sin(now / 1700 + e.x) * W * .3), ty = my ?? (H / 2 + Math.cos(now / 2100 + e.y) * H * .3);
-        const dx = tx - e.x, dy = ty - e.y, dist = Math.hypot(dx, dy) || 1, reach = Math.min(1, dist / (e.r * 4)) * e.r * .42;
-        e.px += (dx / dist * reach - e.px) * .18; e.py += (dy / dist * reach - e.py) * .18;
-        e.dil += ((1 + startle * .9) - e.dil) * .2;
-        let blink = 0;
-        if (now > e.blinkAt) { const k = (now - e.blinkAt) / 160; blink = k < 1 ? Math.sin(k * Math.PI) : 0; if (k >= 1) e.blinkAt = now + 2500 + Math.random() * 7000; }
-        if (wave) { const k = (now - wave.t0) / 900 - Math.abs(e.x - wave.x) / W; if (k > 0 && k < .25) blink = Math.max(blink, Math.sin(k / .25 * Math.PI)); }
-        const lidT = Math.max(blink, sleepy * (1 - startle));
-        e.lid += (lidT - e.lid) * .35;
-        // eye
-        ctx.save(); ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2); ctx.fillStyle = '#e6e6e2'; ctx.fill(); ctx.clip();
-        const ir = e.r * .5 * e.dil, ix = e.x + e.px, iy = e.y + e.py;
-        ctx.fillStyle = '#2a2a2d'; ctx.beginPath(); ctx.arc(ix, iy, ir, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#0b0b0c'; ctx.beginPath(); ctx.arc(ix, iy, ir * (.55 + startle * .25), 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.beginPath(); ctx.arc(ix - ir * .3, iy - ir * .35, ir * .18, 0, Math.PI * 2); ctx.fill();
-        // lids close from top and bottom
-        if (e.lid > .01) { ctx.fillStyle = '#1a1a1c'; const h = e.r * e.lid; ctx.fillRect(e.x - e.r, e.y - e.r, e.r * 2, h * 1.02); ctx.fillRect(e.x - e.r, e.y + e.r - h * .6, e.r * 2, h * .6); }
-        ctx.restore();
-        ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = Math.max(1, e.r * .06); ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2); ctx.stroke();
-      }
-      if (wave && now - wave.t0 > 2200) wave = null;
-    }
-    stage.addEventListener('pointermove', e => { const l = local(stage, e), d = fit(cv); mx = l.x * d; my = l.y * d; lastMove = performance.now(); if (reduce) step(lastMove); });
-    stage.addEventListener('pointerleave', () => { mx = my = null; });
-    stage.addEventListener('pointerdown', e => { const l = local(stage, e), d = fit(cv); mx = l.x * d; my = l.y * d; lastMove = performance.now(); startle = 1; E.forEach(x => { x.blinkAt = performance.now() + Math.random() * 120; }); if (reduce) step(lastMove); });
-    new ResizeObserver(() => { build(); step(performance.now()); }).observe(stage);
-    runner(stage, step);
-  }
-
   // ---------------------------------------------------------------- Attractor: Peter de Jong
   // x' = sin(a·y) − cos(b·x), y' = sin(c·x) − cos(d·y). Chaotic almost everywhere; four numbers decide its shape.
   function attractor(stage) {
@@ -722,30 +673,6 @@
     window.SITE_HOOKS.push(() => { el.textContent = T('sh.scramble.text'); });
   }
 
-  // ---------------------------------------------------------------- 11. Clip-path tabs
-  function tabs(stage) {
-    const wrap = stage.querySelector('.ctabs'), list = wrap.querySelector('.list'), copy = wrap.querySelector('.copy');
-    let active = 0;
-    const sync = () => {
-      copy.innerHTML = ''; const c = list.cloneNode(true); c.classList.remove('list');
-      c.querySelectorAll('button').forEach(b => { b.tabIndex = -1; b.removeAttribute('aria-selected'); b.removeAttribute('role'); }); c.setAttribute('aria-hidden', 'true'); copy.appendChild(c); place();
-    };
-    const place = () => {
-      const btns = list.querySelectorAll('button'); const b = btns[active];
-      btns.forEach((x, i) => x.setAttribute('aria-selected', String(i === active)));
-      const l = b.offsetLeft - list.offsetLeft, r = list.offsetWidth - l - b.offsetWidth;
-      copy.style.clipPath = `inset(0 ${r}px 0 ${l}px round 999px)`;
-    };
-    list.querySelectorAll('button').forEach((b, i) => b.addEventListener('click', () => { active = i; place(); }));
-    list.addEventListener('keydown', e => {
-      const n = list.querySelectorAll('button').length;
-      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { active = (active + (e.key === 'ArrowRight' ? 1 : n - 1)) % n; list.querySelectorAll('button')[active].focus(); place(); }
-    });
-    new ResizeObserver(place).observe(list);
-    window.SITE_HOOKS.push(() => requestAnimationFrame(sync));
-    sync();
-  }
-
   // ---------------------------------------------------------------- 12. Copy with state
   function copy(stage) {
     const b = stage.querySelector('button'); let t = 0;
@@ -796,7 +723,7 @@
   }
 
   window.SITE_HOOKS = window.SITE_HOOKS || [];
-  const kinds = { liquid, ripples, peel, grid, particles, scramble, tabs, copy, rocket, jelly, morpho, attractor, eyes };
+  const kinds = { liquid, ripples, peel, grid, particles, scramble, copy, rocket, jelly, morpho, attractor };
   document.querySelectorAll('[data-shot]').forEach(stage => { try { kinds[stage.dataset.shot](stage); } catch (e) { console.warn('shot', stage.dataset.shot, e); } });
   document.querySelectorAll('[data-pause]').forEach(pause);
 })();
