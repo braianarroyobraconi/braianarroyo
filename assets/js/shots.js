@@ -3,7 +3,7 @@
 (() => {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
-  const coarse = matchMedia('(pointer: coarse)').matches; // no hover on touch: pieces wander on their own until touched
+  const coarse = matchMedia('(pointer: coarse)').matches; // no hover on touch (or inside the home carousel): pieces wander on their own until touched
   const T = k => (window.Site ? window.Site.t(k) : k);
   const lang = () => (window.Site ? window.Site.lang : 'es');
 
@@ -69,7 +69,7 @@
     stage.addEventListener('pointerleave', off); stage.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') off(); }); stage.addEventListener('pointercancel', off);
     const R = runner(stage, t => {
       fit(cv, 1.5);
-      if (coarse && !touching) { const s2 = t / 1000; tx = .5 + Math.sin(s2 * .5) * .3; ty = .5 + Math.cos(s2 * .37) * .25; ti = .6; }
+      if ((coarse || stage.closest('.car')) && !touching) { const s2 = t / 1000; tx = .5 + Math.sin(s2 * .5) * .3; ty = .5 + Math.cos(s2 * .37) * .25; ti = .6; }
       mx += (tx - mx) * .08; my += (ty - my) * .08; mi += (ti - mi) * .05;
       P.gl.uniform2f(P.u.r, cv.width, cv.height); P.gl.uniform1f(P.u.t, reduce ? 12 : t / 1000);
       P.gl.uniform2f(P.u.m, mx, my); P.gl.uniform1f(P.u.mi, mi); P.draw();
@@ -351,7 +351,7 @@
     const off = () => { touching = false; mx = my = -1e4; if (reduce) step(); };
     stage.addEventListener('pointerleave', off); stage.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') off(); }); stage.addEventListener('pointercancel', off);
     function step() {
-      if (coarse && !touching && !reduce) { const s2 = performance.now() / 1000; mx = W * (.5 + Math.sin(s2 * .6) * .32); my = H * (.5 + Math.sin(s2 * .83) * .3); }
+      if ((coarse || stage.closest('.car')) && !touching && !reduce) { const s2 = performance.now() / 1000; mx = W * (.5 + Math.sin(s2 * .6) * .32); my = H * (.5 + Math.sin(s2 * .83) * .3); }
       ctx.clearRect(0, 0, W, H);
       const R = 120 * d;
       for (const p of dots) {
@@ -395,7 +395,7 @@
     const off = () => { touching = false; mx = my = -1e4; if (reduce) step(); };
     stage.addEventListener('pointerleave', off); stage.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') off(); }); stage.addEventListener('pointercancel', off);
     function step() {
-      if (coarse && !touching && !reduce) { const s2 = performance.now() / 1000; mx = W * (.5 + Math.sin(s2 * .7) * .42); my = H * (.5 + Math.cos(s2 * 1.1) * .22); }
+      if ((coarse || stage.closest('.car')) && !touching && !reduce) { const s2 = performance.now() / 1000; mx = W * (.5 + Math.sin(s2 * .7) * .42); my = H * (.5 + Math.cos(s2 * 1.1) * .22); }
       ctx.clearRect(0, 0, W, H); ctx.fillStyle = 'rgba(237,237,235,.9)';
       const R = 70 * d, s = 1.6 * d;
       for (const p of pts) {

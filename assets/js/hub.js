@@ -6,7 +6,7 @@
   const exp = document.querySelector('.door-exp');
   if (exp) {
     const want = new URLSearchParams(location.search).get('exp');
-    if (/^[abc]$/.test(want || '')) exp.dataset.variant = want;
+    exp.dataset.variant = /^[abc]$/.test(want || '') ? want : 'b';
     const preview = !/braianarroyo\.com$/.test(location.hostname);
     if (preview) {
       const sw = document.createElement('div'); sw.className = 'variant-switch mono';
@@ -20,7 +20,18 @@
     let k = 0;
     const show = i => { slides.forEach((s, j) => s.classList.toggle('on', j === i)); ticks.forEach((t, j) => t.classList.toggle('on', j === i)); };
     show(0);
-    if (!reduce) setInterval(() => { if (exp.dataset.variant === 'b' && !document.hidden) show(k = (k + 1) % slides.length); }, 2400);
+    // C: the front card goes to the back every few seconds, so every company gets its turn on top
+    const cards = [...exp.querySelectorAll('.xcard')]; let front = 0;
+    const deal = () => cards.forEach((c, j) => c.style.setProperty('--i', (j - front + cards.length) % cards.length));
+    deal();
+    let hovering = false;
+    exp.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') hovering = true; });
+    exp.addEventListener('pointerleave', () => { hovering = false; });
+    if (!reduce) setInterval(() => {
+      if (document.hidden) return;
+      if (exp.dataset.variant === 'b') show(k = (k + 1) % slides.length);
+      if (exp.dataset.variant === 'c' && !hovering) { const top = cards[front]; top.classList.add('leaving'); setTimeout(() => top.classList.remove('leaving'), 700); front = (front + 1) % cards.length; deal(); }
+    }, 2400);
   }
 
   // ---- After hours carousel: autoplay with story bars, arrows, swipe; pauses on hover, offscreen and hidden tab.
@@ -28,9 +39,10 @@
   if (!car) return;
   const slides = [...car.querySelectorAll('.car-slide')], bars = [...car.querySelectorAll('.car-bar')];
   const DUR = 5000;
-  let i = 0, t0 = performance.now(), elapsed = 0, paused = false, visible = false, raf = 0;
+  let outT = 0, i = 0, t0 = performance.now(), elapsed = 0, paused = false, visible = false, raf = 0;
   function go(n, dir) {
     const prev = i; i = (n + slides.length) % slides.length; if (prev === i) return;
+    clearTimeout(outT); outT = setTimeout(() => slides[prev].classList.remove('out'), 950);
     slides.forEach((s, j) => {
       s.classList.toggle('on', j === i); s.classList.toggle('out', j === prev);
       s.style.setProperty('--dir', dir || (n > prev ? 1 : -1));

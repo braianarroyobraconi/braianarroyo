@@ -692,3 +692,16 @@ h2.chapter-label { font-weight: 400; line-height: 1.6; letter-spacing: 0.04em; t
   .xv .logo { height: 22px; }
   .xv-a { padding: 0 22px; }
 }
+
+/* C, v2: a readable deck. Cards peek out above each other; the front one rotates to the back. */
+.xcard { width: min(70%, 360px); transform: translateY(calc(var(--i) * -22px)) scale(calc(1 - var(--i) * .05)); z-index: calc(10 - var(--i)); opacity: calc(1 - var(--i) * .2); transition: transform 700ms cubic-bezier(0.32, 0.72, 0, 1), opacity 500ms ease; top: calc(50% - 30px); }
+.xcard.leaving { animation: deal-out 700ms cubic-bezier(0.32, 0.72, 0, 1); }
+@keyframes deal-out { 40% { transform: translateY(70px) rotate(-4deg) scale(1); opacity: 1; z-index: 20; } }
+@media (hover: hover) and (pointer: fine) {
+  .door-exp:hover .xcard { transform: translateY(calc(var(--i) * -30px)) scale(calc(1 - var(--i) * .04)); opacity: calc(1 - var(--i) * .15); }
+}
+
+/* Carousel v2: live micro-interactions. Only the visible slide (and the one leaving) is rendered. */
+.car-slide { display: none; }
+.car-slide.on, .car-slide.out { display: block; }
+.car-link { background: var(--panel); }
