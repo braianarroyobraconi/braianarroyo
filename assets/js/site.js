@@ -5,7 +5,7 @@
 (() => {
   document.documentElement.classList.add('js');
   const COMMON_EN = {
-    'nav.work': 'Work', 'nav.after': 'After hours', 'nav.contact': 'Contact',
+    'nav.work': 'Work', 'nav.exp': 'Experience', 'nav.after': 'After hours', 'nav.contact': 'Contact',
     'back': 'Back', 'contact.copy': 'Copy email', 'contact.copied': 'Copied',
     'cta.title': 'Let\'s talk.', 'cta.button': 'Write to me',
     'greet': ['Good morning', 'Good afternoon', 'Good evening'],
@@ -43,7 +43,8 @@
   const pill = document.getElementById('pill');
   const pillList = pill && pill.querySelector('.list');
   const pillCopy = pill && pill.querySelector('.active-copy');
-  let activeSec = null;
+  const pageSec = pill && pill.dataset.current || null; // subpages keep their own tab lit
+  let activeSec = pageSec;
   function syncPill() {
     if (!pill) return;
     pill.setAttribute('aria-label', lang === 'en' ? 'Sections' : 'Secciones');
@@ -66,7 +67,7 @@
   }
   if (pill) {
     const secIO = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) activeSec = e.target.dataset.owner || null; });
+      entries.forEach(e => { if (e.isIntersecting) activeSec = e.target.dataset.owner || pageSec; });
       placePill();
     }, { rootMargin: '-45% 0px -50% 0px' });
     document.querySelectorAll('[data-owner]').forEach(el => secIO.observe(el));
