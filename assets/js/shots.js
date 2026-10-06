@@ -140,78 +140,144 @@
     R.once();
   }
 
-  // ---------------------------------------------------------------- 4. Peel
+  // ---------------------------------------------------------------- Shared sound (only after a user gesture)
+  let AC = null;
+  const audio = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) { AC = null; } return AC; };
+  const noiseBuffer = (ac, secs) => { const b = ac.createBuffer(1, ac.sampleRate * secs, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; };
+
+  // ---------------------------------------------------------------- 4. Peel (Pegote's core gesture)
   function peel(stage) {
     const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
-    let G = null, Pp = null, tgt = null, vx = 0, vy = 0, dragging = false, idle = true;
-    const geo = () => { const w = cv.width, h = cv.height; return { cx: w / 2, cy: h / 2, r: Math.min(w, h) * .3 }; };
-    function draw() {
-      const d = fit(cv); const { cx, cy, r } = geo();
-      ctx.clearRect(0, 0, cv.width, cv.height);
-      const circle = () => { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); };
-      const front = () => {
-        ctx.fillStyle = '#e9e9e6'; circle(); ctx.fill();
-        ctx.fillStyle = '#0b0b0c'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.font = `500 ${r * .26}px Geist, sans-serif`; ctx.fillText(lang() === 'en' ? 'peel me' : 'despegame', cx, cy);
-      };
-      if (!G || !Pp || Math.hypot(Pp.x - G.x, Pp.y - G.y) < 1) {
-        ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 18 * d; ctx.shadowOffsetY = 6 * d; circle(); ctx.fillStyle = '#e9e9e6'; ctx.fill(); ctx.restore();
-        front(); return;
+    let fx = .5, fy = .5;                     // sticker center, relative to the stage
+    let G = null, Pp = null, tgt = null, vx = 0, vy = 0;
+    let mode = 'rest';                        // rest | peel | carry | drop
+    let lift = 0, liftV = 0, tilt = 0, last = null, carryOff = null, hint = true;
+    let snd = null;                           // live peel noise while dragging
+    const geo = () => ({ cx: fx * cv.width, cy: fy * cv.height, r: Math.min(cv.width, cv.height) * .27 });
+
+    function peelSound(speed) {
+      const ac = audio(); if (!ac) return;
+      if (!snd) {
+        const src = ac.createBufferSource(); src.buffer = noiseBuffer(ac, 1); src.loop = true;
+        const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 2600; f.Q.value = .8;
+        const g = ac.createGain(); g.gain.value = 0;
+        src.connect(f).connect(g).connect(ac.destination); src.start();
+        snd = { src, f, g };
       }
-      // Fold line = perpendicular bisector of grab point G and finger P; the part on G's side flips over it.
+      const k = Math.min(1, speed / 26);
+      snd.g.gain.setTargetAtTime(.02 + k * .16, ac.currentTime, .03);
+      snd.f.frequency.setTargetAtTime(1800 + k * 2600, ac.currentTime, .05);
+    }
+    function stopPeel() { if (!snd || !AC) return; const s = snd; snd = null; s.g.gain.setTargetAtTime(0, AC.currentTime, .04); setTimeout(() => s.src.stop(), 300); }
+    function tap(freq = 180, vol = .35) { // soft "thup" when it sticks
+      const ac = audio(); if (!ac) return; const t = ac.currentTime;
+      const o = ac.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(freq * 1.6, t); o.frequency.exponentialRampToValueAtTime(freq, t + .08);
+      const g = ac.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + .14);
+      const n = ac.createBufferSource(); n.buffer = noiseBuffer(ac, .05); const nf = ac.createBiquadFilter(); nf.type = 'highpass'; nf.frequency.value = 3000; const ng = ac.createGain(); ng.gain.value = .05;
+      o.connect(g).connect(ac.destination); n.connect(nf).connect(ng).connect(ac.destination); o.start(t); o.stop(t + .15); n.start(t);
+      if (navigator.vibrate) navigator.vibrate(6);
+    }
+
+    function face(cx, cy, r) {
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#e9e9e6'; ctx.fill();
+      ctx.fillStyle = '#0b0b0c'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = `500 ${r * .24}px Geist, sans-serif`; ctx.fillText(lang() === 'en' ? 'peel me' : 'despegame', cx, cy);
+    }
+    function shadow(blur, oy, a = .45) { const d = window.devicePixelRatio || 1; ctx.shadowColor = `rgba(0,0,0,${a})`; ctx.shadowBlur = blur * d; ctx.shadowOffsetY = oy * d; }
+    function draw() {
+      fit(cv); const { cx, cy, r } = geo();
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      if (mode === 'carry' || mode === 'drop') { // fully lifted: bigger shadow, slight scale and tilt
+        ctx.save(); ctx.translate(cx, cy); ctx.rotate(tilt); ctx.scale(1 + lift * .06, 1 + lift * .06); ctx.translate(-cx, -cy);
+        ctx.save(); shadow(10 + lift * 30, 4 + lift * 18, .35 + lift * .2); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#e9e9e6'; ctx.fill(); ctx.restore();
+        face(cx, cy, r); ctx.restore(); return;
+      }
+      if (!G || !Pp || Math.hypot(Pp.x - G.x, Pp.y - G.y) < 1) {
+        ctx.save(); shadow(14, 4, .4); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#e9e9e6'; ctx.fill(); ctx.restore();
+        face(cx, cy, r); return;
+      }
+      // Fold line = perpendicular bisector of the grab point G and the finger P; the part on G's side flips over it.
       const mx = (G.x + Pp.x) / 2, my = (G.y + Pp.y) / 2;
       let nx = Pp.x - G.x, ny = Pp.y - G.y; const L = Math.hypot(nx, ny); nx /= L; ny /= L;
-      const BIG = Math.max(cv.width, cv.height) * 4;
-      const half = sign => { // polygon covering the half-plane where (X-M)·n has this sign
-        const tx = -ny, ty = nx;
+      const BIG = Math.max(cv.width, cv.height) * 4, tx = -ny, ty = nx;
+      const half = sign => {
         ctx.beginPath();
         ctx.moveTo(mx + tx * BIG, my + ty * BIG); ctx.lineTo(mx - tx * BIG, my - ty * BIG);
         ctx.lineTo(mx - tx * BIG + nx * BIG * sign, my - ty * BIG + ny * BIG * sign);
         ctx.lineTo(mx + tx * BIG + nx * BIG * sign, my + ty * BIG + ny * BIG * sign); ctx.closePath();
       };
-      // what stays stuck
       ctx.save(); half(1); ctx.clip();
-      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 14 * d; ctx.shadowOffsetY = 4 * d; circle(); ctx.fillStyle = '#e9e9e6'; ctx.fill(); ctx.restore();
-      front(); ctx.restore();
-      // the flap: lifted region reflected across the fold
+      ctx.save(); shadow(14, 4, .4); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#e9e9e6'; ctx.fill(); ctx.restore();
+      face(cx, cy, r); ctx.restore();
       const dot = mx * nx + my * ny;
       ctx.save();
       ctx.transform(1 - 2 * nx * nx, -2 * nx * ny, -2 * nx * ny, 1 - 2 * ny * ny, 2 * dot * nx, 2 * dot * ny);
       half(-1); ctx.clip();
-      ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 22 * d; ctx.shadowOffsetY = 10 * d;
-      circle();
+      shadow(22, 10, .55);
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
       const g = ctx.createLinearGradient(mx, my, mx - nx * r, my - ny * r);
-      g.addColorStop(0, '#c9c9c5'); g.addColorStop(1, '#a9a9a5');
+      g.addColorStop(0, '#cfcfcb'); g.addColorStop(1, '#a6a6a2');
       ctx.fillStyle = g; ctx.fill();
       ctx.restore();
     }
+
     const R = runner(stage, () => {
-      if (!dragging && G && Pp) { // spring back and stick again
+      const { cx, cy, r } = geo();
+      if (mode === 'peel' && tgt) { Pp.x += (tgt.x - Pp.x) * .5; Pp.y += (tgt.y - Pp.y) * .5; }
+      if (mode === 'rest' && G && Pp) { // let go before it came off: spring back and stick again
         const ax = (G.x - Pp.x) * .16 - vx * .5, ay = (G.y - Pp.y) * .16 - vy * .5;
         vx += ax; vy += ay; Pp.x += vx; Pp.y += vy;
-        if (Math.hypot(G.x - Pp.x, G.y - Pp.y) < .5 && Math.hypot(vx, vy) < .5) { G = Pp = null; }
-      } else if (dragging && tgt) { Pp.x += (tgt.x - Pp.x) * .5; Pp.y += (tgt.y - Pp.y) * .5; }
-      if (idle && !dragging && !G && !reduce) { // a gentle hint: the corner lifts a little every few seconds
-        const s = (performance.now() % 4200) / 4200; const lift = Math.max(0, Math.sin(s * Math.PI * 2)) ** 3 * .22;
-        if (lift > .002) { const { cx, cy, r } = geo(); const a = -0.75; G = { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }; Pp = { x: G.x - Math.cos(a) * r * lift, y: G.y - Math.sin(a) * r * lift }; draw(); G = Pp = null; return; }
+        if (Math.hypot(G.x - Pp.x, G.y - Pp.y) < .5 && Math.hypot(vx, vy) < .5) { G = Pp = null; tap(150, .2); }
+      }
+      if (mode === 'carry' && tgt) {
+        const nfx = (tgt.x - carryOff.x) / cv.width, nfy = (tgt.y - carryOff.y) / cv.height;
+        const dx = (nfx - fx) * cv.width; fx += (nfx - fx) * .35; fy += (nfy - fy) * .35;
+        tilt += ((Math.max(-1, Math.min(1, dx / (r * 1.5))) * .18) - tilt) * .2;
+        lift += (1 - lift) * .2;
+      }
+      if (mode === 'drop') { // settle onto the table with a tiny overshoot
+        liftV += (0 - lift) * .25 - liftV * .45; lift += liftV; tilt *= .8;
+        if (Math.abs(lift) < .004 && Math.abs(liftV) < .004) { lift = 0; tilt = 0; mode = 'rest'; }
+      }
+      if (hint && mode === 'rest' && !G && !reduce) { // a gentle hint: a corner lifts every few seconds
+        const s = (performance.now() % 4200) / 4200, k = Math.max(0, Math.sin(s * Math.PI * 2)) ** 3 * .22;
+        if (k > .002) { const a = -0.75; G = { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }; Pp = { x: G.x - Math.cos(a) * r * k, y: G.y - Math.sin(a) * r * k }; draw(); G = Pp = null; return; }
       }
       draw();
     });
+
     stage.addEventListener('pointerdown', e => {
       const d = fit(cv); const l = local(stage, e); const x = l.x * d, y = l.y * d; const { cx, cy, r } = geo();
-      const dist = Math.hypot(x - cx, y - cy); if (dist > r * 1.15) return;
-      const a = Math.atan2(y - cy, x - cx);
+      if (Math.hypot(x - cx, y - cy) > r * 1.25) return;
+      audio(); hint = false; stage.setPointerCapture(e.pointerId); stage.style.cursor = 'grabbing';
+      // grab point = the edge in the direction of the finger, so a press anywhere peels from the nearest rim
+      const a = Math.atan2(y - cy, x - cx || 1e-3);
       G = { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }; Pp = { x: G.x, y: G.y }; tgt = { x, y }; vx = vy = 0;
-      dragging = true; idle = false; stage.setPointerCapture(e.pointerId); if (reduce) draw();
+      mode = 'peel'; last = { x, y, t: performance.now() };
+      if (reduce) { Pp = { x, y }; draw(); }
     });
     stage.addEventListener('pointermove', e => {
-      if (!dragging) return; const d = fit(cv); const l = local(stage, e); const { r } = geo();
-      let x = l.x * d, y = l.y * d; const dx = x - G.x, dy = y - G.y, len = Math.hypot(dx, dy), max = r * 2.1;
-      if (len > max) { x = G.x + dx / len * max; y = G.y + dy / len * max; }
-      tgt = { x, y }; if (reduce) { Pp = { x, y }; draw(); }
+      if (mode !== 'peel' && mode !== 'carry') return;
+      const d = fit(cv); const l = local(stage, e); const x = l.x * d, y = l.y * d; const { cx, cy, r } = geo();
+      const now = performance.now(), speed = last ? Math.hypot(x - last.x, y - last.y) / Math.max(1, now - last.t) * 16 / d : 0; last = { x, y, t: now };
+      tgt = { x, y }; peelSound(speed);
+      if (mode === 'peel' && Math.hypot(x - G.x, y - G.y) > r * 1.7) { // pulled far enough: it comes off
+        mode = 'carry'; G = Pp = null; carryOff = { x: x - cx, y: y - cy }; lift = .6; tap(320, .12);
+      }
+      if (reduce) { if (mode === 'peel') Pp = { x, y }; else { fx = (x - carryOff.x) / cv.width; fy = (y - carryOff.y) / cv.height; lift = 1; } draw(); }
     });
-    const up = () => { if (!dragging) return; dragging = false; if (reduce) { G = Pp = null; draw(); } };
+    const up = () => {
+      stopPeel(); stage.style.cursor = 'grab';
+      if (mode === 'carry') { // stick it where it was dropped, kept inside the stage
+        const { r } = geo(); const mxr = r / cv.width + .02, myr = r / cv.height + .02;
+        fx = Math.min(1 - mxr, Math.max(mxr, fx)); fy = Math.min(1 - myr, Math.max(myr, fy));
+        mode = 'drop'; liftV = -.05; tap();
+        if (reduce) { mode = 'rest'; lift = 0; tilt = 0; draw(); }
+      } else if (mode === 'peel') { mode = 'rest'; if (reduce) { G = Pp = null; draw(); } }
+    };
     stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+    stage.addEventListener('dblclick', () => { fx = .5; fy = .5; mode = 'rest'; G = Pp = null; draw(); });
+    new ResizeObserver(draw).observe(stage);
     draw();
     window.SITE_HOOKS.push(() => draw());
   }
@@ -284,7 +350,7 @@
   // ---------------------------------------------------------------- 7. Bubble wrap
   function bubbles(stage) {
     const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
-    let cells = [], d = 1, W = 0, H = 0, R = 0, audio = null, popped = 0;
+    let cells = [], d = 1, W = 0, H = 0, R = 0, popped = 0;
     const counter = stage.querySelector('[data-count]');
     function build() {
       d = fit(cv); W = cv.width; H = cv.height; cells = []; popped = 0;
@@ -296,14 +362,13 @@
     function label() { if (counter) counter.textContent = `${popped}/${cells.length}`; }
     function pop() {
       try {
-        audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-        const t = audio.currentTime, len = .06;
-        const b = audio.createBuffer(1, audio.sampleRate * len, audio.sampleRate), ch = b.getChannelData(0);
+        const ac = audio(); if (!ac) return; const t = ac.currentTime, len = .06;
+        const b = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), ch = b.getChannelData(0);
         for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / ch.length, 6);
-        const src = audio.createBufferSource(); src.buffer = b;
-        const f = audio.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1400 + Math.random() * 900; f.Q.value = 1.2;
-        const g = audio.createGain(); g.gain.value = .5;
-        src.connect(f).connect(g).connect(audio.destination); src.start(t);
+        const src = ac.createBufferSource(); src.buffer = b;
+        const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1400 + Math.random() * 900; f.Q.value = 1.2;
+        const g = ac.createGain(); g.gain.value = .5;
+        src.connect(f).connect(g).connect(ac.destination); src.start(t);
       } catch (e) { /* sound is optional */ }
       if (navigator.vibrate) navigator.vibrate(8);
     }
