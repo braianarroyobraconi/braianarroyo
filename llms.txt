@@ -1,0 +1,51 @@
+# Braian Arroyo Braconi
+
+> UX Manager and design leader based in Córdoba, Argentina (GMT-3). 8+ years designing products and leading design teams at Mercado Libre, PedidosYa and NaranjaX, across e-commerce, logistics, delivery, insurtech and fintech. Focused on design team culture, craft, and bringing AI into the everyday design process.
+
+## Open to
+
+Head of Design, Design Manager, or Design Director roles. Remote. Works in Spanish and English.
+
+Contact: braianarroyobraconi@gmail.com · LinkedIn: https://www.linkedin.com/in/braianarroyobraconi
+
+## How he leads
+
+- Culture first: he brings teams closer to the craft, shares what he keeps learning, and brings in the tools that make the team better, AI included. Teams that get excited about their work improve in quality and speed.
+- He was a designer before he was a leader, so he can give grounded design critique and guide decisions with product and engineering.
+- Hiring, career growth, feedback and team rituals; quality standards, user research and decision-making with product and engineering.
+- Hands-on with AI: explores how AI reshapes design work, roles and collaboration, and builds internal tools so the team uses it day to day.
+
+## Experience
+
+- **NaranjaX**, UX Manager (Dec 2024 to present). Leads the UX team at one of Argentina's largest fintechs, with millions of customers. Areas: Home, Growth and Customer Experience. Work includes the app home, in-app promotions, subscription plans, and AI-powered solutions for customer support.
+- **DesignCore**, Founder (Aug 2021 to present). A UX academy training designers across Latin America.
+- **PedidosYa**, UX Lead (Nov 2021 to 2024). Led multidisciplinary teams at one of the region's largest delivery platforms. Home team (app home redesign) and Check-in team (location, permissions and login).
+- **Mercado Libre**, UX Designer, then Sr. UX Designer (2018 to Nov 2021). Zero-to-one products: Mercado Envíos "Places" (shipping and pick-up at branch locations, live in production), a unified shipping label that merged the label formats of 50 carriers into one to avoid relabeling and cut operating costs and time (live in production), and Mercado Pago's insurance products from their first version (Insurtech).
+
+## Education
+
+Industrial Design, Universidad Nacional de Córdoba (UNC), Argentina.
+
+## Talks
+
+- "Institutional decision-making: UX design as a conflict arena", 1st UX Conference at the University of Buenos Aires (FADU UBA), with Emiliano Mallon Noya. Published in the conference book.
+- "The future of user experiences", Stanford University.
+
+## Side projects (after hours)
+
+- [Pegote](https://www.braianarroyo.com/en/projects/pegote/): a web game about stickers and collage, in open alpha (pegote.club). Designed and built end to end: interaction design, physics-like animation, accounts, analytics (PostHog) and growth. Built with Claude Code as a programming partner.
+- [Living lamp](https://www.braianarroyo.com/en/projects/living-lamp/): an ESP32 lamp whose generative pattern reacts to ambient light and temperature (Arduino, Processing).
+- [Social Monitor](https://www.braianarroyo.com/en/projects/social-monitor/): AI-assisted brand monitoring (Next.js, Supabase, Claude API) that produces a weekly report.
+- [WeeklyGoals](https://www.braianarroyo.com/en/projects/weeklygoals/): a native macOS menu bar app for weekly goals (SwiftUI).
+- [After hours](https://www.braianarroyo.com/en/after-hours/): live coded micro-interactions, shaders and simulations.
+- Interests: rocketry (studies it as a hobby), electronics, creative coding.
+
+## Pages
+
+- [Home (English)](https://www.braianarroyo.com/en/)
+- [Inicio (español)](https://www.braianarroyo.com/)
+- [After hours](https://www.braianarroyo.com/en/after-hours/)
+
+## Resumen en español
+
+Braian Arroyo Braconi es UX Manager y líder de diseño en Córdoba, Argentina, con más de 8 años en Mercado Libre, PedidosYa y NaranjaX. Trabaja sobre la cultura de los equipos de diseño, el oficio y la IA aplicada al proceso. Busca roles de Head of Design, Design Manager o Design Director, en remoto. Contacto: braianarroyobraconi@gmail.com.

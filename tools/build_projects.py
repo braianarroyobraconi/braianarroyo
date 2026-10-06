@@ -6,6 +6,7 @@ and what shows without JavaScript); English is emitted to window.I18N_EN for ass
 Run: python3 tools/build_projects.py
 """
 import html
+import json
 import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -79,8 +80,14 @@ def spec(p, rows):
 
 
 def page_html(p, d, body):
-    en_js = ',\n      '.join(f'{k!r}: {v!r}' for k, v in p.en.items())
+    # register every header string before serializing the English dictionary
     meta = ''.join(meta_item(p, *m) for m in d['meta'])
+    label = p.tr(d['label'], attrs=' class="chapter-label mono" data-intro')
+    title = p.tr((d['name'], d.get('name_en', d['name'])), tag='h1', attrs=' class="cs-title" data-split')
+    lede = p.tr(d['lede'], tag='p', attrs=' class="cs-lede" data-intro')
+    nxt = p.tr(d['next'][1])
+    cover = d['cover'](p)
+    en_js = ',\n      '.join(f"{json.dumps(k)}: {json.dumps(v, ensure_ascii=False)}" for k, v in p.en.items())
     return f'''<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -117,13 +124,13 @@ def page_html(p, d, body):
   <main id="top">
     <header class="cs-hero" data-intro-root>
       <div class="wrap">
-        {p.tr(d['label'], attrs=' class="chapter-label mono" data-intro')}
-        {p.tr((d['name'], d.get('name_en', d['name'])), tag='h1', attrs=' class="cs-title" data-split')}
-        {p.tr(d['lede'], tag='p', attrs=' class="cs-lede" data-intro')}
+        {label}
+        {title}
+        {lede}
         <dl class="cs-meta mono-meta" data-intro>{meta}</dl>
       </div>
       <div class="wrap" style="margin-top:56px">
-        {d['cover'](p)}
+        {cover}
       </div>
     </header>
 
@@ -134,7 +141,7 @@ def page_html(p, d, body):
     <div class="wrap">
       <a class="next-case" href="/projects/{d['next'][0]}/">
         <span class="mono" data-i18n="next">Siguiente proyecto</span>
-        <strong>{p.tr(d['next'][1])} {ARROW_UR}</strong>
+        <strong>{nxt} {ARROW_UR}</strong>
       </a>
     </div>
 

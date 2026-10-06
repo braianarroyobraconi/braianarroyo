@@ -93,7 +93,17 @@
     if (remember) { try { localStorage.setItem('lang', l); } catch (e) {} }
     if (window.ScrollTrigger) ScrollTrigger.refresh();
   }
-  document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+  // Each language lives at its own URL (/ and /en/) so search and AI engines can read both.
+  // The toggle remembers the choice in a cookie (read by middleware.js) and goes to the other page.
+  const PAGE_LANG = document.documentElement.dataset.pageLang || 'es';
+  const ALT = document.documentElement.dataset.alt;
+  document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => {
+    const l = b.dataset.lang;
+    document.cookie = `lang=${l}; Path=/; Max-Age=31536000; SameSite=Lax`;
+    try { localStorage.setItem('lang', l); } catch (e) {}
+    if (l === PAGE_LANG) return;
+    if (ALT) location.href = ALT + location.hash; else setLang(l);
+  }));
 
   // ---- Copy email ----
   const copyBtn = document.getElementById('copy');
@@ -150,12 +160,8 @@
     new IntersectionObserver(([e]) => pill.classList.toggle('tucked', e.intersectionRatio > .3), { threshold: [0, .3, .6] }).observe(heroEl);
   }
 
-  // ---- Language: own choice, then country (middleware.js cookie), then browser ----
-  let saved = null;
-  try { saved = localStorage.getItem('lang'); } catch (e) {}
-  const geo = (document.cookie.match(/(?:^|; )geo-lang=(es|en)/) || [])[1];
-  const browser = (navigator.language || '').toLowerCase().startsWith('es') ? 'es' : 'en';
-  setLang(saved === 'es' || saved === 'en' ? saved : geo || browser, false);
+  // ---- Language: fixed by the page (the server already sent the visitor to the right one)
+  setLang(PAGE_LANG, false);
 
   // ---- Motion ----
   if (!reduce) document.documentElement.classList.add('has-motion');
