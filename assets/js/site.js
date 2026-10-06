@@ -80,7 +80,7 @@
       const v = t((coarse && el.dataset.i18nTouch) || el.dataset.i18n);
       if (el.hasAttribute('data-html')) el.innerHTML = v; else el.textContent = v;
       // Split headings come back as plain, visible copy in the new language.
-      if (el.hasAttribute('data-split-done')) { el.removeAttribute('data-split-done'); el.removeAttribute('aria-label'); }
+      if (el.hasAttribute('data-split-done')) el.removeAttribute('data-split-done');
     });
     document.querySelectorAll('[data-i18n-alt]').forEach(el => { el.alt = t(el.dataset.i18nAlt); });
     document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
@@ -131,7 +131,7 @@
     const btn = job.querySelector('.job-toggle');
     const panel = job.querySelector('.job-panel');
     const head = () => job.style.setProperty('--row-h', panel.offsetTop + 'px');
-    head(); new ResizeObserver(head).observe(job);
+    new ResizeObserver(head).observe(job); // fires after layout, no forced reflow on load
     panel.querySelectorAll('.job-areas, .job-sub, .job-projects li').forEach((el, i) => el.style.setProperty('--i', i));
     panel.inert = true;
     btn.addEventListener('click', () => {
@@ -170,7 +170,7 @@
   // and the element keeps an unsplit accessible name.
   function split(el) {
     if (el.hasAttribute('data-split-done')) return el.querySelectorAll('.w');
-    el.setAttribute('aria-label', el.textContent.replace(/\s+/g, ' ').trim());
+    const full = el.textContent.replace(/\s+/g, ' ').trim();
     const walk = (node, wrapIn) => {
       const out = document.createDocumentFragment();
       node.childNodes.forEach(n => {
@@ -190,7 +190,9 @@
       return out;
     };
     const frag = walk(el, []);
-    el.textContent = ''; el.appendChild(frag);
+    // the split words are aria-hidden; screen readers read this unsplit copy instead (aria-label is not allowed on <p>)
+    const sr = document.createElement('span'); sr.className = 'sr-only'; sr.textContent = full;
+    el.textContent = ''; el.appendChild(sr); el.appendChild(frag);
     el.setAttribute('data-split-done', '');
     return el.querySelectorAll('.w');
   }
@@ -219,13 +221,12 @@
       if (title) gsap.set(title, { autoAlpha: 1 });
       const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
       if (media) {
-        gsap.set(media, { autoAlpha: 1 });
-        tl.fromTo(media, { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 1.2, ease: 'expo.out' }, 0);
+        // the first image is visible from the first frame (it is the LCP element); it only settles its zoom
         const img = media.querySelector('img, video');
-        if (img) tl.fromTo(img, { scale: 1.24 }, { scale: 1.1, duration: 1.6, ease: 'expo.out' }, 0);
+        if (img) tl.fromTo(img, { scale: 1.18 }, { scale: 1.1, duration: 1.2, ease: 'expo.out' }, 0);
       }
-      tl.fromTo(words, { yPercent: 110 }, { yPercent: 0, duration: 1, stagger: 0.05 }, 0.15)
-        .fromTo(intro.querySelectorAll('[data-intro]'), { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.09 }, 0.55);
+      tl.fromTo(words, { yPercent: 110 }, { yPercent: 0, duration: .6, stagger: 0.025 }, 0.05)
+        .fromTo(intro.querySelectorAll('[data-intro]'), { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: .5, stagger: 0.05 }, 0.2);
     }
 
     // Headings outside the intro: word by word as they enter.

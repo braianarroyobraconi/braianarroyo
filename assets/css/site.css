@@ -7,7 +7,7 @@
   --ink-2: #131315;
   --paper: #ededeb;
   --muted: #8e8e92;
-  --faint: #77777b;
+  --faint: #7d7d81;
   --rule: #232326;
   --panel: #141416;
   --light: #e6e6e3;
@@ -529,3 +529,6 @@ button.pause-circle { border: 0; padding: 0; cursor: pointer; font: inherit; col
 button.pause-circle:focus-visible { outline: 2px solid var(--paper); outline-offset: 6px; }
 @media (hover: hover) and (pointer: fine) { .pause:not(.running) button.pause-circle:hover { box-shadow: 0 0 0 1px #4a4a4f, 0 30px 80px -30px rgba(0,0,0,.9); } }
 
+
+/* The intro image is never hidden: it is the largest contentful paint */
+html.has-motion [data-intro-root] [data-unveil] { visibility: visible; }

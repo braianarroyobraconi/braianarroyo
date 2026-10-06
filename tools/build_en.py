@@ -8,6 +8,8 @@ This script takes every Spanish page, swaps each [data-i18n] element for its Eng
   - JSON-LD (Person + ProfilePage on the home pages, CreativeWork on case studies)
   - sitemap.xml with language alternates
 
+It also inlines assets/css/site.css into every page (edit the .css file, then rebuild).
+
 Run after tools/build_projects.py:  python3 tools/build_projects.py && python3 tools/build_en.py
 """
 import html
@@ -165,16 +167,29 @@ def json_ld(url, lang, page_html):
     return page_html.replace('</head>', f'  {block}\n</head>', 1)
 
 
+def inline_css(page_html):
+    """Inline site.css (minified) so the first paint does not wait for a stylesheet request.
+    assets/css/site.css stays the single source; this re-inlines it on every build."""
+    css = read('assets/css/site.css')
+    css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
+    css = re.sub(r'\s+', ' ', css)
+    css = re.sub(r'\s*([{};:,>])\s*', r'\1', css).replace(';}', '}').strip()
+    block = f'<style data-inline="site">{css}</style>'
+    if '<style data-inline="site">' in page_html:
+        return re.sub(r'<style data-inline="site">.*?</style>', lambda m: block, page_html, count=1, flags=re.S)
+    return page_html.replace('<link rel="stylesheet" href="/assets/css/site.css"/>', block, 1)
+
+
 def main():
     urls = []
     for url in PAGES:
         src = file_for(url)
         es = read(src)
         en = en_dict(es)
-        es_out = json_ld(url, 'es', set_head(es, url, 'es'))
+        es_out = inline_css(json_ld(url, 'es', set_head(es, url, 'es')))
         write(src, es_out)
         en_html = localize_links(translate(es, en))
-        en_html = json_ld(url, 'en', set_head(en_html, url, 'en'))
+        en_html = inline_css(json_ld(url, 'en', set_head(en_html, url, 'en')))
         write('en/' + src, en_html)
         urls.append(url)
         print('built', url, '+ /en' + url)
