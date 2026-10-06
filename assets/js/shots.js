@@ -818,6 +818,55 @@
     runner(stage, step);
   }
 
+  // ---------------------------------------------------------------- What never shipped
+  // A wireframe that turns to dust when touched and slowly comes back. For every design that never reached production.
+  function unshipped(stage) {
+    const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
+    let W = 0, H = 0, d = 1, pts = [], mode = 'still', t0 = 0, sweep = 0;
+    function frame() { // a phone-sized wireframe, drawn once and sampled into grains
+      d = fit(cv); W = cv.width; H = cv.height;
+      const off = document.createElement('canvas'); off.width = W; off.height = H; const o = off.getContext('2d');
+      const ph = H * .74, pw = ph * .5, x = (W - pw) / 2, y = H * .1, r = pw * .1;
+      o.strokeStyle = '#fff'; o.fillStyle = '#fff'; o.lineWidth = 1.6 * d;
+      o.beginPath(); o.roundRect(x, y, pw, ph, r); o.stroke();
+      const pad = pw * .1, iw = pw - pad * 2; let yy = y + pad * 1.4;
+      o.fillRect(x + pad, yy, iw * .45, ph * .035); yy += ph * .08;
+      o.beginPath(); o.roundRect(x + pad, yy, iw, ph * .26, 8 * d); o.stroke();
+      o.beginPath(); o.moveTo(x + pad, yy); o.lineTo(x + pad + iw, yy + ph * .26); o.moveTo(x + pad + iw, yy); o.lineTo(x + pad, yy + ph * .26); o.stroke(); yy += ph * .31;
+      for (let k = 0; k < 3; k++) { o.fillRect(x + pad, yy, iw * (k === 2 ? .55 : .9), ph * .018); yy += ph * .045; }
+      yy += ph * .04; o.beginPath(); o.roundRect(x + pad, yy, iw, ph * .075, ph * .0375); o.fill();
+      const data = o.getImageData(0, 0, W, H).data, step = Math.max(2, Math.round(2.4 * d)); pts = [];
+      for (let yy2 = 0; yy2 < H; yy2 += step) for (let xx = 0; xx < W; xx += step) if (data[(yy2 * W + xx) * 4 + 3] > 90) pts.push({ hx: xx, hy: yy2, x: xx, y: yy2, vx: 0, vy: 0, a: 1, k: Math.random() });
+    }
+    function step(now) {
+      ctx.clearRect(0, 0, W, H);
+      const t = (now - t0) / 1000;
+      if (mode === 'dust') { // a wind front sweeps from left to right, lifting grains as it passes
+        sweep = t * W * .45;
+        for (const p of pts) {
+          if (p.hx < sweep + p.k * W * .15) { p.vx += (.06 + p.k * .08) * d; p.vy -= (.02 + p.k * .05) * d; p.vy += Math.sin((p.y + now * .2) * .02) * .01 * d; p.x += p.vx; p.y += p.vy; p.a -= .006 + p.k * .006; }
+        }
+        if (t > 6.5) { mode = 'gone'; t0 = now; }
+      } else if (mode === 'gone') { if (t > 1.8) { mode = 'back'; t0 = now; pts.forEach(p => { p.x = p.hx + (Math.random() - .5) * W * .6; p.y = p.hy - H * (.3 + Math.random() * .5); p.vx = p.vy = 0; p.a = 0; }); } }
+      else if (mode === 'back') { // it comes back slowly, as if remembered
+        let done = true;
+        for (const p of pts) { p.x += (p.hx - p.x) * (.03 + p.k * .03); p.y += (p.hy - p.y) * (.03 + p.k * .03); p.a = Math.min(1, p.a + .012); if (Math.abs(p.x - p.hx) > .5 || Math.abs(p.y - p.hy) > .5 || p.a < 1) done = false; }
+        if (done) { mode = 'still'; pts.forEach(p => { p.x = p.hx; p.y = p.hy; }); }
+      }
+      const s = 1.5 * d;
+      for (const p of pts) { if (p.a <= 0) continue; ctx.fillStyle = `rgba(237,237,235,${Math.min(.9, p.a * .9)})`; ctx.fillRect(p.x, p.y, s, s); }
+    }
+    const crumble = () => {
+      if (mode !== 'still') return;
+      mode = 'dust'; t0 = performance.now(); pts.forEach(p => { p.vx = 0; p.vy = 0; p.a = 1; });
+      if (reduce) { mode = 'gone'; ctx.clearRect(0, 0, W, H); setTimeout(() => { mode = 'still'; pts.forEach(p => { p.x = p.hx; p.y = p.hy; p.a = 1; }); step(performance.now()); }, 2500); }
+    };
+    stage.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') crumble(); });
+    stage.addEventListener('pointerdown', crumble);
+    new ResizeObserver(() => { frame(); mode = 'still'; step(performance.now()); }).observe(stage);
+    runner(stage, step);
+  }
+
   // ---------------------------------------------------------------- Pause for hiring managers
   // The circle is the button: tap to start, tap again to stop; after it ends, tap for another one.
   function pause(root) {
@@ -857,7 +906,7 @@
   }
 
   window.SITE_HOOKS = window.SITE_HOOKS || [];
-  const kinds = { liquid, ripples, peel, grid, particles, scramble, rocket, jelly, morpho, attractor, cloth, rain };
+  const kinds = { liquid, ripples, peel, grid, particles, scramble, rocket, jelly, morpho, attractor, cloth, rain, unshipped };
   document.querySelectorAll('[data-shot]').forEach(stage => { try { kinds[stage.dataset.shot](stage); } catch (e) { console.warn('shot', stage.dataset.shot, e); } });
   document.querySelectorAll('[data-pause]').forEach(pause);
 })();

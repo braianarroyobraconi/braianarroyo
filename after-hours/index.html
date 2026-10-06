@@ -126,13 +126,17 @@
             <div class="shot-stage" data-shot="rain" style="cursor:crosshair"><canvas role="img" aria-label="Ventana empañada con lluvia" data-i18n-aria="s19.aria"></canvas><span class="shot-hint mono" data-i18n="hint.rain">Escribí en el vidrio</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s19.t">Lluvia</h3><span class="mono" data-i18n="s19.tech">Canvas · Web Audio</span><p data-i18n="s19.d">Una ventana empañada un día de lluvia. Escribí algo con el dedo; el vidrio lo va olvidando.</p></figcaption>
           </figure>
-          <figure class="shot" style="--span:5" data-reveal>
-            <div class="shot-stage" data-shot="ripples"><canvas role="img" aria-label="Ondas sobre líneas"></canvas><span class="shot-hint mono" data-i18n="hint.tap">Tocá</span></div>
-            <figcaption class="shot-cap"><h3 data-i18n="s10.t">Ondas</h3><span class="mono">WebGL · GLSL</span><p data-i18n="s10.d">Tocá para tirar una piedra sobre una superficie de líneas.</p></figcaption>
-          </figure>
           <figure class="shot" style="--span:7" data-reveal>
             <div class="shot-stage" data-shot="scramble"><p class="scramble" tabindex="0" data-i18n="sh.scramble.text">Los detalles que nadie ve son los que todos sienten.</p></div>
             <figcaption class="shot-cap"><h3 data-i18n="s9.t">Texto que se decodifica</h3><span class="mono">JS</span><p data-i18n="s9.d" data-i18n-touch="s9.dt">Las letras se ordenan una por una al pasar el cursor.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:5" data-reveal>
+            <div class="shot-stage" data-shot="unshipped"><canvas role="img" aria-label="Un wireframe que se vuelve polvo" data-i18n-aria="s21.aria"></canvas><span class="shot-hint mono" style="text-transform:none">propuesta_final_v7_ahora_si.fig</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s21.t">Lo que no salió</h3><span class="mono">Canvas 2D</span><p data-i18n="s21.d" data-i18n-touch="s21.dt">Para todos los diseños que nunca llegaron a producción. Pasá el cursor y se vuelve polvo.</p></figcaption>
+          </figure>
+          <figure class="shot" style="--span:12" data-reveal>
+            <div class="shot-stage" data-shot="ripples"><canvas role="img" aria-label="Ondas sobre líneas"></canvas><span class="shot-hint mono" data-i18n="hint.tap">Tocá</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s10.t">Ondas</h3><span class="mono">WebGL · GLSL</span><p data-i18n="s10.d">Tocá para tirar una piedra sobre una superficie de líneas.</p></figcaption>
           </figure>
         </div>
       </div>
@@ -162,6 +166,7 @@
   <script src="/assets/vendor/lenis.min.js" defer></script>
   <script>
     window.I18N_ES = {
+      's21.dt': 'Para todos los diseños que nunca llegaron a producción. Tocalo y se vuelve polvo.',
       'hint.touch': 'Tocá y arrastrá', 's1.dt': 'Un shader de ruido fractal que se deforma alrededor de tu dedo.', 's3.dt': 'Puntos que se apartan de tu dedo y vuelven con bounce.', 's6.dt': 'Mi nombre hecho de partículas: pasá el dedo para dispersarlas.', 's9.dt': 'Las letras se ordenan una por una cuando las tocás.', 's16.dt': 'Cuatro números y una ecuación que nunca repite su recorrido. Tu dedo cambia los números.',
       'pause.start': 'Comenzar pausa',
       'pause.in': 'Inhalá', 'pause.hold': 'Sostené', 'pause.out': 'Exhalá',
@@ -169,6 +174,7 @@
       'rk.idle': 'Mantené apretado para lanzar', 'rk.3': 'T-3', 'rk.2': 'T-2', 'rk.1': 'T-1', 'rk.go': '¡Despegue!', 'rk.alt': 'ALT', 'rk.back': 'Volviendo en paracaídas'
     };
     window.I18N_EN = {
+      's21.t': 'What never shipped', 's21.aria': 'A wireframe that turns to dust', 's21.d': 'For every design that never reached production. Hover over it and it turns to dust.', 's21.dt': 'For every design that never reached production. Touch it and it turns to dust.',
       'hint.touch': 'Touch and drag', 's1.dt': 'A fractal noise shader that bends around your finger.', 's3.dt': 'Dots that move away from your finger and bounce back.', 's6.dt': 'My name made of particles: drag your finger to scatter them.', 's9.dt': 'Letters settle one by one when you tap them.', 's16.dt': 'Four numbers and an equation that never repeats its path. Your finger changes the numbers.',
       'ah.label': 'After hours', 'case.cta': 'Read the case study',
       'ahp.title': 'What I make once the work laptop is closed.',

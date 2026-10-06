@@ -528,3 +528,4 @@ html.js .job.open .job-panel .job-areas, html.js .job.open .job-panel .job-sub, 
 button.pause-circle { border: 0; padding: 0; cursor: pointer; font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
 button.pause-circle:focus-visible { outline: 2px solid var(--paper); outline-offset: 6px; }
 @media (hover: hover) and (pointer: fine) { .pause:not(.running) button.pause-circle:hover { box-shadow: 0 0 0 1px #4a4a4f, 0 30px 80px -30px rgba(0,0,0,.9); } }
+
