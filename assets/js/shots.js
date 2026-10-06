@@ -373,7 +373,7 @@
     let pts = [], d = 1, W = 0, H = 0, mx = -1e4, my = -1e4, word = '';
     function build() {
       d = fit(cv); W = cv.width; H = cv.height;
-      word = 'Braian';
+      word = 'PIPO KILLER';
       const off = document.createElement('canvas'); off.width = W; off.height = H; const o = off.getContext('2d');
       let fs = H * .5; o.font = `600 ${fs}px Geist, sans-serif`;
       const tw = o.measureText(word).width; if (tw > W * .82) { fs *= W * .82 / tw; o.font = `600 ${fs}px Geist, sans-serif`; }
