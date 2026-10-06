@@ -613,10 +613,9 @@ h2.chapter-label { font-weight: 400; line-height: 1.6; letter-spacing: 0.04em; t
 .feature .tile-tag { left: 16px; bottom: 14px; }
 .feature .tile-tag { top: 14px; bottom: auto; }
 
-/* ---- Experience door: three variants (data-variant a|b|c) ---- */
+/* ---- Experience door ---- */
 .door-exp .door-visual { display: block; padding: 0; }
 .xv { list-style: none; position: absolute; inset: 0; display: none; }
-.door-exp[data-variant="a"] .xv-a, .door-exp[data-variant="b"] .xv-b, .door-exp[data-variant="c"] .xv-c { display: flex; }
 .xv .logo { height: 26px; opacity: .9; }
 .xv .logo-word { font-size: 21px; font-weight: 600; opacity: .9; }
 .xrole { color: var(--paper); font-size: 15px; }
@@ -632,24 +631,6 @@ h2.chapter-label { font-weight: 400; line-height: 1.6; letter-spacing: 0.04em; t
   .xrow .xrole { transition: color 200ms ease; }
   .door-exp:hover .xrow .xrole { color: var(--paper); }
 }
-/* B: one company at a time, big */
-.xv-b { align-items: center; justify-content: center; }
-.xslide { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 14px; text-align: center; opacity: 0; transform: translateY(14px); filter: blur(6px); transition: opacity 500ms var(--ease-out), transform 700ms var(--ease-out), filter 500ms ease; }
-.xslide.on { opacity: 1; transform: none; filter: none; }
-.xslide .logo { height: 46px; width: calc(var(--w) * 1.7); }
-.xslide .logo-word { font-size: 38px; }
-.xslide .xrole { font-size: 18px; color: var(--muted); }
-.xticks { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); display: flex; gap: 6px; }
-.xticks i { width: 18px; height: 2px; border-radius: 2px; background: var(--rule); transition: background 300ms ease, width 300ms var(--ease-out); }
-.xticks i.on { width: 32px; background: var(--paper); }
-/* C: a fanned card stack that spreads on hover */
-.xv-c { align-items: center; justify-content: center; }
-.xcard { position: absolute; width: min(64%, 340px); padding: 22px 24px; border-radius: 14px; background: #1c1c1f; box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 18px 40px -18px rgba(0,0,0,.8); display: grid; gap: 10px; transform: translateY(calc((var(--i) - 1.5) * 16px)) rotate(calc((var(--i) - 1.5) * 3deg)) scale(calc(1 - var(--i) * .03)); z-index: calc(10 - var(--i)); transition: transform 600ms var(--ease-out); }
-.xcard .xyears { justify-self: start; }
-@media (hover: hover) and (pointer: fine) {
-  .door-exp:hover .xcard { transform: translateY(calc((var(--i) - 1.5) * 64px)) rotate(calc((var(--i) - 1.5) * 1deg)) scale(1); }
-}
-@media (pointer: coarse) { .xcard { transform: translateY(calc((var(--i) - 1.5) * 58px)) scale(1); } }
 
 /* ---- After hours door: carousel ---- */
 .door-ah .door-body { text-decoration: none; color: inherit; }
@@ -679,29 +660,21 @@ h2.chapter-label { font-weight: 400; line-height: 1.6; letter-spacing: 0.04em; t
 @media (hover: hover) and (pointer: fine) { .car-btn:hover { background: rgba(40,40,44,.9); } }
 .car-slide .lamp-read { display: none; }
 
-/* preview-only variant switcher */
-.variant-switch { position: fixed; left: 16px; bottom: 16px; z-index: 90; display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 12px; border-radius: 999px; background: #e6e6e3; color: #0b0b0c; font-size: 11px; box-shadow: 0 8px 30px rgba(0,0,0,.4); }
-.variant-switch span { margin-right: 6px; text-transform: uppercase; letter-spacing: .06em; }
-.variant-switch button { width: 28px; height: 28px; border-radius: 999px; border: 0; background: transparent; font: inherit; font-weight: 600; cursor: pointer; }
-.variant-switch button[aria-pressed="true"] { background: #0b0b0c; color: #e6e6e3; }
-@media (max-width: 720px) { .variant-switch { bottom: 84px; } }
-.variant-switch button { color: #0b0b0c; }
-@media (max-width: 720px) {
-  .xrow { grid-template-columns: 1fr auto; grid-template-areas: "m y" "r r"; gap: 6px 12px; padding: 14px 0; }
-  .xrow .xmark { grid-area: m; } .xrow .xyears { grid-area: y; } .xrow .xrole { grid-area: r; font-size: 14px; }
-  .xv .logo { height: 22px; }
-  .xv-a { padding: 0 22px; }
-}
-
-/* C, v2: a readable deck. Cards peek out above each other; the front one rotates to the back. */
-.xcard { width: min(70%, 360px); transform: translateY(calc(var(--i) * -22px)) scale(calc(1 - var(--i) * .05)); z-index: calc(10 - var(--i)); opacity: calc(1 - var(--i) * .2); transition: transform 700ms cubic-bezier(0.32, 0.72, 0, 1), opacity 500ms ease; top: calc(50% - 30px); }
-.xcard.leaving { animation: deal-out 700ms cubic-bezier(0.32, 0.72, 0, 1); }
-@keyframes deal-out { 40% { transform: translateY(70px) rotate(-4deg) scale(1); opacity: 1; z-index: 20; } }
-@media (hover: hover) and (pointer: fine) {
-  .door-exp:hover .xcard { transform: translateY(calc(var(--i) * -30px)) scale(calc(1 - var(--i) * .04)); opacity: calc(1 - var(--i) * .15); }
-}
-
 /* Carousel v2: live micro-interactions. Only the visible slide (and the one leaving) is rendered. */
 .car-slide { display: none; }
 .car-slide.on, .car-slide.out { display: block; }
 .car-link { background: var(--panel); }
+
+/* Experience door, final: years on the left; logo and role on the right, every logo in the same box */
+.door-exp .xv-a { display: flex; }
+.door-exp .xrow { grid-template-columns: auto 1fr; grid-template-areas: none; gap: 16px; padding: 16px 0; align-items: center; }
+.door-exp .xyears { grid-area: auto; font-size: 12px; }
+.xwho { display: grid; justify-items: end; gap: 6px; }
+.xwho .xmark { display: block; }
+.xwho .logo { width: 128px; height: 24px; -webkit-mask-position: right center; mask-position: right center; opacity: .92; }
+.xwho .logo-word { width: 128px; text-align: right; font-size: 20px; line-height: 24px; height: 24px; letter-spacing: -0.03em; }
+.xwho .xrole { font-size: 13px; color: var(--muted); text-align: right; }
+@media (max-width: 720px) { .door-exp .xrow { padding: 14px 0; } .xwho .logo, .xwho .logo-word { width: 112px; height: 22px; } }
+.xwho .logo[aria-label="Mercado Libre"], .xwho .logo[aria-label="NaranjaX"] { height: 30px; }
+.xwho .logo-word { font-size: 18px; }
+@media (max-width: 720px) { .xv-a { padding: 0 22px; } }

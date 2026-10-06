@@ -1,38 +1,6 @@
-// Home doors: the experience block variants (preview only switcher) and the After hours carousel.
+// Home doors: the After hours carousel.
 (() => {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // ---- Experience block: A list · B rotating logo · C card stack. ?exp=a|b|c picks one.
-  const exp = document.querySelector('.door-exp');
-  if (exp) {
-    const want = new URLSearchParams(location.search).get('exp');
-    exp.dataset.variant = /^[abc]$/.test(want || '') ? want : 'b';
-    const preview = !/braianarroyo\.com$/.test(location.hostname);
-    if (preview) {
-      const sw = document.createElement('div'); sw.className = 'variant-switch mono';
-      sw.innerHTML = '<span>Experiencia</span>' + ['a', 'b', 'c'].map(v => `<button type="button" data-v="${v}">${v.toUpperCase()}</button>`).join('');
-      const sync = () => sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === exp.dataset.variant));
-      sw.addEventListener('click', e => { const v = e.target.dataset.v; if (!v) return; exp.dataset.variant = v; sync(); history.replaceState(null, '', '?exp=' + v + location.hash); });
-      document.body.appendChild(sw); sync();
-    }
-    // B: one company at a time
-    const slides = [...exp.querySelectorAll('.xslide')], ticks = [...exp.querySelectorAll('.xticks i')];
-    let k = 0;
-    const show = i => { slides.forEach((s, j) => s.classList.toggle('on', j === i)); ticks.forEach((t, j) => t.classList.toggle('on', j === i)); };
-    show(0);
-    // C: the front card goes to the back every few seconds, so every company gets its turn on top
-    const cards = [...exp.querySelectorAll('.xcard')]; let front = 0;
-    const deal = () => cards.forEach((c, j) => c.style.setProperty('--i', (j - front + cards.length) % cards.length));
-    deal();
-    let hovering = false;
-    exp.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') hovering = true; });
-    exp.addEventListener('pointerleave', () => { hovering = false; });
-    if (!reduce) setInterval(() => {
-      if (document.hidden) return;
-      if (exp.dataset.variant === 'b') show(k = (k + 1) % slides.length);
-      if (exp.dataset.variant === 'c' && !hovering) { const top = cards[front]; top.classList.add('leaving'); setTimeout(() => top.classList.remove('leaving'), 700); front = (front + 1) % cards.length; deal(); }
-    }, 2400);
-  }
 
   // ---- After hours carousel: autoplay with story bars, arrows, swipe; pauses on hover, offscreen and hidden tab.
   const car = document.querySelector('[data-car]');
