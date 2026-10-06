@@ -112,7 +112,7 @@ def page_html(p, d, body):
     <div class="wrap bar-inner">
       <a href="/" class="brand">Braian Arroyo Braconi</a>
       <div class="bar-right">
-        <a class="back" href="/#despues-de-hora">{ARROW_L}<span data-i18n="back">Volver</span></a>
+        <a class="back" href="/after-hours/">{ARROW_L}<span data-i18n="back">Volver</span></a>
         <div class="lang" role="group" aria-label="Idioma / Language" data-active="es">
           <button type="button" data-lang="es" aria-pressed="true">ES</button>
           <button type="button" data-lang="en" aria-pressed="false">EN</button>

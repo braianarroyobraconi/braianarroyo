@@ -1,5 +1,6 @@
-@font-face { font-family: 'Geist'; src: url('/assets/fonts/Geist.woff2') format('woff2'); font-weight: 300 700; font-display: swap; }
-@font-face { font-family: 'Geist Mono'; src: url('/assets/fonts/Geist-Mono.woff2') format('woff2'); font-weight: 400 500; font-display: swap; }
+@font-face { font-family: 'Geist'; src: url('/assets/fonts/Geist.woff2') format('woff2'); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Geist'; src: url('/assets/fonts/Geist-Italic.woff2') format('woff2'); font-weight: 100 900; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Geist Mono'; src: url('/assets/fonts/Geist-Mono.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
 
 /* Tokens. Shape: pills for controls, 6px on media and panels (editorial, restrained). Dark editorial theme only. */
 :root {
@@ -535,3 +536,145 @@ html.has-motion [data-intro-root] [data-unveil] { visibility: visible; }
 
 /* Section labels that are real headings keep the small label look */
 h2.chapter-label { font-weight: 400; line-height: 1.6; letter-spacing: 0.04em; text-wrap: initial; }
+
+/* HUB HOME: the portrait leads, logos prove, two doors lead deeper */
+.hub-hero { padding: 112px 0 56px; }
+.hub-hero .grid { align-items: end; }
+.hub-hero .hero-copy { grid-column: 1 / span 6; padding-bottom: 8px; }
+.hub-hero .portrait { grid-column: 7 / span 6; }
+.hub-hero .portrait figure { aspect-ratio: auto; height: min(84svh, 860px); }
+.logos { padding: 40px 0 0; }
+.logos .chapter-label { margin-bottom: 0; }
+.logo-row { list-style: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 28px 48px; padding: 36px 0; border-bottom: 1px solid var(--rule); margin-top: 20px; border-top: 1px solid var(--rule); }
+.logo { display: block; width: var(--w); height: 32px; background: var(--paper); opacity: .72; -webkit-mask: var(--u) center / contain no-repeat; mask: var(--u) center / contain no-repeat; transition: opacity 200ms ease; }
+.logo-word { display: block; font-weight: 600; font-size: 23px; letter-spacing: -0.035em; opacity: .72; transition: opacity 200ms ease; }
+.hub-statement { padding: clamp(88px, 11vw, 150px) 0; }
+.doors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.door { background: var(--panel); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; text-decoration: none; transition: transform 260ms var(--ease-out); }
+.door-visual { position: relative; aspect-ratio: 16 / 10; background: #0f0f11; display: grid; place-items: center; overflow: hidden; }
+.door-ah .lamp-stage { position: absolute; inset: 0; height: auto; }
+.door-body { padding: 28px 32px 32px; display: grid; gap: 8px; }
+.door-body h2 { font-size: clamp(30px, 3vw, 46px); }
+.door-body p { color: var(--muted); font-size: 16px; }
+.door-body .case-link { margin-top: 12px; }
+.timeline-mini { list-style: none; width: min(78%, 460px); }
+.timeline-mini li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+.timeline-mini li:first-child { border-top: 1px solid var(--rule); }
+.timeline-mini b { font-weight: 500; font-size: clamp(20px, 2vw, 28px); letter-spacing: -0.03em; }
+.timeline-mini .mono { color: var(--faint); }
+@media (hover: hover) and (pointer: fine) {
+  .logo-row li:hover .logo, .logo-row li:hover .logo-word { opacity: 1; }
+  .door:hover { transform: translateY(-3px); }
+  .door:hover .case-link .icon { transform: translateX(3px); }
+}
+@media (max-width: 1024px) {
+  .hub-hero .hero-copy, .hub-hero .portrait { grid-column: 1 / -1; }
+  .hub-hero .portrait figure { height: auto; aspect-ratio: 4 / 5; }
+  .doors { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .hub-hero { padding-top: 92px; }
+  .logo-row { justify-content: flex-start; gap: 24px 36px; }
+  .logo { height: 24px; width: calc(var(--w) * .8); }
+  .logo-word { font-size: 19px; }
+  .door-body { padding: 22px; }
+}
+.door-exp .door-visual { aspect-ratio: auto; min-height: clamp(260px, 26vw, 360px); padding: 32px 0; }
+
+/* Hub portrait parallax: the photo lives in a taller inner layer that moves inside the frame */
+.hub-hero .portrait figure { will-change: transform; }
+.hub-hero .ph-inner { position: absolute; inset: -9% 0; }
+.hub-hero .ph-inner img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+.hub-hero .ph-shade { position: absolute; inset: 0; background: #0b0b0c; opacity: 0; pointer-events: none; }
+@media (max-width: 1024px) { .hub-hero .portrait figure { position: relative; } }
+
+/* After hours door: a mosaic of what lives inside */
+.mosaic { display: grid; grid-template-columns: 1.15fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 6px; padding: 6px; place-items: stretch; }
+.tile { position: relative; overflow: hidden; border-radius: calc(var(--r) - 4px); background: #0b0b0c; min-height: 0; }
+.tile > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 600ms var(--ease-out); }
+.t-pegote { grid-row: 1 / 3; }
+.t-wg { grid-column: 2 / 4; }
+.t-wg > img { object-position: 50% 0; }
+.tile .lamp-stage, .tile .shot-stage { position: absolute; inset: 0; height: auto; max-height: none; border-radius: 0; }
+.tile .lamp-read { display: none; }
+.tile-tag { position: absolute; left: 10px; bottom: 9px; z-index: 2; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--paper); background: rgba(11,11,12,.72); padding: 4px 7px; border-radius: 999px; }
+@media (hover: hover) and (pointer: fine) {
+  .door-ah:hover .tile > img { transform: scale(1.04); }
+}
+.doors .door-visual { aspect-ratio: auto; min-height: 0; height: clamp(300px, 30vw, 440px); }
+@media (max-width: 720px) { .doors .door-visual { height: 92vw; max-height: 420px; } }
+
+/* After hours door: one project per session */
+.feature { display: block; padding: 0; }
+.feature .tile { position: absolute; inset: 0; border-radius: 0; }
+.feature .tile:not(:first-child) { display: none; }
+.feature .t-wg > img { object-position: 50% 0; }
+.feature .tile .lamp-read { display: flex; }
+.feature .tile-tag { left: 16px; bottom: 14px; }
+.feature .tile-tag { top: 14px; bottom: auto; }
+
+/* ---- Experience door ---- */
+.door-exp .door-visual { display: block; padding: 0; }
+.xv { list-style: none; position: absolute; inset: 0; display: none; }
+.xv .logo { height: 26px; opacity: .9; }
+.xv .logo-word { font-size: 21px; font-weight: 600; opacity: .9; }
+.xrole { color: var(--paper); font-size: 15px; }
+.xyears { color: var(--faint); font-size: 12px; white-space: nowrap; }
+/* A: a quiet list, logo · role · years */
+.xv-a { flex-direction: column; justify-content: center; padding: 0 clamp(24px, 3.4vw, 48px); }
+.xrow { display: grid; grid-template-columns: minmax(110px, 1fr) 1.3fr auto; align-items: center; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--rule); }
+.xrow:first-child { border-top: 1px solid var(--rule); }
+.xrow .xrole { color: var(--muted); }
+.xrow .xmark { display: flex; }
+@media (hover: hover) and (pointer: fine) {
+  .xrow { transition: transform 260ms var(--ease-out); }
+  .xrow .xrole { transition: color 200ms ease; }
+  .door-exp:hover .xrow .xrole { color: var(--paper); }
+}
+
+/* ---- After hours door: carousel ---- */
+.door-ah .door-body { text-decoration: none; color: inherit; }
+.car { display: block; padding: 0; touch-action: pan-y; }
+.car-track { list-style: none; position: absolute; inset: 0; }
+.car-slide { position: absolute; inset: 0; clip-path: inset(0 0 0 100%); z-index: 1; transition: clip-path 900ms cubic-bezier(0.32, 0.72, 0, 1); }
+.car-slide.on { clip-path: inset(0 0 0 0); z-index: 2; }
+.car-slide.out { z-index: 1; clip-path: inset(0 0 0 0); }
+.car-slide[style*="--dir: -1"]:not(.on):not(.out), .car-slide[style*="--dir:-1"]:not(.on):not(.out) { clip-path: inset(0 100% 0 0); }
+.car-link { position: absolute; inset: 0; display: block; overflow: hidden; }
+.car-link > img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); transition: transform 1400ms cubic-bezier(0.32, 0.72, 0, 1); }
+.car-link > img.top { object-position: 50% 0; }
+.car-slide.on .car-link > img { transform: scale(1); }
+.car-link .lamp-stage, .car-link .shot-stage { position: absolute; inset: 0; height: auto; max-height: none; border-radius: 0; }
+.car-cap { position: absolute; left: 18px; bottom: 16px; z-index: 3; display: flex; align-items: baseline; gap: 10px; padding: 8px 12px; border-radius: 999px; background: rgba(11,11,12,.78); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); pointer-events: none; opacity: 0; transform: translateY(8px); transition: opacity 400ms ease 300ms, transform 600ms var(--ease-out) 300ms; }
+.car-slide.on .car-cap { opacity: 1; transform: none; }
+.car-cap b { font-weight: 500; font-size: 14px; }
+.car-cap .mono { font-size: 11px; color: var(--muted); }
+.car-bars { position: absolute; top: 14px; left: 16px; right: 16px; z-index: 4; display: flex; gap: 6px; }
+.car-bar { flex: 1; height: 16px; padding: 7px 0; border: 0; background: none; cursor: pointer; }
+.car-bar::before { content: ""; display: block; height: 2px; border-radius: 2px; background: rgba(237,237,235,.25); }
+.car-bar i { display: block; height: 2px; margin-top: -2px; border-radius: 2px; background: var(--paper); transform: scaleX(0); transform-origin: left; }
+.car-nav { position: absolute; right: 14px; bottom: 12px; z-index: 4; display: flex; gap: 6px; }
+.car-btn { width: 38px; height: 38px; border-radius: 999px; border: 0; display: grid; place-items: center; color: var(--paper); background: rgba(11,11,12,.78); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); cursor: pointer; transition: transform 160ms var(--ease-out), background 200ms ease; }
+.car-btn .icon { width: 18px; height: 18px; }
+.car-btn:active { transform: scale(.94); }
+@media (hover: hover) and (pointer: fine) { .car-btn:hover { background: rgba(40,40,44,.9); } }
+.car-slide .lamp-read { display: none; }
+
+/* Carousel v2: live micro-interactions. Only the visible slide (and the one leaving) is rendered. */
+.car-slide { display: none; }
+.car-slide.on, .car-slide.out { display: block; }
+.car-link { background: var(--panel); }
+
+/* Experience door, final: years on the left; logo and role on the right, every logo in the same box */
+.door-exp .xv-a { display: flex; }
+.door-exp .xrow { grid-template-columns: auto 1fr; grid-template-areas: none; gap: 16px; padding: 16px 0; align-items: center; }
+.door-exp .xyears { grid-area: auto; font-size: 12px; }
+.xwho { display: grid; justify-items: end; gap: 6px; }
+.xwho .xmark { display: block; }
+.xwho .logo { width: 128px; height: 24px; -webkit-mask-position: right center; mask-position: right center; opacity: .92; }
+.xwho .logo-word { width: 128px; text-align: right; font-size: 20px; line-height: 24px; height: 24px; letter-spacing: -0.03em; }
+.xwho .xrole { font-size: 13px; color: var(--muted); text-align: right; }
+@media (max-width: 720px) { .door-exp .xrow { padding: 14px 0; } .xwho .logo, .xwho .logo-word { width: 112px; height: 22px; } }
+.xwho .logo[aria-label="Mercado Libre"], .xwho .logo[aria-label="NaranjaX"] { height: 30px; }
+.xwho .logo-word { font-size: 18px; }
+@media (max-width: 720px) { .xv-a { padding: 0 22px; } }

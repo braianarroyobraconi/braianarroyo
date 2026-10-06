@@ -13,6 +13,18 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://www.braianarroyo.com/experience/</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.braianarroyo.com/experience/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.braianarroyo.com/en/experience/"/>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.braianarroyo.com/en/experience/</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.braianarroyo.com/experience/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.braianarroyo.com/en/experience/"/>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://www.braianarroyo.com/after-hours/</loc>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.braianarroyo.com/after-hours/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://www.braianarroyo.com/en/after-hours/"/>

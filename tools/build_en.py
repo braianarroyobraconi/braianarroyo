@@ -20,7 +20,7 @@ import re
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'https://www.braianarroyo.com'
 
-PAGES = ['/', '/after-hours/', '/projects/pegote/', '/projects/living-lamp/', '/projects/social-monitor/', '/projects/weeklygoals/']
+PAGES = ['/', '/experience/', '/after-hours/', '/projects/pegote/', '/projects/living-lamp/', '/projects/social-monitor/', '/projects/weeklygoals/']
 
 HEAD = {  # per-language title and description for pages whose head is not already right
     '/': {
@@ -28,6 +28,10 @@ HEAD = {  # per-language title and description for pages whose head is not alrea
                'UX Manager en NaranjaX con más de 8 años en Mercado Libre, PedidosYa y NaranjaX. Cultura de diseño, oficio e IA aplicada al proceso de diseño. Córdoba, Argentina.'),
         'en': ('Braian Arroyo Braconi · UX Manager and Design Leader',
                'UX Manager at NaranjaX with 8+ years at Mercado Libre, PedidosYa and NaranjaX. Design culture, craft and AI in the design process. Based in Córdoba, Argentina.'),
+    },
+    '/experience/': {
+        'es': ('Experiencia · Braian Arroyo Braconi', 'Cómo lidera Braian Arroyo Braconi y dónde trabajó: NaranjaX, DesignCore, PedidosYa y Mercado Libre. Proyectos por empresa y charlas.'),
+        'en': ('Experience · Braian Arroyo Braconi', 'How Braian Arroyo Braconi leads and where he has worked: NaranjaX, DesignCore, PedidosYa and Mercado Libre. Projects by company and talks.'),
     },
     '/after-hours/': {
         'es': ('After hours · Braian Arroyo Braconi', 'Proyectos propios, micro-interacciones y shaders de Braian Arroyo Braconi. Todo funciona en vivo.'),
@@ -120,7 +124,7 @@ def translate(page_html, en):
 def localize_links(page_html):
     # internal links go to the English tree
     page_html = re.sub(r'href="/(#[^"]*)?"', lambda m: f'href="/en/{m.group(1) or ""}"', page_html)
-    page_html = re.sub(r'href="/(after-hours|projects)/', r'href="/en/\1/', page_html)
+    page_html = re.sub(r'href="/(after-hours|projects|experience)/', r'href="/en/\1/', page_html)
     return page_html
 
 
