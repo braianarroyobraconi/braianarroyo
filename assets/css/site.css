@@ -602,3 +602,12 @@ h2.chapter-label { font-weight: 400; line-height: 1.6; letter-spacing: 0.04em; t
 }
 .doors .door-visual { aspect-ratio: auto; min-height: 0; height: clamp(300px, 30vw, 440px); }
 @media (max-width: 720px) { .doors .door-visual { height: 92vw; max-height: 420px; } }
+
+/* After hours door: one project per session */
+.feature { display: block; padding: 0; }
+.feature .tile { position: absolute; inset: 0; border-radius: 0; }
+.feature .tile:not(:first-child) { display: none; }
+.feature .t-wg > img { object-position: 50% 0; }
+.feature .tile .lamp-read { display: flex; }
+.feature .tile-tag { left: 16px; bottom: 14px; }
+.feature .tile-tag { top: 14px; bottom: auto; }
