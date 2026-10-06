@@ -105,153 +105,228 @@
   const audio = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) { AC = null; } return AC; };
   const noiseBuffer = (ac, secs) => { const b = ac.createBuffer(1, ac.sampleRate * secs, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; };
 
-  // ---------------------------------------------------------------- Sticker sounds
-  // Peeling adhesive is a crackle, not a hiss: tiny filtered clicks at random, more of them the faster you pull.
-  let GRAIN = null;
-  function crackle(speed) {
-    const ac = audio(); if (!ac) return;
-    GRAIN = GRAIN || (() => { const b = ac.createBuffer(1, ac.sampleRate * .006, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3); return b; })();
-    const n = Math.min(7, Math.round(speed * .45 + Math.random()));
-    for (let i = 0; i < n; i++) {
-      const t = ac.currentTime + Math.random() * .018;
-      const src = ac.createBufferSource(); src.buffer = GRAIN; src.playbackRate.value = .6 + Math.random() * 1.2;
-      const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 700 + Math.random() * 2600; f.Q.value = 2 + Math.random() * 4;
-      const g = ac.createGain(); g.gain.value = (.04 + Math.random() * .2) * Math.min(1, .35 + speed / 18);
-      src.connect(f).connect(g).connect(ac.destination); src.start(t);
+  // ---------------------------------------------------------------- Sticker: a port of Pegote's peel model
+  // (sobrecito-pegote.html: peelFrom / peelGeom / updPeel / detach / updLift / updCarry / drawSticker and its SND)
+  const PSND = {
+    burst(ac, t, f, q, dur, vol, type = 'bandpass') {
+      const s = ac.createBufferSource(); s.buffer = PSND.nb || (PSND.nb = noiseBuffer(ac, 1));
+      const fl = ac.createBiquadFilter(); fl.type = type; fl.frequency.value = f; fl.Q.value = q;
+      const g = ac.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(vol, t + .0015); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      s.connect(fl).connect(g).connect(ac.destination); s.start(t, Math.random() * .8); s.stop(t + dur + .02); return fl;
+    },
+    crackle(n, base) { const ac = audio(); if (!ac) return; const t = ac.currentTime; for (let i = 0; i < n; i++) PSND.burst(ac, t + Math.random() * .028, base * (.6 + Math.random() * .9), 1.4, .004 + Math.random() * .012, .05 + Math.random() * .09); },
+    tick() { const ac = audio(); if (!ac) return; PSND.burst(ac, ac.currentTime, 5200, 2, .014, .12); },
+    rip() { const ac = audio(); if (!ac) return; const t = ac.currentTime; const f = PSND.burst(ac, t, 1300, .9, .15, .2); f.frequency.exponentialRampToValueAtTime(5400, t + .13); for (let i = 0; i < 7; i++) PSND.burst(ac, t + Math.random() * .1, 2400 + Math.random() * 3200, 1.5, .006, .12); if (navigator.vibrate) navigator.vibrate(12); },
+    thump() { const ac = audio(); if (!ac) return; const t = ac.currentTime; const o = ac.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(170, t); o.frequency.exponentialRampToValueAtTime(68, t + .09); const g = ac.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(.26, t + .004); g.gain.exponentialRampToValueAtTime(.0001, t + .12); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .14); PSND.burst(ac, t, 900, .7, .05, .14, 'lowpass'); if (navigator.vibrate) navigator.vibrate(8); },
+    settle() { const ac = audio(); if (!ac) return; PSND.burst(ac, ac.currentTime, 2400, 1, .02, .05); }
+  };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const eOutCubic = t => 1 - Math.pow(1 - t, 3);
+  const eOutBack = t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+  const rotv = (x, y, a) => ({ x: x * Math.cos(a) - y * Math.sin(a), y: x * Math.sin(a) + y * Math.cos(a) });
+  function clipHalf(pts, M, n, sg) {
+    const out = []; let prev = pts[pts.length - 1], dp = sg * ((prev.x - M.x) * n.x + (prev.y - M.y) * n.y);
+    for (let i = 0; i < pts.length; i++) {
+      const cur = pts[i], dc = sg * ((cur.x - M.x) * n.x + (cur.y - M.y) * n.y);
+      if (dc >= 0) { if (dp < 0) { const t = dp / (dp - dc); out.push({ x: prev.x + (cur.x - prev.x) * t, y: prev.y + (cur.y - prev.y) * t }); } out.push(cur); }
+      else if (dp >= 0) { const t = dp / (dp - dc); out.push({ x: prev.x + (cur.x - prev.x) * t, y: prev.y + (cur.y - prev.y) * t }); }
+      prev = cur; dp = dc;
     }
+    return out;
   }
-  function thump(vol = .5) { // pressing a sticker down: a short, muffled knock
-    const ac = audio(); if (!ac) return; const t = ac.currentTime;
-    const n = ac.createBufferSource(); n.buffer = noiseBuffer(ac, .05);
-    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(900, t); lp.frequency.exponentialRampToValueAtTime(140, t + .05);
-    const g = ac.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + .07);
-    n.connect(lp).connect(g).connect(ac.destination); n.start(t);
-    const o = ac.createOscillator(); o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(60, t + .08);
-    const og = ac.createGain(); og.gain.setValueAtTime(vol * .5, t); og.gain.exponentialRampToValueAtTime(.001, t + .09);
-    o.connect(og).connect(ac.destination); o.start(t); o.stop(t + .1);
-    if (navigator.vibrate) navigator.vibrate(8);
-  }
+  const extent = (pts, n) => { let mn = 1e9, mx = -1e9; for (const p of pts) { const d = p.x * n.x + p.y * n.y; if (d < mn) mn = d; if (d > mx) mx = d; } return [mn, mx]; };
 
-  // ---------------------------------------------------------------- 4. Peel (Pegote's core gesture)
-  // The sticker sits on a backing sheet. Pull it and it folds along the line between grab point and finger;
-  // pull far enough and it comes off, leaving its die-cut outline on the sheet. Drop it anywhere to stick it.
   function peel(stage) {
     const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
-    let fx = .5, fy = .5, onSheet = true;
-    let G = null, Pp = null, tgt = null, vx = 0, vy = 0;
-    let mode = 'rest', lift = 0, liftV = 0, tilt = 0, last = null, carryOff = null, hint = true, press = null;
-    const geo = () => { const r = Math.min(cv.width, cv.height) * .22; return { cx: fx * cv.width, cy: fy * cv.height, r, hx: cv.width / 2, hy: cv.height / 2 }; };
-    const dpr = () => Math.min(window.devicePixelRatio || 1, 2);
-    function shadow(blur, oy, a) { const d = dpr(); ctx.shadowColor = `rgba(0,0,0,${a})`; ctx.shadowBlur = blur * d; ctx.shadowOffsetY = oy * d; }
-    function sheet() { // backing sheet with the die-cut outline
-      const { r, hx, hy } = geo(), w = r * 3.1, h = r * 3.1, rr = r * .22;
-      ctx.save(); shadow(18, 8, .5);
-      ctx.beginPath(); ctx.roundRect(hx - w / 2, hy - h / 2, w, h, rr); ctx.fillStyle = '#2a2a2d'; ctx.fill(); ctx.restore();
-      ctx.save(); ctx.beginPath(); ctx.arc(hx, hy, r + 2 * dpr(), 0, Math.PI * 2); ctx.fillStyle = '#232326'; ctx.fill();
-      ctx.setLineDash([4 * dpr(), 4 * dpr()]); ctx.strokeStyle = 'rgba(237,237,235,.18)'; ctx.lineWidth = 1 * dpr(); ctx.stroke(); ctx.restore();
-      ctx.fillStyle = 'rgba(237,237,235,.35)'; ctx.font = `${Math.round(r * .11)}px "Geist Mono", monospace`; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-      ctx.fillText('PEGOTE · Nº 01', hx - w / 2 + rr * .7, hy + h / 2 - rr * .6);
-    }
-    function face(cx, cy, r) {
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#ededea'; ctx.fill();
-      ctx.lineWidth = r * .035; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+    const S = { fx: .5, fy: .5, onSheet: true, state: 'rest', peel: null, geom: null, L: 0, scale: 1, rot: 0, psi: 0, psiV: 0, lf: null, hold: null, hv: { x: 0, y: 0 }, acc: { x: 0, y: 0 } };
+    const ptr = { x: 0, y: 0, sx: 0, sy: 0, down: false, type: 'mouse' };
+    let r = 60, pts = [], t0 = 0;
+    const dpr = () => cv.width / Math.max(1, cv.getBoundingClientRect().width);
+    function shape() { r = Math.min(cv.width, cv.height) * .22; pts = Array.from({ length: 72 }, (_, i) => { const a = i / 72 * Math.PI * 2; return { x: Math.cos(a) * r, y: Math.sin(a) * r }; }); }
+    const home = () => ({ x: cv.width / 2, y: cv.height / 2 });
+    const center = () => ({ x: S.fx * cv.width, y: S.fy * cv.height });
+    const path = P => { const p = new Path2D(); P.forEach((q, i) => (i ? p.lineTo(q.x, q.y) : p.moveTo(q.x, q.y))); p.closePath(); return p; };
+    function shadow(L) { const d = dpr(); ctx.shadowColor = `rgba(0,0,0,${.32 + L * .25})`; ctx.shadowBlur = (4 + L * 26) * d; ctx.shadowOffsetY = (1.5 + L * 16) * d; }
+    const noShadow = () => { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; };
+    function paintFront(p) {
+      ctx.save(); ctx.clip(p);
       ctx.fillStyle = '#0b0b0c'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = `500 ${r * .24}px Geist, sans-serif`; ctx.fillText(lang() === 'en' ? 'peel me' : 'despegame', cx, cy);
-    }
-    function flat(cx, cy, r) { ctx.save(); shadow(onSheet ? 3 : 10, onSheet ? 1 : 4, .4); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#ededea'; ctx.fill(); ctx.restore(); face(cx, cy, r); }
-    function draw() {
-      fit(cv); const { cx, cy, r } = geo();
-      ctx.clearRect(0, 0, cv.width, cv.height); sheet();
-      if (mode === 'carry' || mode === 'drop') {
-        ctx.save(); ctx.translate(cx, cy); ctx.rotate(tilt); const k = 1 + lift * .07; ctx.scale(k, k); ctx.translate(-cx, -cy);
-        ctx.save(); shadow(10 + lift * 34, 4 + lift * 22, .35 + lift * .25); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#ededea'; ctx.fill(); ctx.restore();
-        face(cx, cy, r); ctx.restore(); return;
-      }
-      if (!G || !Pp || Math.hypot(Pp.x - G.x, Pp.y - G.y) < 1) { flat(cx, cy, r); return; }
-      const mx = (G.x + Pp.x) / 2, my = (G.y + Pp.y) / 2;
-      let nx = Pp.x - G.x, ny = Pp.y - G.y; const L = Math.hypot(nx, ny); nx /= L; ny /= L;
-      const BIG = Math.max(cv.width, cv.height) * 4, tx = -ny, ty = nx;
-      const half = sign => {
-        ctx.beginPath();
-        ctx.moveTo(mx + tx * BIG, my + ty * BIG); ctx.lineTo(mx - tx * BIG, my - ty * BIG);
-        ctx.lineTo(mx - tx * BIG + nx * BIG * sign, my - ty * BIG + ny * BIG * sign);
-        ctx.lineTo(mx + tx * BIG + nx * BIG * sign, my + ty * BIG + ny * BIG * sign); ctx.closePath();
-      };
-      ctx.save(); half(1); ctx.clip(); flat(cx, cy, r); ctx.restore();
-      const dot = mx * nx + my * ny;
-      ctx.save();
-      ctx.transform(1 - 2 * nx * nx, -2 * nx * ny, -2 * nx * ny, 1 - 2 * ny * ny, 2 * dot * nx, 2 * dot * ny);
-      half(-1); ctx.clip();
-      shadow(22, 10, .55);
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      const g = ctx.createLinearGradient(mx, my, mx - nx * r, my - ny * r);
-      g.addColorStop(0, '#d6d6d2'); g.addColorStop(1, '#a9a9a5');
-      ctx.fillStyle = g; ctx.fill();
+      ctx.font = `500 ${r * .24}px Geist, sans-serif`; ctx.fillText(lang() === 'en' ? 'peel me' : 'despegame', 0, 0);
       ctx.restore();
     }
-    runner(stage, () => {
-      const { cx, cy, r } = geo();
-      if (mode === 'peel' && tgt) { Pp.x += (tgt.x - Pp.x) * .55; Pp.y += (tgt.y - Pp.y) * .55; }
-      if (mode === 'rest' && G && Pp) {
-        const ax = (G.x - Pp.x) * .18 - vx * .5, ay = (G.y - Pp.y) * .18 - vy * .5;
-        vx += ax; vy += ay; Pp.x += vx; Pp.y += vy;
-        if (Math.hypot(G.x - Pp.x, G.y - Pp.y) < .5 && Math.hypot(vx, vy) < .5) { G = Pp = null; thump(.25); }
-      }
-      if (mode === 'carry' && tgt) {
-        const nfx = (tgt.x - carryOff.x) / cv.width, nfy = (tgt.y - carryOff.y) / cv.height;
-        const dx = (nfx - fx) * cv.width; fx += (nfx - fx) * .4; fy += (nfy - fy) * .4;
-        tilt += ((Math.max(-1, Math.min(1, dx / (r * 1.2))) * .22) - tilt) * .2; lift += (1 - lift) * .25;
-      }
-      if (mode === 'drop') {
-        liftV += (0 - lift) * .3 - liftV * .42; lift += liftV; tilt *= .78;
-        if (Math.abs(lift) < .004 && Math.abs(liftV) < .004) { lift = 0; tilt = 0; mode = 'rest'; }
-      }
-      if (hint && mode === 'rest' && !G && !reduce) {
-        const s = (performance.now() % 3600) / 3600, k = Math.max(0, Math.sin(s * Math.PI * 2)) ** 3 * .28;
-        if (k > .002) { const a = -0.75; G = { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }; Pp = { x: G.x - Math.cos(a) * r * k, y: G.y - Math.sin(a) * r * k }; draw(); G = Pp = null; return; }
-      }
-      draw();
-    });
-    stage.addEventListener('pointerdown', e => {
-      const d = fit(cv); const l = local(stage, e); const x = l.x * d, y = l.y * d; const { cx, cy, r } = geo();
-      if (Math.hypot(x - cx, y - cy) > r * 1.3) return;
-      audio(); hint = false; stage.setPointerCapture(e.pointerId); stage.style.cursor = 'grabbing';
-      const a = Math.atan2(y - cy, (x - cx) || 1e-3);
-      G = { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }; Pp = { x: G.x, y: G.y }; tgt = { x, y }; vx = vy = 0;
-      mode = 'peel'; last = { x, y, t: performance.now() }; press = { x, y };
-      if (reduce) { Pp = { x, y }; draw(); }
-    });
-    stage.addEventListener('pointermove', e => {
-      if (mode !== 'peel' && mode !== 'carry') return;
-      const d = fit(cv); const l = local(stage, e); const x = l.x * d, y = l.y * d; const { cx, cy, r } = geo();
-      const now = performance.now(), speed = last ? Math.hypot(x - last.x, y - last.y) / d / Math.max(1, now - last.t) * 16 : 0; last = { x, y, t: now };
-      tgt = { x, y };
-      if (mode === 'peel') {
-        crackle(speed);
-        // measured from where the finger went down, so the fold is always visible before it comes off
-        if (Math.hypot(x - press.x, y - press.y) > r * 1.25) { // it comes off
-          mode = 'carry'; onSheet = false; G = Pp = null; carryOff = { x: x - cx, y: y - cy }; lift = .5; crackle(20);
+    function paintBack(p, g) {
+      ctx.save(); ctx.clip(p);
+      const M = g.M, n = g.n, bg = ctx.createLinearGradient(M.x, M.y, M.x - n.x * r * 1.2, M.y - n.y * r * 1.2);
+      bg.addColorStop(0, 'rgba(0,0,0,.18)'); bg.addColorStop(.35, 'rgba(255,255,255,.05)'); bg.addColorStop(1, 'rgba(0,0,0,.06)');
+      ctx.fillStyle = bg; ctx.fillRect(-r * 3, -r * 3, r * 6, r * 6); ctx.restore();
+    }
+    function sheet() {
+      const h = home(), d = dpr(), w = r * 3.1, rr = r * .22;
+      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 18 * d; ctx.shadowOffsetY = 8 * d;
+      ctx.beginPath(); ctx.roundRect(h.x - w / 2, h.y - w / 2, w, w, rr); ctx.fillStyle = '#2a2a2d'; ctx.fill(); ctx.restore();
+      ctx.save(); ctx.beginPath(); ctx.arc(h.x, h.y, r + 1.5 * d, 0, Math.PI * 2); ctx.fillStyle = '#232326'; ctx.fill();
+      ctx.setLineDash([4 * d, 4 * d]); ctx.strokeStyle = 'rgba(237,237,235,.18)'; ctx.lineWidth = d; ctx.stroke(); ctx.restore();
+      ctx.fillStyle = 'rgba(237,237,235,.35)'; ctx.font = `${Math.round(r * .11)}px "Geist Mono", monospace`; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText('PEGOTE · Nº 01', h.x - w / 2 + rr * .7, h.y + w / 2 - rr * .6);
+    }
+    function draw() {
+      ctx.clearRect(0, 0, cv.width, cv.height); sheet();
+      const c = center(), g = S.geom, L = S.L;
+      ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(S.rot + S.psi); if (S.scale !== 1) ctx.scale(S.scale, S.scale);
+      const full = path(pts);
+      if (!g) { ctx.fillStyle = '#f3f2ee'; shadow(L); ctx.fill(full); noShadow(); paintFront(full); }
+      else {
+        const k = 1 - Math.cos(g.theta), M = g.M, n = g.n;
+        const base = clipHalf(pts, M, n, 1), flap = clipHalf(pts, M, n, -1);
+        if (base.length > 2) {
+          const bp = path(base); ctx.fillStyle = '#f3f2ee'; shadow(L); ctx.fill(bp); noShadow(); paintFront(bp);
+          ctx.save(); ctx.clip(bp); const cg = ctx.createLinearGradient(M.x, M.y, M.x + n.x * 14 * dpr(), M.y + n.y * 14 * dpr());
+          cg.addColorStop(0, 'rgba(0,0,0,.22)'); cg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = cg; ctx.fillRect(-r * 2, -r * 2, r * 4, r * 4); ctx.restore();
+        }
+        if (flap.length > 2) {
+          const md = M.x * n.x + M.y * n.y;
+          ctx.save(); ctx.transform(1 - k * n.x * n.x, -k * n.x * n.y, -k * n.x * n.y, 1 - k * n.y * n.y, k * md * n.x, k * md * n.y);
+          const fp = path(flap); ctx.fillStyle = '#d6d5d0'; shadow(Math.max(L, g.lift)); ctx.fill(fp); noShadow();
+          if (Math.cos(g.theta) < 0) paintBack(fp, g); else paintFront(fp);
+          ctx.restore();
         }
       }
-      if (reduce) { if (mode === 'peel') Pp = { x, y }; else { fx = (x - carryOff.x) / cv.width; fy = (y - carryOff.y) / cv.height; lift = 1; } draw(); }
+      ctx.restore();
+    }
+    // --- model (same constants as Pegote)
+    const toLocal = p => { const c = center(), d = rotv(p.x - c.x, p.y - c.y, -(S.rot + S.psi)); return { x: d.x / S.scale, y: d.y / S.scale }; };
+    function peelFrom(p, nailT) {
+      const q = toLocal(p), lq = Math.hypot(q.x, q.y) || 1, G = { x: q.x / lq * r, y: q.y / lq * r };
+      let cx = -G.x, cy = -G.y; const lc = Math.hypot(cx, cy) || 1; cx /= lc; cy /= lc;
+      let ax = q.x - G.x, ay = q.y - G.y; const l = Math.hypot(ax, ay);
+      if (l > 1.5 && lq < r) { ax = ax / l * .6 + cx * .4; ay = ay / l * .6 + cy * .4; } else { ax = cx; ay = cy; }
+      const la = Math.hypot(ax, ay) || 1;
+      return { G, a: { x: ax / la, y: ay / la }, nail: S.peel ? S.peel.nail : 0, nailT, D: { x: 0, y: 0 }, Dv: { x: 0, y: 0 }, theta: Math.PI - .5, prevFold: null, acc: 0 };
+    }
+    function peelGeom(dt) {
+      const P = S.peel, G = P.G, a = P.a, D = P.D;
+      const nailPx = clamp(r * .22, 6 * dpr(), 15 * dpr()) * P.nail;
+      const ad = D.x * a.x + D.y * a.y, dl = Math.hypot(D.x, D.y);
+      let vx = D.x, vy = D.y; if (ad < 0) { vx -= 2 * ad * a.x; vy -= 2 * ad * a.y; }
+      const out = dl > 3 ? Math.max(0, -ad) / dl : 0;
+      const thT = Math.PI - .16 - out * .95 - (S.state === 'hover' ? .55 : 0);
+      P.theta += (thT - P.theta) * (1 - Math.exp(-dt * 16));
+      const tx = G.x + a.x * nailPx + vx, ty = G.y + a.y * nailPx + vy, dx = tx - G.x, dy = ty - G.y, l = Math.hypot(dx, dy);
+      if (l < .6) return null;
+      return { M: { x: G.x + dx / 2, y: G.y + dy / 2 }, n: { x: dx / l, y: dy / l }, theta: P.theta, lift: .16 + .55 * out };
+    }
+    function updPeel(dt) {
+      const P = S.peel;
+      P.nail += (P.nailT - P.nail) * (1 - Math.exp(-dt * (P.nailT > P.nail ? 30 : 16)));
+      if (S.state === 'release') {
+        const K = 520, C = 2 * Math.sqrt(K) * .6;
+        P.Dv.x += (-K * P.D.x - C * P.Dv.x) * dt; P.Dv.y += (-K * P.D.y - C * P.Dv.y) * dt;
+        P.D.x += P.Dv.x * dt; P.D.y += P.Dv.y * dt;
+      }
+      const g = peelGeom(dt); S.geom = g;
+      if (g) {
+        const [mn, mx] = extent(pts, g.n), md = g.M.x * g.n.x + g.M.y * g.n.y;
+        g.frac = clamp((md - mn) / (mx - mn), 0, 1);
+        const fd = md - mn, step = 1.8 * dpr() * (r / (60 * dpr()));
+        if (P.prevFold != null && S.state === 'peel') { const dd = fd - P.prevFold; if (dd > 0) { P.acc += dd; let n = 0; while (P.acc > step && n < 5) { P.acc -= step; n++; } if (n) PSND.crackle(n, 3200); } }
+        P.prevFold = fd;
+        if (S.state === 'peel' && (g.frac > .54 || Math.hypot(P.D.x, P.D.y) > r * 2.6)) { detach(g); return; }
+      }
+      if ((S.state === 'release' || S.state === 'hover') && S.state === 'release' && P.nail < .03 && Math.hypot(P.D.x, P.D.y) < .4 && Math.hypot(P.Dv.x, P.Dv.y) < 6) {
+        S.state = 'rest'; S.peel = null; S.geom = null; PSND.settle();
+      }
+    }
+    function detach(g) {
+      const c = center();
+      S.lf = { t: 0, M: g.M, n: g.n, th0: g.theta, x0: c.x, y0: c.y };
+      S.state = 'lift'; S.onSheet = false; S.hold = { x: ptr.x, y: ptr.y }; S.hv = { x: 0, y: 0 }; S.acc = { x: 0, y: 0 }; S.psi = 0; S.psiV = 0;
+      PSND.rip();
+      if (reduce) { S.state = 'carry'; S.geom = null; S.L = 1; S.scale = 1.075; }
+    }
+    function followHold(dt) {
+      const k = 1 - Math.exp(-dt * 38);
+      const nx = S.hold.x + (ptr.x - S.hold.x) * k, ny = S.hold.y + (ptr.y - S.hold.y) * k;
+      const vx = (nx - S.hold.x) / dt, vy = (ny - S.hold.y) / dt, ax = (vx - S.hv.x) / dt, ay = (vy - S.hv.y) / dt;
+      S.acc.x += (ax - S.acc.x) * .35; S.acc.y += (ay - S.acc.y) * .35; S.hv.x = vx; S.hv.y = vy; S.hold.x = nx; S.hold.y = ny;
+    }
+    const setCenter = (x, y) => { S.fx = x / cv.width; S.fy = y / cv.height; };
+    function updLift(dt) {
+      const L = S.lf; L.t += dt / (reduce ? .15 : .3); const t = clamp(L.t, 0, 1), e = eOutCubic(t);
+      followHold(dt);
+      const th = L.th0 * (1 - e);
+      S.geom = th > .03 ? { M: L.M, n: L.n, theta: th, lift: .3 * (1 - e) } : null;
+      S.L = e; S.scale = 1 + .075 * eOutBack(t);
+      const G = S.peel.G, off = rotv(G.x * S.scale, G.y * S.scale, S.rot + S.psi);
+      setCenter(lerp(L.x0, S.hold.x - off.x, e), lerp(L.y0, S.hold.y - off.y, e));
+      if (t >= 1) { S.state = 'carry'; S.geom = null; if (!ptr.down) drop(); }
+    }
+    function updCarry(dt, T) {
+      followHold(dt);
+      const G = S.peel.G;
+      if (!reduce) {
+        const c = rotv(-G.x * S.scale, -G.y * S.scale, S.rot + S.psi), cl = c.x * c.x + c.y * c.y + 120 * dpr() * dpr();
+        const tq = clamp((c.x * -S.acc.y - c.y * -S.acc.x) / cl, -70, 70);
+        const K = 110, C = 2 * .33 * Math.sqrt(K);
+        S.psiV += (tq - K * S.psi - C * S.psiV) * dt; S.psi = clamp(S.psi + S.psiV * dt, -.5, .5);
+      }
+      S.L += (1 - S.L) * (1 - Math.exp(-dt * 10));
+      S.scale += (1.075 - S.scale) * (1 - Math.exp(-dt * 10)) + Math.sin(T * 2.1) * .0006;
+      const off = rotv(G.x * S.scale, G.y * S.scale, S.rot + S.psi);
+      setCenter(S.hold.x - off.x, S.hold.y - off.y);
+    }
+    function drop() {
+      // keep the rotation it landed with; snap home if dropped over its outline
+      S.rot += S.psi; S.psi = 0; S.psiV = 0; S.peel = null; S.geom = null;
+      const c = center(), h = home();
+      if (Math.hypot(c.x - h.x, c.y - h.y) < r * .6) { S.fx = .5; S.fy = .5; S.rot = 0; S.onSheet = true; }
+      const mx = r / cv.width, my = r / cv.height; S.fx = clamp(S.fx, mx, 1 - mx); S.fy = clamp(S.fy, my, 1 - my);
+      S.state = 'stick'; PSND.thump();
+    }
+    function frame(now) {
+      fit(cv); if (!pts.length || Math.abs(r - Math.min(cv.width, cv.height) * .22) > 1) shape();
+      const dt = Math.min(.05, Math.max(.001, (now - (t0 || now)) / 1000)) || .016; t0 = now;
+      if (S.state === 'peel' || S.state === 'release' || S.state === 'hover') updPeel(dt);
+      if (S.state === 'lift') updLift(dt);
+      else if (S.state === 'carry') updCarry(dt, now / 1000);
+      else if (S.state === 'stick') { S.scale += (1 - S.scale) * (1 - Math.exp(-dt * 18)); S.L += (0 - S.L) * (1 - Math.exp(-dt * 14)); if (Math.abs(S.scale - 1) < .002 && S.L < .01) { S.scale = 1; S.L = 0; S.state = 'rest'; } }
+      draw();
+    }
+    const R = runner(stage, frame);
+    const toCanvas = e => { const l = local(stage, e), d = dpr(); return { x: l.x * d, y: l.y * d }; };
+    const onSticker = p => { const q = toLocal(p); return Math.hypot(q.x, q.y) <= r + (ptr.type === 'mouse' ? 3 : 12) * dpr(); };
+    stage.addEventListener('pointerdown', e => {
+      fit(cv); if (!pts.length) shape();
+      const p = toCanvas(e); ptr.type = e.pointerType; ptr.x = ptr.sx = p.x; ptr.y = ptr.sy = p.y;
+      if (!onSticker(p) || !['rest', 'hover', 'release', 'stick'].includes(S.state)) return;
+      audio(); ptr.down = true; stage.setPointerCapture(e.pointerId); stage.style.cursor = 'grabbing';
+      if (S.state === 'hover' && S.peel) { S.peel.nailT = 1; S.peel.D = { x: 0, y: 0 }; } else S.peel = peelFrom(p, 1);
+      S.state = 'peel'; S.scale = 1; PSND.tick();
+      if (reduce) R.once();
+    });
+    stage.addEventListener('pointermove', e => {
+      const p = toCanvas(e); ptr.x = p.x; ptr.y = p.y; ptr.type = e.pointerType;
+      if (S.state === 'peel' && ptr.down) { S.peel.D.x = p.x - ptr.sx; S.peel.D.y = p.y - ptr.sy; }
+      else if (!ptr.down && e.pointerType === 'mouse' && (S.state === 'rest' || S.state === 'hover' || S.state === 'release')) {
+        // hover near the rim: the corner lifts a little, like in Pegote
+        const q = toLocal(p), d = Math.hypot(q.x, q.y), near = d < r && d > r - 16 * dpr();
+        if (near && S.state !== 'hover') { S.peel = peelFrom(p, .7); S.state = 'hover'; }
+        else if (!near && S.state === 'hover') { S.state = 'release'; S.peel.nailT = 0; }
+      }
+      if (reduce) R.once();
     });
     const up = () => {
-      stage.style.cursor = 'grab';
-      if (mode === 'carry') {
-        const { r, hx, hy } = geo();
-        // dropped back over its outline: it snaps home onto the sheet
-        if (Math.hypot(fx * cv.width - hx, fy * cv.height - hy) < r * .6) { fx = .5; fy = .5; onSheet = true; }
-        const mxr = r / cv.width + .02, myr = r / cv.height + .02;
-        fx = Math.min(1 - mxr, Math.max(mxr, fx)); fy = Math.min(1 - myr, Math.max(myr, fy));
-        mode = 'drop'; liftV = -.06; thump();
-        if (reduce) { mode = 'rest'; lift = 0; tilt = 0; draw(); }
-      } else if (mode === 'peel') { mode = 'rest'; if (reduce) { G = Pp = null; draw(); } }
+      if (!ptr.down) return; ptr.down = false; stage.style.cursor = 'grab';
+      if (S.state === 'peel') { S.state = 'release'; S.peel.nailT = 0; }
+      else if (S.state === 'carry') drop();
+      if (reduce) { if (S.state === 'release') { S.state = 'rest'; S.peel = null; S.geom = null; } if (S.state === 'stick') { S.state = 'rest'; S.scale = 1; S.L = 0; } R.once(); }
     };
     stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
-    stage.addEventListener('dblclick', () => { fx = .5; fy = .5; onSheet = true; mode = 'rest'; G = Pp = null; draw(); });
-    new ResizeObserver(draw).observe(stage);
-    draw();
-    window.SITE_HOOKS.push(() => draw());
+    stage.addEventListener('pointerleave', () => { if (!ptr.down && S.state === 'hover') { S.state = 'release'; S.peel.nailT = 0; } });
+    stage.addEventListener('dblclick', () => { if (S.state === 'rest') { S.fx = .5; S.fy = .5; S.rot = 0; S.onSheet = true; R.once(); } });
+    new ResizeObserver(() => { fit(cv); shape(); R.once(); }).observe(stage);
+    window.SITE_HOOKS.push(() => R.once());
+    R.once();
   }
 
   // ---------------------------------------------------------------- 5. Magnetic dot grid
