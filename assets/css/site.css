@@ -513,3 +513,5 @@ html.js .job.open .job-panel-content { opacity: 1; transform: none; transition-d
 .see-all { margin-top: 32px; }
 @media (hover: hover) and (pointer: fine) { .wink:hover { color: var(--ink); border-color: var(--ink); } }
 @media (max-width: 1024px) { .pause-copy, .pause-stage { grid-column: 1 / -1; } .pause-stage { max-width: 380px; width: 100%; margin: 0 auto; } }
+
+.see-all-row { display: flex; justify-content: center; margin-top: clamp(40px, 5vw, 64px); }
