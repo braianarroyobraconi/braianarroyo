@@ -818,6 +818,59 @@
     runner(stage, step);
   }
 
+  // ---------------------------------------------------------------- Slime mould (Physarum)
+  // Thousands of blind agents that only smell the trail left by the others. Each one turns toward the
+  // strongest scent and leaves its own; together they weave a network of veins. Touch to drop food.
+  function slime(stage) {
+    const cv = stage.querySelector('canvas'); const ctx = cv.getContext('2d');
+    let W = 0, H = 0, trail, next, ag, n = 0, img, off, octx, food = null, foodT = 0;
+    const SA = .7, SO = 7, RA = .5, SPEED = 1, DEPOSIT = .5, DECAY = .9, JITTER = .18, CAP = 1.6;
+    function build() {
+      const r = stage.getBoundingClientRect(); const k = Math.max(r.width, r.height) > 600 ? 2 : 1.8;
+      W = Math.max(80, Math.round(r.width / k)); H = Math.max(60, Math.round(r.height / k));
+      trail = new Float32Array(W * H); next = new Float32Array(W * H);
+      n = Math.min(26000, Math.round(W * H * .14)); ag = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) {
+        ag[i * 3] = 1 + Math.random() * (W - 2); ag[i * 3 + 1] = 1 + Math.random() * (H - 2); ag[i * 3 + 2] = Math.random() * Math.PI * 2;
+      }
+      off = document.createElement('canvas'); off.width = W; off.height = H; octx = off.getContext('2d'); img = octx.createImageData(W, H);
+    }
+    const sense = (x, y, a) => { const sx = Math.round(x + Math.cos(a) * SO), sy = Math.round(y + Math.sin(a) * SO); if (sx < 0 || sy < 0 || sx >= W || sy >= H) return -1; return trail[sy * W + sx]; };
+    function step() {
+      for (let i = 0; i < n; i++) {
+        const o = i * 3; let x = ag[o], y = ag[o + 1], a = ag[o + 2];
+        const f = sense(x, y, a), l = sense(x, y, a - SA), r = sense(x, y, a + SA);
+        if (f >= l && f >= r) { /* keep going */ } else if (f < l && f < r) a += (Math.random() < .5 ? -1 : 1) * RA; else if (l > r) a -= RA; else a += RA;
+        a += (Math.random() - .5) * JITTER; // a little wandering keeps the network branching
+        x += Math.cos(a) * SPEED; y += Math.sin(a) * SPEED;
+        if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) { x = Math.min(W - 2, Math.max(1, x)); y = Math.min(H - 2, Math.max(1, y)); a += Math.PI * (.5 + Math.random()); }
+        ag[o] = x; ag[o + 1] = y; ag[o + 2] = a;
+        const k = Math.round(y) * W + Math.round(x); trail[k] = Math.min(CAP, trail[k] + DEPOSIT); // same rounding as sensing, or the network drifts
+      }
+      if (food && performance.now() - foodT < 4000) { // food: a strong scent that draws the network in
+        for (let j = -4; j <= 4; j++) for (let i = -4; i <= 4; i++) { if (i * i + j * j > 16) continue; const xx = Math.round(food.x + i), yy = Math.round(food.y + j); if (xx > 0 && yy > 0 && xx < W && yy < H) trail[yy * W + xx] += 3; }
+      }
+      // diffuse (3x3 mean) and evaporate
+      for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+        const k = y * W + x;
+        next[k] = (trail[k] * 4 + trail[k - 1] + trail[k + 1] + trail[k - W] + trail[k + W]) / 8 * DECAY; // light diffusion keeps veins thin
+      }
+      [trail, next] = [next, trail];
+      const d = img.data;
+      let mx = .5; for (let k = 0; k < W * H; k += 9) if (trail[k] > mx) mx = trail[k];
+      const LM = Math.log(1 + mx * .8);
+      for (let k = 0; k < W * H; k++) { const v = Math.min(1, Math.log(1 + trail[k]) / LM); const c = 11 + v * v * 232; d[k * 4] = c; d[k * 4 + 1] = c; d[k * 4 + 2] = c - 3; d[k * 4 + 3] = 255; }
+      octx.putImageData(img, 0, 0);
+      fit(cv, 1.5); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(off, 0, 0, cv.width, cv.height);
+    }
+    const toGrid = e => { const l = local(stage, e); return { x: l.x / l.w * W, y: l.y / l.h * H }; };
+    stage.addEventListener('pointerdown', e => { food = toGrid(e); foodT = performance.now(); if (reduce) { for (let i = 0; i < 30; i++) step(); } });
+    stage.addEventListener('pointermove', e => { if (e.buttons || e.pointerType !== 'mouse') { food = toGrid(e); foodT = performance.now(); } });
+    stage.addEventListener('dblclick', () => build());
+    new ResizeObserver(() => { build(); if (reduce) for (let i = 0; i < 120; i++) step(); else step(); }).observe(stage);
+    runner(stage, step);
+  }
+
   // ---------------------------------------------------------------- Pause for hiring managers
   // The circle is the button: tap to start, tap again to stop; after it ends, tap for another one.
   function pause(root) {
@@ -857,7 +910,7 @@
   }
 
   window.SITE_HOOKS = window.SITE_HOOKS || [];
-  const kinds = { liquid, ripples, peel, grid, particles, scramble, rocket, jelly, morpho, attractor, cloth, rain };
+  const kinds = { liquid, ripples, peel, grid, particles, scramble, rocket, jelly, morpho, attractor, cloth, rain, slime };
   document.querySelectorAll('[data-shot]').forEach(stage => { try { kinds[stage.dataset.shot](stage); } catch (e) { console.warn('shot', stage.dataset.shot, e); } });
   document.querySelectorAll('[data-pause]').forEach(pause);
 })();
