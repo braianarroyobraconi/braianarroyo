@@ -67,12 +67,11 @@
           <div class="pause-copy">
             <h2 data-i18n="pause.title">Hiring manager: esta pausa va por mi cuenta.</h2>
             <p data-i18n="pause.text">Sé que estás viendo muchos perfiles. Te regalo 30 segundos para respirar antes del próximo.</p>
-            <button class="btn btn-solid" type="button" data-pause-start>Tomar la pausa</button>
           </div>
-          <div class="pause-stage" aria-live="polite">
+          <div class="pause-stage">
             <div class="pause-ring" aria-hidden="true"></div>
-            <div class="pause-circle" aria-hidden="true"></div>
-            <div class="pause-say">Cuando quieras.</div>
+            <button class="pause-circle" type="button" data-pause-start aria-label="Comenzar pausa"></button>
+            <div class="pause-say" aria-live="polite">Comenzar pausa</div>
             <div class="pause-bar" aria-hidden="true"><i></i></div>
           </div>
         </div>
@@ -88,43 +87,43 @@
 
         <div class="shots">
           <figure class="shot" style="--span:7" data-reveal>
-            <div class="shot-stage" data-shot="liquid"><canvas role="img" aria-label="Shader de ruido líquido"></canvas><span class="shot-hint mono" data-i18n="hint.move">Mové el cursor</span></div>
-            <figcaption class="shot-cap"><h3 data-i18n="s1.t">Ruido líquido</h3><span class="mono">WebGL · GLSL</span><p data-i18n="s1.d">Un shader de ruido fractal que se deforma alrededor del cursor.</p></figcaption>
+            <div class="shot-stage" data-shot="liquid"><canvas role="img" aria-label="Shader de ruido líquido"></canvas><span class="shot-hint mono" data-i18n="hint.move" data-i18n-touch="hint.touch">Mové el cursor</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s1.t">Ruido líquido</h3><span class="mono">WebGL · GLSL</span><p data-i18n="s1.d" data-i18n-touch="s1.dt">Un shader de ruido fractal que se deforma alrededor del cursor.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:5" data-reveal>
-            <div class="shot-stage" data-shot="peel" style="touch-action:none;cursor:grab"><canvas role="img" aria-label="Sticker para despegar"></canvas><span class="shot-hint mono" data-i18n="hint.peel">Arrastralo hasta despegarlo</span></div>
+            <div class="shot-stage" data-shot="peel" style="cursor:grab"><canvas role="img" aria-label="Sticker para despegar"></canvas><span class="shot-hint mono" data-i18n="hint.peel">Arrastralo hasta despegarlo</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s2.t">Despegar</h3><span class="mono">Canvas 2D</span><p data-i18n="s2.d">El gesto central de Pegote: el pliegue sigue al dedo y se vuelve a pegar al soltar.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:8" data-reveal>
-            <div class="shot-stage" data-shot="rocket" tabindex="0" style="touch-action:none;cursor:pointer" aria-label="Cohete: mantené apretado para lanzar" data-i18n-aria="rk.aria"><canvas aria-hidden="true"></canvas><span class="shot-hint mono" data-rocket-read aria-live="polite">Mantené apretado para lanzar</span></div>
+            <div class="shot-stage" data-shot="rocket" tabindex="0" style="cursor:pointer" aria-label="Cohete: mantené apretado para lanzar" data-i18n-aria="rk.aria"><canvas aria-hidden="true"></canvas><span class="shot-hint mono" data-rocket-read aria-live="polite">Mantené apretado para lanzar</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s13.t">Cohete</h3><span class="mono">Canvas · Web Audio</span><p data-i18n="s13.d">Mantené apretado para la cuenta regresiva y soltá para despegar. Un guiño a mi hobby.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:4" data-reveal>
-            <div class="shot-stage" data-shot="jelly" style="touch-action:none;cursor:grab"><canvas role="img" aria-label="Gelatina con cara"></canvas><span class="shot-hint mono" data-i18n="hint.jelly">Estirala</span></div>
+            <div class="shot-stage" data-shot="jelly" style="cursor:grab"><canvas role="img" aria-label="Gelatina con cara"></canvas><span class="shot-hint mono" data-i18n="hint.jelly">Estirala</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s14.t">Gelatina</h3><span class="mono" data-i18n="s14.tech">Canvas · física</span><p data-i18n="s14.d">Un blob blando con bounce: estiralo, soltalo y mirá cómo te sigue con los ojos.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:6" data-reveal>
-            <div class="shot-stage" data-shot="morpho" style="touch-action:none;cursor:crosshair"><canvas role="img" aria-label="Simulación de reacción-difusión" data-i18n-aria="s15.aria"></canvas><span class="shot-hint mono" data-i18n="hint.draw">Dibujá con el dedo</span></div>
+            <div class="shot-stage" data-shot="morpho" style="cursor:crosshair"><canvas role="img" aria-label="Simulación de reacción-difusión" data-i18n-aria="s15.aria"></canvas><span class="shot-hint mono" data-i18n="hint.draw">Dibujá con el dedo</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s15.t">Morfogénesis</h3><span class="mono">Gray-Scott · JS</span><p data-i18n="s15.d">Dos químicos imaginarios que se comen entre sí. Dibujá y de tu trazo crece un coral que muta solo.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:6" data-reveal>
-            <div class="shot-stage" data-shot="attractor"><canvas role="img" aria-label="Atractor de Peter de Jong" data-i18n-aria="s16.aria"></canvas><span class="shot-hint mono" data-i18n="hint.move">Mové el cursor</span></div>
-            <figcaption class="shot-cap"><h3 data-i18n="s16.t">Atractor</h3><span class="mono">De Jong · Canvas</span><p data-i18n="s16.d">Cuatro números y una ecuación que nunca repite su recorrido. El cursor cambia los números.</p></figcaption>
+            <div class="shot-stage" data-shot="attractor"><canvas role="img" aria-label="Atractor de Peter de Jong" data-i18n-aria="s16.aria"></canvas><span class="shot-hint mono" data-i18n="hint.move" data-i18n-touch="hint.touch">Mové el cursor</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s16.t">Atractor</h3><span class="mono">De Jong · Canvas</span><p data-i18n="s16.d" data-i18n-touch="s16.dt">Cuatro números y una ecuación que nunca repite su recorrido. El cursor cambia los números.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:8" data-reveal>
-            <div class="shot-stage" data-shot="particles"><canvas role="img" aria-label="Nombre hecho de partículas"></canvas><span class="shot-hint mono" data-i18n="hint.move">Mové el cursor</span></div>
-            <figcaption class="shot-cap"><h3 data-i18n="s6.t">Partículas</h3><span class="mono">Canvas 2D</span><p data-i18n="s6.d">Mi nombre hecho de partículas: pasá el cursor para dispersarlas.</p></figcaption>
+            <div class="shot-stage" data-shot="particles"><canvas role="img" aria-label="Nombre hecho de partículas"></canvas><span class="shot-hint mono" data-i18n="hint.move" data-i18n-touch="hint.touch">Mové el cursor</span></div>
+            <figcaption class="shot-cap"><h3 data-i18n="s6.t">Partículas</h3><span class="mono">Canvas 2D</span><p data-i18n="s6.d" data-i18n-touch="s6.dt">Mi nombre hecho de partículas: pasá el cursor para dispersarlas.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:4" data-reveal>
             <div class="shot-stage" data-shot="grid"><canvas role="img" aria-label="Grilla de puntos magnética"></canvas></div>
-            <figcaption class="shot-cap"><h3 data-i18n="s3.t">Grilla magnética</h3><span class="mono">Canvas 2D</span><p data-i18n="s3.d">Puntos que se apartan del cursor y vuelven con bounce.</p></figcaption>
+            <figcaption class="shot-cap"><h3 data-i18n="s3.t">Grilla magnética</h3><span class="mono">Canvas 2D</span><p data-i18n="s3.d" data-i18n-touch="s3.dt">Puntos que se apartan del cursor y vuelven con bounce.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:7" data-reveal>
-            <div class="shot-stage" data-shot="cloth" style="touch-action:none;cursor:grab"><canvas role="img" aria-label="Tela con física que se puede romper" data-i18n-aria="s18.aria"></canvas><span class="shot-hint mono" data-i18n="hint.cloth">Agarrala y tirá fuerte</span></div>
+            <div class="shot-stage" data-shot="cloth" style="cursor:grab"><canvas role="img" aria-label="Tela con física que se puede romper" data-i18n-aria="s18.aria"></canvas><span class="shot-hint mono" data-i18n="hint.cloth">Agarrala y tirá fuerte</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s18.t">Tela</h3><span class="mono" data-i18n="s18.tech">Verlet · Canvas</span><p data-i18n="s18.d">Una tela colgada con física de verdad. Sacudila; si tirás demasiado, los hilos se cortan. Doble click cuelga una nueva.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:5" data-reveal>
-            <div class="shot-stage" data-shot="rain" style="touch-action:none;cursor:crosshair"><canvas role="img" aria-label="Ventana empañada con lluvia" data-i18n-aria="s19.aria"></canvas><span class="shot-hint mono" data-i18n="hint.rain">Escribí en el vidrio</span></div>
+            <div class="shot-stage" data-shot="rain" style="cursor:crosshair"><canvas role="img" aria-label="Ventana empañada con lluvia" data-i18n-aria="s19.aria"></canvas><span class="shot-hint mono" data-i18n="hint.rain">Escribí en el vidrio</span></div>
             <figcaption class="shot-cap"><h3 data-i18n="s19.t">Lluvia</h3><span class="mono" data-i18n="s19.tech">Canvas · Web Audio</span><p data-i18n="s19.d">Una ventana empañada un día de lluvia. Escribí algo con el dedo; el vidrio lo va olvidando.</p></figcaption>
           </figure>
           <figure class="shot" style="--span:5" data-reveal>
@@ -133,7 +132,7 @@
           </figure>
           <figure class="shot" style="--span:7" data-reveal>
             <div class="shot-stage" data-shot="scramble"><p class="scramble" tabindex="0" data-i18n="sh.scramble.text">Los detalles que nadie ve son los que todos sienten.</p></div>
-            <figcaption class="shot-cap"><h3 data-i18n="s9.t">Texto que se decodifica</h3><span class="mono">JS</span><p data-i18n="s9.d">Las letras se ordenan una por una al pasar el cursor.</p></figcaption>
+            <figcaption class="shot-cap"><h3 data-i18n="s9.t">Texto que se decodifica</h3><span class="mono">JS</span><p data-i18n="s9.d" data-i18n-touch="s9.dt">Las letras se ordenan una por una al pasar el cursor.</p></figcaption>
           </figure>
         </div>
       </div>
@@ -163,12 +162,14 @@
   <script src="/assets/vendor/lenis.min.js" defer></script>
   <script>
     window.I18N_ES = {
-      'pause.start': 'Tomar la pausa', 'pause.ready': 'Cuando quieras.',
+      'hint.touch': 'Tocá y arrastrá', 's1.dt': 'Un shader de ruido fractal que se deforma alrededor de tu dedo.', 's3.dt': 'Puntos que se apartan de tu dedo y vuelven con bounce.', 's6.dt': 'Mi nombre hecho de partículas: pasá el dedo para dispersarlas.', 's9.dt': 'Las letras se ordenan una por una cuando las tocás.', 's16.dt': 'Cuatro números y una ecuación que nunca repite su recorrido. Tu dedo cambia los números.',
+      'pause.start': 'Comenzar pausa',
       'pause.in': 'Inhalá', 'pause.hold': 'Sostené', 'pause.out': 'Exhalá',
       'pause.done': 'Espero que te haya servido. Gracias.', 'pause.again': 'Otra pausa', 'pause.stop': 'Terminar',
       'rk.idle': 'Mantené apretado para lanzar', 'rk.3': 'T-3', 'rk.2': 'T-2', 'rk.1': 'T-1', 'rk.go': '¡Despegue!', 'rk.alt': 'ALT', 'rk.back': 'Volviendo en paracaídas'
     };
     window.I18N_EN = {
+      'hint.touch': 'Touch and drag', 's1.dt': 'A fractal noise shader that bends around your finger.', 's3.dt': 'Dots that move away from your finger and bounce back.', 's6.dt': 'My name made of particles: drag your finger to scatter them.', 's9.dt': 'Letters settle one by one when you tap them.', 's16.dt': 'Four numbers and an equation that never repeats its path. Your finger changes the numbers.',
       'ah.label': 'After hours', 'case.cta': 'Read the case study',
       'ahp.title': 'What I make once the work laptop is closed.',
       'ahp.lede': 'I study rocketry, tinker with electronics, build my own software and develop a game. All of it keeps me close to the craft and lets me test ideas, especially with AI, before bringing them to the team.',
@@ -180,7 +181,7 @@
       'lamp.t': 'Living lamp', 'lamp.aria': 'Generative pattern from the living lamp',
       'pause.title': 'Hiring manager, this pause is on me.',
       'pause.text': 'I know you\'re going through a lot of profiles. Here are 30 seconds to breathe before the next one.',
-      'pause.start': 'Take the pause', 'pause.ready': 'Whenever you are ready.',
+      'pause.start': 'Start pause',
       'pause.in': 'Breathe in', 'pause.hold': 'Hold', 'pause.out': 'Breathe out',
       'pause.done': 'Hope that helped. Thank you.', 'pause.again': 'Another pause', 'pause.stop': 'Stop',
       'shots.label': 'Shots', 'shots.title': 'Micro-interactions and shaders.',

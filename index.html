@@ -169,7 +169,7 @@
               <div><dt data-i18n="m.role">Rol</dt><dd data-i18n="m.hw">Hardware y código creativo</dd></div>
               <div><dt data-i18n="m.year">Año</dt><dd>2026</dd></div>
             </dl>
-            <p class="p-desc" data-i18n="lamp.d">Un ESP32 lee la luz y la temperatura del ambiente y mueve un patrón generativo. Acá corre en vivo: pasá el cursor por encima.</p>
+            <p class="p-desc" data-i18n="lamp.d" data-i18n-touch="lamp.dt">Un ESP32 lee la luz y la temperatura del ambiente y mueve un patrón generativo. Acá corre en vivo: pasá el cursor por encima.</p>
             <div class="p-actions"><a class="case-link" href="/projects/living-lamp/"><span data-i18n="case.cta">Ver caso completo</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 12h16m0 0l-6-6m6 6l-6 6"/></svg></a></div>
             <div class="tags"><span class="tag">ESP32</span><span class="tag">Arduino</span><span class="tag">Processing</span></div>
           </article>
@@ -278,7 +278,9 @@
   <script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
   <script src="/assets/vendor/lenis.min.js" defer></script>
   <script>
+    window.I18N_ES = { 'lamp.dt': 'Un ESP32 lee la luz y la temperatura del ambiente y mueve un patrón generativo. Acá corre en vivo: tocala y arrastrá el dedo.' };
     window.I18N_EN = {
+      'lamp.dt': 'An ESP32 reads ambient light and temperature and drives a generative pattern. It runs live here: touch it and drag your finger.',
       'hero.title': 'UX Manager, design culture builder <em>and AI practitioner.</em>',
       'hero.sub': 'I was a designer before I was a leader. Today I bring teams closer to the craft, share what I keep learning and bring in the tools that make us better. 8+ years at Mercado Libre, PedidosYa and NaranjaX.',
       'hero.alt': 'Braian Arroyo Braconi smiling, sitting in an office with plants',

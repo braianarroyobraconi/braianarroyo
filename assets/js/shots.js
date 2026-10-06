@@ -3,6 +3,7 @@
 (() => {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const coarse = matchMedia('(pointer: coarse)').matches; // no hover on touch: pieces wander on their own until touched
   const T = k => (window.Site ? window.Site.t(k) : k);
   const lang = () => (window.Site ? window.Site.lang : 'es');
 
@@ -60,11 +61,15 @@
       float lines=.5+.5*sin(v*46.);float c=mix(v,v*lines,.42);
       c*=1.-.45*length(uv-.5);gl_FragColor=vec4(vec3(c*.9+.03),1.);}`);
     if (!P) return fallback(stage, 'WebGL no disponible.');
-    let mx = .5, my = .5, tx = .5, ty = .5, mi = 0, ti = 0;
-    stage.addEventListener('pointermove', e => { const l = local(stage, e); tx = l.x / l.w; ty = 1 - l.y / l.h; ti = 1; if (reduce) R.once(); });
-    stage.addEventListener('pointerleave', () => { ti = 0; });
+    let mx = .5, my = .5, tx = .5, ty = .5, mi = 0, ti = 0, touching = false;
+    const at = e => { const l = local(stage, e); tx = l.x / l.w; ty = 1 - l.y / l.h; ti = 1; if (reduce) R.once(); };
+    stage.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || touching) at(e); });
+    stage.addEventListener('pointerdown', e => { touching = true; at(e); });
+    const off = () => { touching = false; ti = 0; };
+    stage.addEventListener('pointerleave', off); stage.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') off(); }); stage.addEventListener('pointercancel', off);
     const R = runner(stage, t => {
       fit(cv, 1.5);
+      if (coarse && !touching) { const s2 = t / 1000; tx = .5 + Math.sin(s2 * .5) * .3; ty = .5 + Math.cos(s2 * .37) * .25; ti = .6; }
       mx += (tx - mx) * .08; my += (ty - my) * .08; mi += (ti - mi) * .05;
       P.gl.uniform2f(P.u.r, cv.width, cv.height); P.gl.uniform1f(P.u.t, reduce ? 12 : t / 1000);
       P.gl.uniform2f(P.u.m, mx, my); P.gl.uniform1f(P.u.mi, mi); P.draw();
@@ -339,9 +344,14 @@
       for (let y = gap / 2; y < H; y += gap) for (let x = gap / 2; x < W; x += gap) dots.push({ x, y, ox: 0, oy: 0, vx: 0, vy: 0 });
     }
     new ResizeObserver(build).observe(stage); build();
-    stage.addEventListener('pointermove', e => { const l = local(stage, e); mx = l.x * d; my = l.y * d; if (reduce) step(); });
-    stage.addEventListener('pointerleave', () => { mx = my = -1e4; if (reduce) step(); });
+    let touching = false;
+    const at = e => { const l = local(stage, e); mx = l.x * d; my = l.y * d; if (reduce) step(); };
+    stage.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || touching) at(e); });
+    stage.addEventListener('pointerdown', e => { touching = true; at(e); });
+    const off = () => { touching = false; mx = my = -1e4; if (reduce) step(); };
+    stage.addEventListener('pointerleave', off); stage.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') off(); }); stage.addEventListener('pointercancel', off);
     function step() {
+      if (coarse && !touching && !reduce) { const s2 = performance.now() / 1000; mx = W * (.5 + Math.sin(s2 * .6) * .32); my = H * (.5 + Math.sin(s2 * .83) * .3); }
       ctx.clearRect(0, 0, W, H);
       const R = 120 * d;
       for (const p of dots) {
@@ -378,9 +388,14 @@
     }
     new ResizeObserver(() => { build(); if (reduce) step(); }).observe(stage);
     if (document.fonts) document.fonts.ready.then(() => { build(); if (reduce) step(); });
-    stage.addEventListener('pointermove', e => { const l = local(stage, e); mx = l.x * d; my = l.y * d; if (reduce) step(); });
-    stage.addEventListener('pointerleave', () => { mx = my = -1e4; if (reduce) step(); });
+    let touching = false;
+    const at = e => { const l = local(stage, e); mx = l.x * d; my = l.y * d; if (reduce) step(); };
+    stage.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || touching) at(e); });
+    stage.addEventListener('pointerdown', e => { touching = true; at(e); });
+    const off = () => { touching = false; mx = my = -1e4; if (reduce) step(); };
+    stage.addEventListener('pointerleave', off); stage.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') off(); }); stage.addEventListener('pointercancel', off);
     function step() {
+      if (coarse && !touching && !reduce) { const s2 = performance.now() / 1000; mx = W * (.5 + Math.sin(s2 * .7) * .42); my = H * (.5 + Math.cos(s2 * 1.1) * .22); }
       ctx.clearRect(0, 0, W, H); ctx.fillStyle = 'rgba(237,237,235,.9)';
       const R = 70 * d, s = 1.6 * d;
       for (const p of pts) {
@@ -475,6 +490,8 @@
     }
     stage.addEventListener('pointermove', e => { const l = local(stage, e); hover = true; ta = .6 + l.x / l.w * 2.2; tb = -3 + (1 - l.y / l.h) * 1.8; if (reduce) step(performance.now()); });
     stage.addEventListener('pointerleave', () => { hover = false; });
+    stage.addEventListener('pointerdown', e => { const l = local(stage, e); hover = true; ta = .6 + l.x / l.w * 2.2; tb = -3 + (1 - l.y / l.h) * 1.8; });
+    stage.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') hover = false; }); stage.addEventListener('pointercancel', () => { hover = false; });
     new ResizeObserver(() => { build(); step(performance.now()); }).observe(stage);
     runner(stage, step);
   }
@@ -801,17 +818,18 @@
     runner(stage, step);
   }
 
-  // ---------------------------------------------------------------- Pause for recruiters
+  // ---------------------------------------------------------------- Pause for hiring managers
+  // The circle is the button: tap to start, tap again to stop; after it ends, tap for another one.
   function pause(root) {
-    const btn = root.querySelector('[data-pause-start]'), circle = root.querySelector('.pause-circle'), say = root.querySelector('.pause-say'), bar = root.querySelector('.pause-bar i');
+    const btn = root.querySelector('[data-pause-start]'), circle = btn, say = root.querySelector('.pause-say'), bar = root.querySelector('.pause-bar i');
     const phases = [['pause.in', 4000, 1], ['pause.hold', 3000, 1], ['pause.out', 6000, 0]];
-    const cycles = 2; let timers = [], running = false, sayKey = 'pause.ready';
+    const cycles = 2; let timers = [], running = false, sayKey = 'pause.start';
     const show = k => { sayKey = k; say.textContent = T(k); };
+    const label = () => btn.setAttribute('aria-label', T(running ? 'pause.stop' : root.classList.contains('finished') ? 'pause.again' : 'pause.start'));
     const clear = () => { timers.forEach(clearTimeout); timers = []; };
     function start() {
-      clear(); running = true; root.classList.add('running'); root.classList.remove('finished');
-      btn.textContent = T('pause.stop');
-      let at = 0; const total = phases.reduce((s, p) => s + p[1], 0) * cycles;
+      clear(); running = true; root.classList.add('running'); root.classList.remove('finished'); label();
+      let at = 0; const total = phases.reduce((s2, p) => s2 + p[1], 0) * cycles;
       bar.style.transition = 'none'; bar.style.transform = 'scaleX(0)';
       requestAnimationFrame(() => { bar.style.transition = `transform ${total}ms linear`; bar.style.transform = 'scaleX(1)'; });
       for (let c = 0; c < cycles; c++) for (const [key, ms, big] of phases) {
@@ -826,19 +844,16 @@
       timers.push(setTimeout(finish, at));
     }
     function finish() {
-      running = false; root.classList.remove('running'); root.classList.add('finished');
-      show('pause.done'); btn.textContent = T('pause.again');
+      running = false; root.classList.remove('running'); root.classList.add('finished'); show('pause.done'); label();
       circle.style.transitionDuration = '1200ms'; circle.style.transform = 'scale(.7)'; circle.style.opacity = '';
     }
     function stop() {
-      clear(); running = false; root.classList.remove('running');
-      bar.style.transition = 'none'; bar.style.transform = 'scaleX(0)';
-      show('pause.ready'); btn.textContent = T('pause.start');
+      clear(); running = false; root.classList.remove('running', 'finished');
+      bar.style.transition = 'none'; bar.style.transform = 'scaleX(0)'; show('pause.start'); label();
       circle.style.transitionDuration = '600ms'; circle.style.transform = 'scale(.7)'; circle.style.opacity = '';
     }
     btn.addEventListener('click', () => (running ? stop() : start()));
-    // Language changes keep the current phase: the pause owns its texts (no data-i18n on them).
-    window.SITE_HOOKS.push(() => { say.textContent = T(sayKey); btn.textContent = T(running ? 'pause.stop' : root.classList.contains('finished') ? 'pause.again' : 'pause.start'); });
+    window.SITE_HOOKS.push(() => { say.textContent = T(sayKey); label(); });
   }
 
   window.SITE_HOOKS = window.SITE_HOOKS || [];

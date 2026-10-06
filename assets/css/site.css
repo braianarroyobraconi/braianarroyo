@@ -368,13 +368,7 @@ footer a { text-decoration: none; transition: color 200ms ease; }
 .job-plus { position: absolute; right: 0; top: 30px; width: 36px; height: 36px; border-radius: 999px; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--rule); color: var(--muted); pointer-events: none; transition: transform 260ms var(--ease-out), background-color 200ms ease, color 200ms ease; }
 .job-plus svg { width: 18px; height: 18px; }
 .job.open .job-plus { transform: rotate(45deg); background: var(--paper); color: var(--ink); box-shadow: none; }
-.job-panel { grid-column: 1 / -1; display: grid; grid-template-rows: 1fr; }
-html.js .job-panel { grid-template-rows: 0fr; transition: grid-template-rows 420ms var(--ease-out); }
-html.js .job.open .job-panel { grid-template-rows: 1fr; }
-.job-panel-inner { overflow: hidden; min-height: 0; }
 .job-panel-content { padding-top: 32px; padding-bottom: 8px; }
-html.js .job-panel-content { opacity: 0; transform: translateY(-6px); transition: opacity 200ms ease, transform 300ms var(--ease-out); }
-html.js .job.open .job-panel-content { opacity: 1; transform: none; transition-delay: 80ms; }
 .job-areas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 24px; }
 .job-areas .mono, .job-sub { color: var(--faint); margin-right: 6px; }
 .job-sub { display: block; margin-bottom: 14px; }
@@ -391,7 +385,7 @@ html.js .job.open .job-panel-content { opacity: 1; transform: none; transition-d
   .job.open:hover .job-plus { color: var(--ink); }
 }
 @media (prefers-reduced-motion: reduce) {
-  html.js .job-panel, html.js .job-panel-content { transition: none; }
+  html.js .job-panel, html.js .job-panel .job-areas, html.js .job-panel .job-sub, html.js .job-panel .job-projects li { transition: none !important; }
 }
 @media (max-width: 720px) {
   .job { padding-right: 0; }
@@ -507,3 +501,30 @@ html.js .job.open .job-panel-content { opacity: 1; transform: none; transition-d
 @media (max-width: 1024px) { .pause-copy, .pause-stage { grid-column: 1 / -1; } .pause-stage { max-width: 380px; width: 100%; margin: 0 auto; } }
 
 .see-all-row { display: flex; justify-content: center; margin-top: clamp(40px, 5vw, 64px); }
+
+/* Accordion panels (height animated from JS; without JS they stay open) */
+.job-panel { grid-column: 1 / -1; }
+html.js .job-panel { height: 0; overflow: hidden; }
+html.js .job-panel .job-areas, html.js .job-panel .job-sub, html.js .job-panel .job-projects li {
+  opacity: 0; transform: translateY(10px); transition: opacity 220ms ease, transform 220ms var(--ease-out);
+}
+html.js .job.open .job-panel .job-areas, html.js .job.open .job-panel .job-sub, html.js .job.open .job-panel .job-projects li {
+  opacity: 1; transform: none; transition: opacity 420ms ease, transform 520ms var(--ease-out); transition-delay: calc(var(--i, 0) * 55ms + 120ms);
+}
+
+/* Phones: the pill hides while the hero is visible */
+@media (max-width: 720px) {
+  .pill { transition: transform 420ms var(--ease-out), opacity 300ms ease; }
+  .pill.tucked { transform: translate(-50%, 170%); opacity: 0; pointer-events: none; }
+}
+
+/* Shots never trap vertical scrolling on touch screens */
+.shot-stage { touch-action: pan-y; }
+
+/* WeeklyGoals card: the app peeks in, large and cropped, instead of shrinking to fit */
+.ah-card .ah-media img.goals-shot { position: absolute; top: 9%; left: 50%; transform: translateX(-50%); width: min(76%, 380px); height: auto; object-fit: initial; border-radius: 12px; }
+
+/* Pause: the circle is the button */
+button.pause-circle { border: 0; padding: 0; cursor: pointer; font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
+button.pause-circle:focus-visible { outline: 2px solid var(--paper); outline-offset: 6px; }
+@media (hover: hover) and (pointer: fine) { .pause:not(.running) button.pause-circle:hover { box-shadow: 0 0 0 1px #4a4a4f, 0 30px 80px -30px rgba(0,0,0,.9); } }

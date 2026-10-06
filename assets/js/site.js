@@ -26,6 +26,7 @@
   document.querySelectorAll('[data-i18n-aria]').forEach(el => { I18N.es[el.dataset.i18nAria] = el.getAttribute('aria-label'); });
 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const coarse = matchMedia('(pointer: coarse)').matches; // touch screens get copy that talks about fingers, not cursors
   let lang = 'es';
   const t = k => (I18N[lang] && I18N[lang][k]) ?? I18N.es[k];
   const hooks = window.SITE_HOOKS || [];
@@ -76,7 +77,7 @@
     lang = l;
     document.documentElement.lang = l;
     document.querySelectorAll('[data-i18n]').forEach(el => {
-      const v = t(el.dataset.i18n);
+      const v = t((coarse && el.dataset.i18nTouch) || el.dataset.i18n);
       if (el.hasAttribute('data-html')) el.innerHTML = v; else el.textContent = v;
       // Split headings come back as plain, visible copy in the new language.
       if (el.hasAttribute('data-split-done')) { el.removeAttribute('data-split-done'); el.removeAttribute('aria-label'); }
@@ -113,21 +114,41 @@
   }
 
 
-  // ---- Experience accordion: the whole row toggles; closed panels are inert so focus skips them ----
+  // ---- Experience accordion: the whole row toggles. Height is measured and animated with an iOS-like curve;
+  // the projects inside arrive in a short stagger. Closed panels are inert so focus skips them.
+  const DRAWER = 'cubic-bezier(0.32, 0.72, 0, 1)';
   document.querySelectorAll('.job.has-panel').forEach(job => {
     const btn = job.querySelector('.job-toggle');
     const panel = job.querySelector('.job-panel');
     const head = () => job.style.setProperty('--row-h', panel.offsetTop + 'px');
     head(); new ResizeObserver(head).observe(job);
+    panel.querySelectorAll('.job-areas, .job-sub, .job-projects li').forEach((el, i) => el.style.setProperty('--i', i));
     panel.inert = true;
     btn.addEventListener('click', () => {
       const open = !job.classList.contains('open');
-      job.classList.toggle('open', open);
       btn.setAttribute('aria-expanded', String(open));
       panel.inert = !open;
+      if (reduce) { job.classList.toggle('open', open); panel.style.height = open ? 'auto' : '0px'; return; }
+      const from = panel.getBoundingClientRect().height;
+      job.classList.toggle('open', open);
+      const to = open ? panel.scrollHeight : 0;
+      panel.style.transition = 'none'; panel.style.height = from + 'px';
+      panel.offsetHeight; // commit the start height before transitioning
+      panel.style.transition = `height ${open ? 560 : 380}ms ${DRAWER}`;
+      panel.style.height = to + 'px';
     });
-    panel.addEventListener('transitionend', e => { if (e.target === panel && window.ScrollTrigger) ScrollTrigger.refresh(); });
+    panel.addEventListener('transitionend', e => {
+      if (e.target !== panel || e.propertyName !== 'height') return;
+      if (job.classList.contains('open')) panel.style.height = 'auto';
+      if (window.ScrollTrigger) requestAnimationFrame(() => ScrollTrigger.refresh());
+    });
   });
+
+  // ---- Phones: the floating section pill stays out of the way while the hero is on screen
+  const heroEl = document.querySelector('.hero');
+  if (pill && heroEl && matchMedia('(max-width: 720px)').matches) {
+    new IntersectionObserver(([e]) => pill.classList.toggle('tucked', e.intersectionRatio > .3), { threshold: [0, .3, .6] }).observe(heroEl);
+  }
 
   // ---- Language: own choice, then country (middleware.js cookie), then browser ----
   let saved = null;
