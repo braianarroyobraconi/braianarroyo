@@ -532,3 +532,6 @@ button.pause-circle:focus-visible { outline: 2px solid var(--paper); outline-off
 
 /* The intro image is never hidden: it is the largest contentful paint */
 html.has-motion [data-intro-root] [data-unveil] { visibility: visible; }
+
+/* Section labels that are real headings keep the small label look */
+h2.chapter-label { font-weight: 400; line-height: 1.6; letter-spacing: 0.04em; text-wrap: initial; }
